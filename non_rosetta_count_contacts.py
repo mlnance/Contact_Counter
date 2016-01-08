@@ -1,5 +1,9 @@
 #!/usr/bin/python
 
+'''
+LINK record thing seems to work, but double check. Fix logic of skipping a PDB if it doesn't have the right number of ligand residues, or if it's because it has glycans or something
+'''
+
 import argparse
 
 parser = argparse.ArgumentParser(description="Use Python to count contacts.")
@@ -179,13 +183,13 @@ class LINK_line:
     def alt_loc1(self):
         return str( self.line[ 16:17] )
     
-    def res_name1(self):
+    def res1_name(self):
         return str( self.line[17:20] )
     
-    def chain_id1(self):
+    def res1_chain(self):
         return str( self.line[21:22] )
     
-    def res_seq1(self):
+    def res1_seq(self):
         return int( self.line[22:26] )
     
     def i_code1(self):
@@ -197,13 +201,13 @@ class LINK_line:
     def alt_loc2(self):
         return str( self.line[46:47] )
     
-    def res_name2(self):
+    def res2_name(self):
         return str( self.line[47:50] )
     
-    def chain_id2(self):
+    def res2_chain(self):
         return str( self.line[51:52] )
     
-    def res_seq2(self):
+    def res2_seq(self):
         return int( self.line[52:56] )
     
     def i_code2(self):
@@ -266,9 +270,10 @@ class cif_struct_conn_lines:
             self.mmcif_dict[ "_struct_conn.ptnr2_auth_asym_id" ] 
             self.mmcif_dict[ "_struct_conn.ptnr2_auth_comp_id" ]
             self.mmcif_dict[ "_struct_conn.ptnr2_auth_seq_id" ]
+            return True
         except:
-            print "Something wrong with the _struct_conn keys in", self.cif_filename
-            return 0
+            print " Something wrong with the _struct_conn keys in", self.cif_filename
+            return False
         
     def connection_types(self):
         return self.mmcif_dict[ "_struct_conn.conn_type_id" ]
@@ -567,7 +572,7 @@ class CTCT:
 
 
 
-    def pymol_clean(self, pdb_filename):
+    def pymol_clean( self, pdb_filename ):
         """
         Uses PyMOL to "clean" a PDB by removing waters and hydrogens.
         Opens up PyMOL via a command-line argument. Closes PyMOL upon completion
@@ -584,37 +589,29 @@ class CTCT:
         # run the PyMol command through the terminal
         os.popen( pymol_command )
         
+        
+        
+    def get_uniq_connection_names_from_LINK_records( self, LINK_records ):
+        unique_connection_names = []
+        
+        for link_line in LINK_records:
+            res1_unique_name = link_line.res1_name + '_' + link_line.res1_chain + '_' + link_line.res1_seq
+            res2_unique_name = link_line.res2_name + '_' + link_line.res2_chain + '_' + link_line.res2_seq
+            uniq_connection_name = res1_unique_name + '+' + res2_unique_name
+            
+            if uniq_connection_name not in unique_connection_names:
+                unique_connection_names.append( uniq_connection_name )
+        
+        return unique_connection_names
 
 
-    def determine_covalently_bound_ligands( self, pdb_filename ):
-        self.covalently_bound_lig_uniq_names = []
-        
-        # download the mmcif file
-        cif_filename = self.download_cif( pdb_filename[:4] )
-                
-        # get the unique protein and hetatm names from the mmcif file
-        # unique name = resname_reschain_resnum
-        _atom_site = cif_atom_site_lines( cif_filename )
-        unique_protein_names = _atom_site.cif_uniq_pro_names()
-        unique_hetatm_names = _atom_site.cif_uniq_het_names()
-        
-        # get _struct_conn lines to determine HETATM connections
-        _struct_conn = cif_struct_conn_lines( cif_filename )
-        
-        # check to see if check_if_has_mmcif_dict() returned 0.
-        # if it did, there was something wrong with getting the _struct_conn records
-        response = _struct_conn.check_if_has_mmcif_dict()
-        if response == 0:
-            return None
-        
-        # unique name = res1name_res1chain_res1num+res2name_res2chain_res2num
-        unique_connect_partner_names = _struct_conn.get_uniq_connection_names()
-        
+    
+    def graph_out_residue_connections( self, unique_partner_names, unique_protein_names, unique_hetatm_names ):
         # make a tree using networkx
         graph = nx.Graph()
         
         # add nodes 2 at a time from unique_connect_partner_names
-        for partners in unique_connect_partner_names:
+        for partners in unique_partner_names:
             # get the unique names for partner1 and partner2
             ptnr1 = partners.split( '+' )[0]
             ptnr2 = partners.split( '+' )[1]
@@ -663,19 +660,59 @@ class CTCT:
                     # remove this subgraph as there is a covalent connection bewteen protein and ligand
                     remove = True
             
-            # if you need to remove the ligs from this subgraph
-            if remove:
-                for mynode in g.nodes_iter():
-                    # if this node is a ligand
-                    if g.node[mynode]["HETATM"]:
-                        # if you haven't already added it
-                        if mynode not in remove_these_ligs:
-                            remove_these_ligs.append( mynode )
+                # if you need to remove the ligs from this subgraph
+                if remove:
+                    for mynode in g.nodes_iter():
+                        # if this node is a ligand
+                        if g.node[mynode]["HETATM"]:
+                            # if you haven't already added it
+                            if mynode not in remove_these_ligs:
+                                remove_these_ligs.append( mynode )
 
         # return the unique names of the residues that are covalently linked to the protein
         return remove_these_ligs
+
+
+
+    def determine_covalently_bound_ligands( self, pdb_filename, unique_protein_names, unique_hetatm_names, link_records ):
+        # download the mmcif file
+        cif_filename = self.download_cif( pdb_filename[:4] )
+        
+        '''
+        # get the unique protein and hetatm names from the mmcif file
+        # unique name = resname_reschain_resnum
+        _atom_site = cif_atom_site_lines( cif_filename )
+        unique_protein_names = _atom_site.cif_uniq_pro_names()
+        unique_hetatm_names = _atom_site.cif_uniq_het_names()
+        '''
+        
+        # get _struct_conn lines to determine HETATM connections
+        _struct_conn = cif_struct_conn_lines( cif_filename )
+        
+        # check to see if check_if_has_mmcif_dict() by using return value
+        response = _struct_conn.check_if_has_mmcif_dict()
+        
+        # if this PDB has an mmcif file
+        if response is True:        
+            # unique name = res1name_res1chain_res1num+res2name_res2chain_res2num
+            unique_partner_names = _struct_conn.get_uniq_connection_names()
+            
+            # get list of ligand residues to remove
+            remove_these_ligs = self.graph_out_residue_connections( unique_partner_names, unique_protein_names, unique_hetatm_names )
+        
+        # otherwise this PDB didn't have an mmcif file, use LINK records instead
+        else:
+            # unique name = res1name_res1chain_res1num+res2name_res2chain_res2num
+            unique_partner_names = self.get_uniq_connection_names_from_LINK_records( link_records )
+            
+            # get list of ligand residues to remove
+            remove_these_ligs = self.graph_out_residue_connections( unique_partner_names, unique_protein_names, unique_hetatm_names )
+
+            
+        return remove_these_ligs
+        
     
-    
+
     def split_pdb_file(self, pdb_filename):
         """
         Splits up the PDB file into ATOM and HETATM lines.
@@ -691,6 +728,9 @@ class CTCT:
         # get the PDB name from the end of the full path given in pdb_filename
         split_pdb_name = pdb_filename.split( '/' )[-1]
         pdb_name = split_pdb_name[:-4]
+        
+        # holds LINK records
+        self.link_records = []
         
         # instantiate lists that will hold relevant PDB data that is NOT wanted
         AA_lig = []
@@ -710,24 +750,6 @@ class CTCT:
             print pdb_filename, "doesn't exist in this directory. Did you mean to download it? Exiting."
             sys.exit()
         
-        # if user wants to ignore glycosylated proteins (proteins with a HETATM attached to them)
-        covalently_bound_lig_residues = []
-        if input_args.ignore_glycosylated_proteins:
-            # see if there are residues covalently bound to the protein
-            covalently_bound_lig_residues = self.determine_covalently_bound_ligands( pdb_name )
-            
-            # if it returns Nonem there was a problem getting _struct_conn records
-            if covalently_bound_lig_residues is None:
-                print pdb_filename, "doesn't have _struct_conn records. Skipping", self.name
-                return 0
-            
-            # skip this particular PDB if covalently_bound_lig_residues is not empty
-            if len( covalently_bound_lig_residues ) != 0:
-                # add name of PDB to glycosylated_proteins list (to be dumped later)
-                self.glycosylated_proteins.append( self.name )
-                print "Skipping", self.name, "because it has a covalently attached HETATM residue"
-                return 0
-        
         # parse through the PDB file
         for line in pdb:
             # if there is a residue that has a modification, it is likely classified as a HETATM, so treat it like an ATOM line
@@ -746,7 +768,12 @@ class CTCT:
             # TODO-write code so you don't have to skip a multi-model PDB and can instead just look at the first MODEL
             if line[0:6] == "MODEL":
                 models.append( line )
-                break            
+                break
+            
+            if line[0:4] == "LINK":
+                # store LINK records
+                link_line = LINK_line( line )
+                self.link_records.append( link_line )
             
             if line[0:4] == "ATOM":
                 # store the protein lines
@@ -816,16 +843,29 @@ class CTCT:
                             lig_res_num = str( pdb_line.res_num() )
                             uniq_lig_name = lig_res_name + '_' + lig_res_chain + '_' + lig_res_num
                             
-                            # if this ligand residue is not covalently bound...
-                            if uniq_lig_name not in covalently_bound_lig_residues:
-                                # instantiate a dictionary key for this specific ligand residue
-                                # will be filled with the non-hydrogen HETATM lines later
-                                if uniq_lig_name not in self.ligand.keys():
-                                    self.ligand[ uniq_lig_name ] = []
+                            # instantiate a dictionary key for this specific ligand residue
+                            # will be filled with the non-hydrogen HETATM lines later
+                            if uniq_lig_name not in self.ligand.keys():
+                                self.ligand[ uniq_lig_name ] = []
                                     
-                                # store the HETATM lines
-                                self.hetatm_lines.append( pdb_line )
+                            # store the HETATM lines
+                            self.hetatm_lines.append( pdb_line )
                             
+        # if there are any protein ligands, return an exception code
+        if len( AA_lig ) != 0:
+            print "Skipping", self.name, "because it has an amino acid as a ligand"
+            return 0
+        
+        # if there were unknown residues, return an exception code
+        if len( unknown ) != 0:
+            print "Skipping", self.name, "because it has unknown residues"
+            return 0
+        
+        # if there were PDBs with more than one model, return an exception code
+        if len( models ) != 0:
+            print "Skipping", self.name, "because it has more than one model."
+            return 0
+        
         # move all ATOM and HETATM lines to their appropriate place in the dictionaries based on their unique names
         for pro_pdb_line in self.protein_lines:
             pro_res_name = pro_pdb_line.res_name()
@@ -843,24 +883,36 @@ class CTCT:
             
             self.ligand[ uniq_lig_name ].append( lig_pdb_line )
         
-        # if there are any protein ligands, return an exception code
-        if len( AA_lig ) != 0:
-            print "Skipping", self.name, "because it has an amino acid as a ligand"
-            return 0
         
-        # if there were unknown residues, return an exception code
-        if len( unknown ) != 0:
-            print "Skipping", self.name, "because it has unknown residues"
-            return 0
-        
-        # if there were PDBs with more than one model, return an exception code
-        if len( models ) != 0:
-            print "Skipping", self.name, "because it has more than one model."
-            return 0
+        # if user wants to ignore glycosylated proteins (proteins with a HETATM attached to them)
+        if input_args.ignore_glycosylated_proteins: 
+            self.covalently_bound_lig_residues = []
+            
+            # see if there are residues covalently bound to the protein
+            self.covalently_bound_lig_residues = self.determine_covalently_bound_ligands( pdb_name, self.protein, self.ligand, self.link_records )
+            
+            '''
+            # if it returns None, then there was a problem getting _struct_conn records
+            if self.covalently_bound_lig_residues is None:
+                print pdb_filename, "doesn't have _struct_conn records. Skipping", self.name
+                return 0
+            
+            ### not skipping anymore, just ignoring those residues ###
+            # skip this particular PDB if covalently_bound_lig_residues is not empty
+            if len( self.covalently_bound_lig_residues ) != 0:
+                # add name of PDB to glycosylated_proteins list (to be dumped later)
+                self.glycosylated_proteins.append( self.name )
+                print "Skipping", self.name, "because it has a covalently attached HETATM residue"
+                return 0
+            '''
+            
+        # remove covalently bound ligands from the list of unique ligand residue names
+        for remove_this_lig in self.covalently_bound_lig_residues:
+            self.ligand.pop( remove_this_lig )
         
         # if there is no ligand, return an exception code
         if len( self.hetatm_lines ) == 0:
-            print "Skipping", self.name, "because it does not have a ligand"
+            print "Skipping", self.name, "because it does not have a ligand of interest"
             return 0
         
         # make a clean PDB file that can be kept at the user's request to see if the program is doing what they think it is
@@ -1426,6 +1478,7 @@ class CTCT:
 ###########################
 ##### DATA COLLECTION #####
 ###########################
+'''
         # print the names of glycosylated proteins to a file including the name of the list passed
         filename = input_args.pdb_name_list + "_glycosylated_protein_PDB_names.txt"
         with open( filename, 'wb' ) as fh:
@@ -1541,7 +1594,7 @@ class CTCT:
 
         print self.CC_per_lig_df
         self.CC_per_lig_df.to_csv( str( self.working_dir ) + '/' + filename + "contact_counts_per_lig_res_" + str( input_args.cutoff ) + "_Ang_cutoff_and_" + str( input_args.heavy_atoms ) + "_heavy_atom_ligand.csv", index = 0, index_col = 0 )
-
+'''
 
 
 
