@@ -1,10 +1,7 @@
 #!/usr/bin/python
+# @author: morganlnance
 
-'''
-LINK record thing seems to work, but double check. Fix logic of skipping a PDB if it doesn't have the right number of ligand residues, or if it's because it has glycans or something
-'''
 
-print "Loading '%s' dependencies..." %__name__
 
 #####
 # path to pymol executable
@@ -13,7 +10,13 @@ print "Loading '%s' dependencies..." %__name__
 #####
 
 
-# other imports
+
+#################
+#### IMPORTS ####
+#################
+
+print "Loading '%s' dependencies..." %__name__
+
 import sys
 import os
 import shutil
@@ -34,6 +37,11 @@ except ImportError:
     sys.exit()
 
 
+
+#######################
+#### CHEMICAL DATA ####
+#######################
+
 # list of polar and nonpolar atoms
 nonpolar_atoms = [ 'C' ]
 polar_atoms = [ 'O', 'N', 'S', 'P', 'F', 'Cl', 'CL', 'Br', 'BR', 'I', 'Se', 'SE', 'B' ]
@@ -41,6 +49,7 @@ polar_atoms = [ 'O', 'N', 'S', 'P', 'F', 'Cl', 'CL', 'Br', 'BR', 'I', 'Se', 'SE'
 # list of residues to remove if they are a ligand
 # ligand meaning it was defined as HETATM in the PDB
 metal_list = ['B', 'K', 'V', 'Y', 'W', 'U', "LI", "BE", "NA", "MG", "AL", "SI", "CA", "SC", "TI", "CR", "MN", "FE", "CO", "NI", "CU", "ZN", "GA", "GE", "AS", "RB", "SR", "ZR", "NB", "MO", "TC", "RU", "RH", "PD", "AG", "CD", "IN", "SN", "SB", "TE", "CS", "BA", "LU", "HF", "TA", "RE", "OS", "IR", "PT", "AU", "HG", "TI", "PB", "BI", "PO", "AT", "FR", "RA", "LR", "RF", "DB", "SG", "BH", "HS", "MT", "LA", "CE", "PR", "ND", "PM", "SM", "EU", "GD", "TB", "DY", "HO", "ER", "TM", "YB", "AC", "TH", "PA", "NP", "PU", "AM", "CM", "BK", "CF", "ES", "FM", "MD", "NO"]
+
 AA_list = ["ALA", "ARG", "ASN", "ASP", "CYS", "GLN", "GLU", "GLY", "HIS", "ILE", "LEU", "LYS", "MET", "PHE", "PRO", "SER", "THR", "TRP", "TRY", "VAL"]
 
 
@@ -1388,211 +1397,6 @@ class CTCT:
         self.CC_nn_contacts.append( self.nonpolar_nonpolar )
         self.CC_unk_contacts.append( self.unk_contact )
         
-    '''
-    def go(self):
-        all_pdb_names = []
-        
-        # get current files as to not delete them later
-        cur_files_working = os.listdir( self.working_dir )
-        cur_dir = os.getcwd() + '/'
-        
-        pdb_name_list = []  # only the first four letters
-
-        # instantiate the data holders that will hold the data for all of the PDBs
-        self.instantiate_data_holders()
-        
-        for pdb in self.pdb_names:
-            if pdb != '':
-                print "Working on", pdb
-                
-                # instantiate holders for the HETATM and ATOM lines
-                self.instantiate_holders()
-                
-                # get pdb name
-                self.name = pdb
-                
-                # check to see if this PDB has already been looked at in this round
-                if not self.name[0:4] in pdb_name_list:
-                    if not self.name[0:4].lower() in pdb_name_list:  # check lower case
-                        pdb_name_list.append( self.name )
-                
-                        # download the pdb if needed
-                        if input_args.download_pdbs:
-                            pdb = self.download_pdb( pdb )
-                            
-                        # otherwise, try opening the file in the current directory
-                        else:
-                            try:
-                                with open( pdb, 'r' ) as pdb_fh:
-                                    pdb_lines = pdb_fh.readlines()
-                            except IOError:
-                                print pdb, "doesn't exist in this directory. Did you mean to download it? Add the '-d' argument in your command. Exiting."
-                                sys.exit()
-
-                        ## use pymol to remove waters and hydrogens
-                	#self.pymol_clean( pdb )
-                        
-                	# split ATOM and HETATM
-                        response = self.split_pdb_file( pdb,  )
-                        
-                        # if splitting the pdb was successful ( there is a ligand, no AA as ligand, no metal as ligand, no UNK residues )
-                        if response:
-                            # get ligand residue numbers from pose
-                            response = self.get_ligand_residues()
-                            
-                    	# if a ligand remains after the heavy atom cutoff
-                        if response:
-                            # get protein atoms in the activesite around the ligand
-                            response = self.get_activesite()
-                            
-                            # if there is indeed an activesite
-                            if response:
-                                # get activesite composition
-                                self.get_activesite_AA_composition()
-                                
-                                # get activesite composition per ligandresidue
-                                self.get_activesite_AA_composition_per_lig_res()
-                                
-                                # count contacts
-                                self.count_contacts()
-                                all_pdb_names.append( self.name )
-                                
-            with open( "clean_PSMDB_90_pro_70_lig_7_atom_cutoff_list", 'wb' ) as fh:
-                fh.writelines( all_pdb_names )
-
-            # PDB files always end with .pdb and are 8 characters long
-            # this program creates XXXX.clean.pdb files, so have to be specific on what gets deleted
-            if not input_args.keep_pdbs:
-                os.chdir( cur_dir + 'pdbs' )
-                pdb_files = os.listdir( os.getcwd() )
-                for f in pdb_files:
-                    if len( f ) == 8:
-                        os.remove( f )
-                os.chdir( cur_dir )
-    '''
-
-
- 
-###########################
-##### DATA COLLECTION #####
-###########################
-'''
-        # print the names of glycosylated proteins to a file including the name of the list passed
-        filename = input_args.pdb_name_list + "_glycosylated_protein_PDB_names.txt"
-        with open( filename, 'wb' ) as fh:
-            fh.writelines( self.glycosylated_proteins )
-            fh.write( "\n" )
-                
-        # filename will be taken from the name of the PDB list passed through
-        filename = input_args.pdb_name_list.split( "list" )[0]
-                                
-        # collect AA composition data in a pandas dataframe
-        self.AA_df = pd.DataFrame()
-        self.AA_df["PDB"] = self.AA_pdb_names
-        self.AA_df["num_lig_res"] = self.AA_lig_res
-        self.AA_df["num_lig_atoms"] = self.AA_lig_atms
-        self.AA_df["num_lig_nonpolar_atoms"] = self.AA_num_ligand_nonpolar_atoms 
-        self.AA_df["num_lig_polar_atoms"] = self.AA_num_ligand_polar_atoms
-        self.AA_df["num_lig_unk_atom_type"] = self.AA_num_ligand_unk_atom_types
-        self.AA_df["num_activesite_res"] = self.AA_activesite_res
-        self.AA_df["num_activesite_atoms"] = self.AA_activesite_atms
-        self.AA_df["num_activesite_nonpolar_atoms"] = self.AA_num_activesite_nonpolar_atoms
-        self.AA_df["num_activesite_polar_atoms"] = self.AA_num_activesite_polar_atoms
-        self.AA_df["num_activesite_unk_atom_type"] = self.AA_num_activesite_unk_atom_types
-        self.AA_df["ALA"] = self.ALA
-        self.AA_df["CYS"] = self.CYS
-        self.AA_df["ASP"] = self.ASP
-        self.AA_df["GLU"] = self.GLU
-        self.AA_df["PHE"] = self.PHE
-        self.AA_df["GLY"] = self.GLY
-        self.AA_df["HIS"] = self.HIS
-        self.AA_df["ILE"] = self.ILE
-        self.AA_df["LYS"] = self.LYS
-        self.AA_df["LEU"] = self.LEU
-        self.AA_df["MET"] = self.MET
-        self.AA_df["ASN"] = self.ASN
-        self.AA_df["PRO"] = self.PRO
-        self.AA_df["GLN"] = self.GLN
-        self.AA_df["ARG"] = self.ARG
-        self.AA_df["SER"] = self.SER
-        self.AA_df["THR"] = self.THR
-        self.AA_df["VAL"] = self.VAL
-        self.AA_df["TRP"] = self.TRP
-        self.AA_df["TYR"] = self.TYR
-        
-        print self.AA_df
-        self.AA_df.to_csv( str( self.working_dir ) + '/' + filename + "activesite_AA_composition_at_" + str( input_args.cutoff ) + "_Ang_cutoff_and_" + str( input_args.heavy_atoms ) + "_heavy_atom_ligand.csv", index = 0, index_col = 0 )
-
-
-            
-        # collect AA composition per ligand residue data in a pandas dataframe
-        self.AA_per_lig_df = pd.DataFrame()
-        self.AA_per_lig_df["PDB"] = self.AA_pdb_names_per_lig
-        self.AA_per_lig_df["uniq_lig_res_names"] = self.AA_lig_uniq_res_names_per_lig
-        self.AA_per_lig_df["lig_res_names"] = self.AA_lig_res_names_per_lig
-        self.AA_per_lig_df["num_lig_atoms"] = self.AA_lig_atms_per_lig
-        self.AA_per_lig_df["num_lig_nonpolar_atoms"] = self.AA_lig_num_ligand_nonpolar_atoms
-        self.AA_per_lig_df["num_lig_polar_atoms"] = self.AA_lig_num_ligand_polar_atoms
-        self.AA_per_lig_df["num_lig_unk_atoms"] = self.AA_lig_num_ligand_unk_atoms
-        self.AA_per_lig_df["num_activesite_res"] = self.AA_activesite_res_per_lig
-        self.AA_per_lig_df["num_activesite_atoms"] = self.AA_activesite_atms_per_lig
-        self.AA_per_lig_df["num_activesite_nonpolar_atoms"] = self.AA_lig_num_activesite_nonpolar_atoms
-        self.AA_per_lig_df["num_activesite_polar_atoms"] = self.AA_lig_num_activesite_polar_atoms
-        self.AA_per_lig_df["ALA"] = self.ALA_per_lig
-        self.AA_per_lig_df["CYS"] = self.CYS_per_lig
-        self.AA_per_lig_df["ASP"] = self.ASP_per_lig
-        self.AA_per_lig_df["GLU"] = self.GLU_per_lig
-        self.AA_per_lig_df["PHE"] = self.PHE_per_lig
-        self.AA_per_lig_df["GLY"] = self.GLY_per_lig
-        self.AA_per_lig_df["HIS"] = self.HIS_per_lig
-        self.AA_per_lig_df["ILE"] = self.ILE_per_lig
-        self.AA_per_lig_df["LYS"] = self.LYS_per_lig
-        self.AA_per_lig_df["LEU"] = self.LEU_per_lig
-        self.AA_per_lig_df["MET"] = self.MET_per_lig
-        self.AA_per_lig_df["ASN"] = self.ASN_per_lig
-        self.AA_per_lig_df["PRO"] = self.PRO_per_lig
-        self.AA_per_lig_df["GLN"] = self.GLN_per_lig
-        self.AA_per_lig_df["ARG"] = self.ARG_per_lig
-        self.AA_per_lig_df["SER"] = self.SER_per_lig
-        self.AA_per_lig_df["THR"] = self.THR_per_lig
-        self.AA_per_lig_df["VAL"] = self.VAL_per_lig
-        self.AA_per_lig_df["TRP"] = self.TRP_per_lig
-        self.AA_per_lig_df["TYR"] = self.TYR_per_lig
-        
-        print self.AA_per_lig_df
-        self.AA_per_lig_df.to_csv( str( self.working_dir ) + '/' + filename + "activesite_AA_composition_per_ligand_at_" + str( input_args.cutoff ) + "_Ang_cutoff_and_" + str( input_args.heavy_atoms ) + "_heavy_atom_ligand.csv", index = 0, index_col = 0 )
-            
-
-        # contact counting data
-        self.CC_df = pd.DataFrame()
-        self.CC_df["pdb_names"] = self.CC_pdb_names
-        self.CC_df["num_lig_atoms"] = self.CC_lig_atms
-        self.CC_df["num_activesite_atms"] = self.CC_activesite_atms
-        self.CC_df["num_polar_polar_contacts"] = self.CC_pp_contacts
-        self.CC_df["num_polar_nonpolar_contacts"] = self.CC_pn_contacts
-        self.CC_df["num_nonpolar_polar_contacts"] = self.CC_np_contacts
-        self.CC_df["num_nonpolar_nonpolar_contacts"] = self.CC_nn_contacts
-        self.CC_df["num_unk_contacts"] = self.CC_unk_contacts
-        
-        print self.CC_df
-        self.CC_df.to_csv( str( self.working_dir ) + '/' + filename + "contact_counts_" + str( input_args.cutoff ) + "_Ang_cutoff_and_" + str( input_args.heavy_atoms ) + "_heavy_atom_ligand.csv", index = 0, index_col = 0 )
-
-
-        # make data lists to add over course of program for contact counts per lig - will be added to pandas df at end
-        self.CC_per_lig_df = pd.DataFrame()
-        self.CC_per_lig_df["pdb_names"] = self.CC_per_lig_pdb_names
-        self.CC_per_lig_df["lig_names"] = self.CC_per_lig_lig_names
-        self.CC_per_lig_df["num_lig_atms"] = self.CC_per_lig_lig_atms
-        self.CC_per_lig_df["num_activesite_atms"] = self.CC_per_lig_activesite_atms
-        self.CC_per_lig_df["polar_polar_contacts"] = self.CC_per_lig_pp_contacts
-        self.CC_per_lig_df["polar_nonpolar_contacts"] = self.CC_per_lig_pn_contacts
-        self.CC_per_lig_df["nonpolar_polar_contacts"] = self.CC_per_lig_np_contacts
-        self.CC_per_lig_df["nonpolar_nonpolar_contacts"] = self.CC_per_lig_nn_contacts
-        self.CC_per_lig_df["num_unk_contacts"] = self.CC_per_lig_unk_contacts
-
-        print self.CC_per_lig_df
-        self.CC_per_lig_df.to_csv( str( self.working_dir ) + '/' + filename + "contact_counts_per_lig_res_" + str( input_args.cutoff ) + "_Ang_cutoff_and_" + str( input_args.heavy_atoms ) + "_heavy_atom_ligand.csv", index = 0, index_col = 0 )
-'''
 
 
 
@@ -1613,5 +1417,5 @@ if __name__ == "__main__":
     parser.add_argument("--keep_clean_pdbs", action="store_true", help="do you want to keep the cleaned-up version of the pdbs you are working with?")
     input_args = parser.parse_args()
     
-    my_obj = CTCT( input_args.pdb_name_list, input_args.download_pdbs )
-    my_obj.go()
+    #my_obj = CTCT( input_args.pdb_name_list, input_args.download_pdbs )
+    #my_obj.test()
