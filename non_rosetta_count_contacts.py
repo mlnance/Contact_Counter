@@ -32,9 +32,13 @@ import shutil
 import pandas as pd
 try:
     from Bio.PDB import *
+except ImportError:
+    print "Trouble with imports - do you have Bio.PDB? Exiting"
+    sys.exit()
+try:
     import networkx as nx
 except ImportError:
-    print "Trouble with imports - do you have Bio.PDB and networkx? Exiting"
+    print "Trouble with imports - do you have networkx? Exiting"
     sys.exit()
 
 
