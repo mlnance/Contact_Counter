@@ -1,4 +1,11 @@
 #!/usr/bin/python
+# @author: morganlnance
+
+
+
+#################
+#### IMPORTS ####
+#################
 
 import os
 import sys
@@ -7,8 +14,14 @@ try:
 except:
     pass
 import non_rosetta_count_contacts as contact
-import argparse
 
+
+
+###########################
+#### PROGRAM ARGUMENTS ####
+###########################
+
+import argparse
 parser = argparse.ArgumentParser(description="Use Python to count contacts.")
 parser.add_argument("pdb_name_list", help="a file of the pdbs to be analyzed")
 parser.add_argument("--ignore_glycosylated_proteins", "-i", action="store_true", help="do you want to skip PDBs that have a covalently attached HETATM group? This is most likely a glycan")
@@ -20,6 +33,10 @@ parser.add_argument("--keep_clean_pdbs", action="store_true", help="do you want 
 input_args = parser.parse_args()
 
 
+
+######################
+#### MAIN PROGRAM ####
+######################
 
 def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, download_pdbs, keep_pdbs, keep_clean_pdbs ):
     # relevant variable instatiations
@@ -233,10 +250,8 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
 
 
 
-####################
-### RUNS PROGRAM ###
-####################
+######################
+#### RUNS PROGRAM ####
+######################
 
-
-#my_obj = CTCT()
 go( input_args.pdb_name_list, input_args.ignore_glycosylated_proteins, input_args.cutoff, input_args.heavy_atoms, input_args.download_pdbs, input_args.keep_pdbs, input_args.keep_clean_pdbs )
