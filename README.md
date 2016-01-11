@@ -1,15 +1,17 @@
 # ContactCounter
 
 ## Default values for optional arguments
--cutoff:               activesite cutoff distance  =  5 Angstroms
+-cutoff:			activesite cutoff distance  =  5 Angstroms
 
--heavy_atoms:          number of heavy atoms to be considered a ligand  =  10
+-heavy_atoms:          		number of heavy atoms to be considered a ligand  =  10
 
---download_pdbs, -d:   download PDBs from internet  =  False
+--download_pdbs, -d:   		download PDBs from internet  =  False
 
---keep_pdbs:           keep PDB files after download  =  False
+--keep_pdbs:           		keep PDB files after download  =  False
 
---keep_clean_pdbs:     keep cleaned-up versions of the PDB files after use  =  False
+--keep_clean_pdbs:     		keep cleaned-up versions of the PDB files after use  =  False
+
+--ignore_glycosylated_proteins	when determining a ligand, ignore covalenlty bound residues = False
 
 
 ## Example ways to run this program
