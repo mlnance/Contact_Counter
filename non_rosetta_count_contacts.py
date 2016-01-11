@@ -4,19 +4,7 @@
 LINK record thing seems to work, but double check. Fix logic of skipping a PDB if it doesn't have the right number of ligand residues, or if it's because it has glycans or something
 '''
 
-import argparse
-
-parser = argparse.ArgumentParser(description="Use Python to count contacts.")
-parser.add_argument("pdb_name_list", help="a file of the pdbs to be analyzed")
-parser.add_argument("--ignore_glycosylated_proteins", "-i", action="store_true", help="do you want to skip PDBs that have a covalently attached HETATM group? This is most likely a glycan")
-parser.add_argument("--cutoff", "-c", type=int, default=5, help="how big do you want the activesite cutoff to be, in angstroms? default = 5")
-parser.add_argument("--heavy_atoms", "-ha", type=int, default=10, help="how many heavy atoms does a HETATM residue need to be considered a ligand? default = 10")
-parser.add_argument("--download_pdbs", "-d", action="store_true", help="do you need to download the pdbs from the database?")
-parser.add_argument("--keep_pdbs", action="store_true", help="do you want to keep the pdbs you download?")
-parser.add_argument("--keep_clean_pdbs", action="store_true", help="do you want to keep the cleaned-up version of the pdbs you are working with?")
-input_args = parser.parse_args()
-
-print "Loading dependencies..."
+print "Loading '%s' dependencies..." %__name__
 
 #####
 # path to pymol executable
@@ -29,7 +17,11 @@ print "Loading dependencies..."
 import sys
 import os
 import shutil
-import pandas as pd
+try:
+    import pandas as pd
+except ImportError:
+    print "Trouble with imports - do you have pandas? Exiting"
+    sys.exit()
 try:
     from Bio.PDB import *
 except ImportError:
@@ -276,7 +268,7 @@ class cif_struct_conn_lines:
             self.mmcif_dict[ "_struct_conn.ptnr2_auth_seq_id" ]
             return True
         except:
-            print " Something wrong with the _struct_conn keys in", self.cif_filename
+            print "~~Something wrong with the _struct_conn keys in", self.cif_filename
             return False
         
     def connection_types(self):
@@ -384,7 +376,7 @@ class cif_atom_site_lines:
 
         
 class CTCT:
-    def __init__(self):
+    def __init__( self, pdb_name_list, download_pdbs ):
         """
         Initializes variables that hold the data, and reads the PDB name list read in on startup
         """
@@ -393,17 +385,17 @@ class CTCT:
         
         # load up PDB name list from input argument
         self.pdb_names = []
-        pdb_file_CR = open( input_args.pdb_name_list, 'r' ).readlines()  # CR = carriage return (new line character)
+        pdb_file_CR = open( pdb_name_list, 'r' ).readlines()  # CR = carriage return (new line character)
         for name in pdb_file_CR:
             name = name.rstrip( '\n' )
             # add .pdb extension if not already there  -  don't need to do this if downloading the PDB
-            if not input_args.download_pdbs:
+            if not download_pdbs:
                 if not name.endswith( ".pdb" ):
                     name = name + ".pdb"
             self.pdb_names.append( name )
 
     
-    def instantiate_holders(self):
+    def instantiate_holders( self ):
         # instantiate lists that will hold relevant PDB data
         self.protein_lines = []
         self.hetatm_lines = []
@@ -411,7 +403,7 @@ class CTCT:
         self.ligand = {}
 
 
-    def instantiate_data_holders(self):
+    def instantiate_data_holders( self ):
         ## initialize all the data holders
         # make on/off switches for skipping 
         self.has_covalently_attached_hetatm = False
@@ -510,7 +502,7 @@ class CTCT:
 
 
 
-    def download_pdb(self, pdb_name):
+    def download_pdb( self, pdb_name ):
         """
         Uses a utility function to download a PDB from the internet based on the four letter accession code
         :param pdb_name: str( four-letter PDB code )
@@ -543,7 +535,7 @@ class CTCT:
 
 
 
-    def download_cif(self, pdb_name):
+    def download_cif( self, pdb_name ):
         """
         Uses a utility function to download the cif file of a PDB from the internet based on the four letter accession code
         :param pdb_name: str( four-letter PDB code )
@@ -717,7 +709,7 @@ class CTCT:
         
     
 
-    def split_pdb_file(self, pdb_filename):
+    def split_pdb_file( self, pdb_filename, ignore_glycosylated_proteins, keep_clean_pdbs ):
         """
         Splits up the PDB file into ATOM and HETATM lines.
         Doesn't keep HETATM lines that are 1) lone metal atoms, 2) amino acids, or 3) unknown
@@ -857,19 +849,24 @@ class CTCT:
                             
         # if there are any protein ligands, return an exception code
         if len( AA_lig ) != 0:
-            print "Skipping", self.name, "because it has an amino acid as a ligand"
+            print "## Skipping", self.name, "because it has an amino acid as a ligand ##"
             return 0
         
         # if there were unknown residues, return an exception code
         if len( unknown ) != 0:
-            print "Skipping", self.name, "because it has unknown residues"
+            print "## Skipping", self.name, "because it has unknown residues ##"
             return 0
         
         # if there were PDBs with more than one model, return an exception code
         if len( models ) != 0:
-            print "Skipping", self.name, "because it has more than one model."
+            print "## Skipping", self.name, "because it has more than one model ##"
             return 0
         
+        # if there is no ligand, return an exception code
+        if len( self.hetatm_lines ) == 0:
+            print "## Skipping", self.name, "because it does not have a ligand of interest ##"
+            return 0
+
         # move all ATOM and HETATM lines to their appropriate place in the dictionaries based on their unique names
         for pro_pdb_line in self.protein_lines:
             pro_res_name = pro_pdb_line.res_name()
@@ -886,10 +883,9 @@ class CTCT:
             uniq_lig_name = lig_res_name + '_' + lig_res_chain + '_' + lig_res_num
             
             self.ligand[ uniq_lig_name ].append( lig_pdb_line )
-        
-        
+                
         # if user wants to ignore glycosylated proteins (proteins with a HETATM attached to them)
-        if input_args.ignore_glycosylated_proteins: 
+        if ignore_glycosylated_proteins: 
             self.covalently_bound_lig_residues = []
             
             # see if there are residues covalently bound to the protein
@@ -914,14 +910,14 @@ class CTCT:
         for remove_this_lig in self.covalently_bound_lig_residues:
             self.ligand.pop( remove_this_lig )
         
-        # if there is no ligand, return an exception code
-        if len( self.hetatm_lines ) == 0:
-            print "Skipping", self.name, "because it does not have a ligand of interest"
+        # if there is no ligand after removing glycans, return an exception code
+        if len( self.ligand.keys() ) == 0:
+            print "## Skipping", self.name, "because it did not have a ligand of interest after removing glycans ##"
             return 0
         
         # make a clean PDB file that can be kept at the user's request to see if the program is doing what they think it is
         # only need to make the clean file if the user wants to keep it
-        if input_args.keep_clean_pdbs:
+        if keep_clean_pdbs:
             # create and open a XXXX.clean.pdb file name in the pdb directory
             cur_dir = os.getcwd() + '/'
             pdb_dir = cur_dir + 'pdbs/'
@@ -940,7 +936,7 @@ class CTCT:
 
     
 
-    def get_ligand_residues(self):
+    def get_ligand_residues( self, heavy_atoms, cutoff):
         # dictionary: key = lig residue number, value: hetatm lines
         self.ligand_dict = {}
         self.uniq_lig_res_names = []  # list of the 3-letter ligand names, not allowing repeats - used later to count the number of each ligand residue
@@ -956,7 +952,7 @@ class CTCT:
         
         # this makes a new dictionary of ligands only if there are more than the specified number of heavy atoms in the lig residue
         for uniq_lig in self.ligand.keys():
-            if len( self.ligand[ uniq_lig ] ) >= input_args.heavy_atoms:
+            if len( self.ligand[ uniq_lig ] ) >= heavy_atoms:
                 self.ligand_dict[ uniq_lig ] = self.ligand[ uniq_lig ]
         
         # get the 3-letter names of each remaining ligand residue
@@ -993,12 +989,12 @@ class CTCT:
                     
         # stop if there were no ligand residues with the given heavy atom cutoff
         if self.num_ligand_residues == 0:
-            print "Skipping", self.name, "because it had no ligand residues left given the", input_args.heavy_atoms, "heavy atom cutoff"
+            print "## Skipping", self.name, "because it had no ligand residues left given the", heavy_atoms, "heavy atom cutoff ##"
             return 0
         else:
             print "  ", self.name,
             print "has", self.num_ligand_residues, 
-            print "ligand residues with more than", input_args.heavy_atoms, "heavy atoms",
+            print "ligand residues with more than", heavy_atoms, "heavy atoms",
             print "and", self.num_ligand_atoms, "non-hydrogen atoms"
             
             # replace self.hetatm_lines with only the hetatm lines of the remaining ligand residues with the appropriate number of heavy atoms
@@ -1030,7 +1026,7 @@ class CTCT:
     
     
     
-    def get_activesite(self):
+    def get_activesite( self, cutoff ):
         self.activesite_dict = {}  # key: unique protein name (resname_reschain_resnum), value: list of ATOM lines per residue
         self.activesite_lig_pro_res_dict = {}  # unique ligand name (resname_reschain_resnum), value: list of 3-letter amino acid names
         self.activesite_lig_pro_atms_dict = {} # unique ligand name (resname_reschain_resnum), value: list of atom_line for each AA ( to get atom count later )
@@ -1069,7 +1065,7 @@ class CTCT:
                     pro_xyz = [ x_pro, y_pro, z_pro ]
                     
                     # check the distance
-                    if self.calc_distance( lig_xyz, pro_xyz ) <= input_args.cutoff:
+                    if self.calc_distance( lig_xyz, pro_xyz ) <= cutoff:
                         # append the line if the unique protein residue has already been counted
                         if pro_uniq_res in self.activesite_residues:
                             if atom_line not in self.activesite_dict[ pro_uniq_res ]:
@@ -1121,7 +1117,7 @@ class CTCT:
             
         # return information
         if len( self.activesite_dict.keys() ) == 0:
-            print "Skipping", self.name, "because it had no activesite residues within", input_args.cutoff, "Angstroms of the ligand residue(s)"
+            print "## Skipping", self.name, "because it had no activesite residues within", cutoff, "Angstroms of the ligand residue(s) ##"
             return 0
         else:
             print "  ", self.name, "has", self.num_activesite_res, "activesite residues",
@@ -1297,7 +1293,7 @@ class CTCT:
         
         
         
-    def count_contacts(self):
+    def count_contacts( self, cutoff ):
         # must have already found all residues within the activesite
         # ligand to protein!!
         self.polar_polar = 0
@@ -1339,7 +1335,7 @@ class CTCT:
                     pro_xyz_str = str( x_pro ) + '_' + str( y_pro ) + '_' + str( z_pro )
                     
                     # check atomic distance
-                    if self.calc_distance( lig_xyz, pro_xyz ) < input_args.cutoff:
+                    if self.calc_distance( lig_xyz, pro_xyz ) < cutoff:
                         # check to see that this contact has not yet been counted
                        uniq_contact = lig_xyz_str + '.' + pro_xyz_str
                        if uniq_contact not in self.uniq_contact_list:
@@ -1392,8 +1388,7 @@ class CTCT:
         self.CC_nn_contacts.append( self.nonpolar_nonpolar )
         self.CC_unk_contacts.append( self.unk_contact )
         
-        
-        
+    '''
     def go(self):
         all_pdb_names = []
         
@@ -1438,7 +1433,7 @@ class CTCT:
                 	#self.pymol_clean( pdb )
                         
                 	# split ATOM and HETATM
-                        response = self.split_pdb_file( pdb )
+                        response = self.split_pdb_file( pdb,  )
                         
                         # if splitting the pdb was successful ( there is a ligand, no AA as ligand, no metal as ligand, no UNK residues )
                         if response:
@@ -1474,8 +1469,7 @@ class CTCT:
                     if len( f ) == 8:
                         os.remove( f )
                 os.chdir( cur_dir )
-
-                           
+    '''
 
 
  
@@ -1606,5 +1600,18 @@ class CTCT:
 ### RUNS PROGRAM ###
 ####################
 
-my_obj = CTCT()
-my_obj.go()
+if __name__ == "__main__":
+    import argparse
+    
+    parser = argparse.ArgumentParser(description="Use Python to count contacts.")
+    parser.add_argument("pdb_name_list", help="a file of the pdbs to be analyzed")
+    parser.add_argument("--ignore_glycosylated_proteins", "-i", action="store_true", help="do you want to skip PDBs that have a covalently attached HETATM group? This is most likely a glycan")
+    parser.add_argument("--cutoff", "-c", type=int, default=5, help="how big do you want the activesite cutoff to be, in angstroms? default = 5")
+    parser.add_argument("--heavy_atoms", "-ha", type=int, default=10, help="how many heavy atoms does a HETATM residue need to be considered a ligand? default = 10")
+    parser.add_argument("--download_pdbs", "-d", action="store_true", help="do you need to download the pdbs from the database?")
+    parser.add_argument("--keep_pdbs", action="store_true", help="do you want to keep the pdbs you download?")
+    parser.add_argument("--keep_clean_pdbs", action="store_true", help="do you want to keep the cleaned-up version of the pdbs you are working with?")
+    input_args = parser.parse_args()
+    
+    my_obj = CTCT( input_args.pdb_name_list, input_args.download_pdbs )
+    my_obj.go()
