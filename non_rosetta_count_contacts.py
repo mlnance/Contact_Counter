@@ -21,6 +21,10 @@ import sys
 import os
 import shutil
 try:
+    from colorama import Fore, Style
+except:
+    pass
+try:
     import pandas as pd
 except ImportError:
     print "Trouble with imports - do you have pandas? Exiting"
@@ -277,7 +281,12 @@ class cif_struct_conn_lines:
             self.mmcif_dict[ "_struct_conn.ptnr2_auth_seq_id" ]
             return True
         except:
-            print "~~Something wrong with the _struct_conn keys in", self.cif_filename
+            # print in color (if possible) letting the user know the cif file didn't work
+            try:
+                text = "~~Something wrong with the _struct_conn keys in " + self.cif_filename.split( '/' )[-1] + " using LINK records instead"
+                print(Fore.YELLOW + text + Style.RESET_ALL)
+            except:
+                print "~~Something wrong with the _struct_conn keys in", self.cif_filename.split( '/' )[-1], "using LINK records instead"
             return False
         
     def connection_types(self):
