@@ -868,22 +868,22 @@ class CTCT:
         # if there are any protein ligands, return an exception code
         if len( AA_lig ) != 0:
             print "## Skipping", self.name, "because it has an amino acid as a ligand ##"
-            return 0
+            return False
         
         # if there were unknown residues, return an exception code
         if len( unknown ) != 0:
             print "## Skipping", self.name, "because it has unknown residues ##"
-            return 0
+            return False
         
         # if there were PDBs with more than one model, return an exception code
         if len( models ) != 0:
             print "## Skipping", self.name, "because it has more than one model ##"
-            return 0
+            return False
         
         # if there is no ligand, return an exception code
         if len( self.hetatm_lines ) == 0:
             print "## Skipping", self.name, "because it does not have a ligand of interest ##"
-            return 0
+            return False
 
         # move all ATOM and HETATM lines to their appropriate place in the dictionaries based on their unique names
         for pro_pdb_line in self.protein_lines:
@@ -913,7 +913,7 @@ class CTCT:
             # if it returns None, then there was a problem getting _struct_conn records
             if self.covalently_bound_lig_residues is None:
                 print pdb_filename, "doesn't have _struct_conn records. Skipping", self.name
-                return 0
+                return False
             
             ### not skipping anymore, just ignoring those residues ###
             # skip this particular PDB if covalently_bound_lig_residues is not empty
@@ -921,7 +921,7 @@ class CTCT:
                 # add name of PDB to glycosylated_proteins list (to be dumped later)
                 self.glycosylated_proteins.append( self.name )
                 print "Skipping", self.name, "because it has a covalently attached HETATM residue"
-                return 0
+                return False
             '''
             
         # remove covalently bound ligands from the list of unique ligand residue names
@@ -931,7 +931,7 @@ class CTCT:
         # if there is no ligand after removing glycans, return an exception code
         if len( self.ligand.keys() ) == 0:
             print "## Skipping", self.name, "because it did not have a ligand of interest after removing glycans ##"
-            return 0
+            return False
         
         # make a clean PDB file that can be kept at the user's request to see if the program is doing what they think it is
         # only need to make the clean file if the user wants to keep it
@@ -950,7 +950,7 @@ class CTCT:
                     for hetatm_line in self.ligand[ hetatm_key ]:
                         pdb_fh.write( hetatm_line.line )
         
-        return 1
+        return True
 
     
 
@@ -1008,7 +1008,7 @@ class CTCT:
         # stop if there were no ligand residues with the given heavy atom cutoff
         if self.num_ligand_residues == 0:
             print "## Skipping", self.name, "because it had no ligand residues left given the", heavy_atoms, "heavy atom cutoff ##"
-            return 0
+            return False
         else:
             print "  ", self.name,
             print "has", self.num_ligand_residues, 
@@ -1022,7 +1022,7 @@ class CTCT:
                 for pdb_line in self.ligand_dict[ uniq_lig ]:
                     self.hetatm_lines.append( pdb_line.line )
             
-            return 1
+            return True
         
         
         
@@ -1136,11 +1136,11 @@ class CTCT:
         # return information
         if len( self.activesite_dict.keys() ) == 0:
             print "## Skipping", self.name, "because it had no activesite residues within", cutoff, "Angstroms of the ligand residue(s) ##"
-            return 0
+            return False
         else:
             print "  ", self.name, "has", self.num_activesite_res, "activesite residues",
             print "and", self.num_activesite_atms, "non-hydrogen activesite atoms"
-            return 1
+            return True
         
 
         

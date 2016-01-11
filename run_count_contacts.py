@@ -47,13 +47,15 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
     cur_dir = os.getcwd() + '/'
     cur_files_working = os.listdir( cur_dir )
     
-    pdb_name_list = []  # only the first four letters
+    # for storing only the first four letters of each PDB name
+    pdb_name_list = []
 
     # instantiate the data holders that will hold the data for all of the PDBs
     ctct.instantiate_data_holders()
     
     for pdb in ctct.pdb_names:
         if pdb != '':
+            # try to print in color if user has colorama library
             try:
                 text = "Working on %s" %pdb
                 print(Fore.RED + text + Style.RESET_ALL)
@@ -63,12 +65,13 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
             # instantiate holders for the HETATM and ATOM lines
             ctct.instantiate_holders()
             
-            # get pdb name
-            ctct.name = pdb
+            # store pdb name in the contact counting class
+            ctct.name = pdb[0:4]
             
             # check to see if this PDB has already been looked at in this round
             if not pdb[0:4] in pdb_name_list:
-                if not pdb[0:4].lower() in pdb_name_list:  # check lower case
+                # also check lower case
+                if not pdb[0:4].lower() in pdb_name_list:
                     pdb_name_list.append( pdb )
                     
                     # download the pdb if needed
@@ -95,22 +98,22 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
                         # get ligand residue numbers from pose
                         response = ctct.get_ligand_residues( heavy_atoms, cutoff )
                             
-                    # if a ligand remains after the heavy atom cutoff
-                    if response:
-                        # get protein atoms in the activesite around the ligand
-                        response = ctct.get_activesite( cutoff )
-                        
-                        # if there is indeed an activesite
+                        # if a ligand remains after the heavy atom cutoff
                         if response:
-                            # get activesite composition
-                            ctct.get_activesite_AA_composition()
+                            # get protein atoms in the activesite around the ligand
+                            response = ctct.get_activesite( cutoff )
                             
-                            # get activesite composition per ligandresidue
-                            ctct.get_activesite_AA_composition_per_lig_res()
+                            # if there is indeed an activesite
+                            if response:
+                                # get activesite composition
+                                ctct.get_activesite_AA_composition()
                             
-                            # count contacts
-                            ctct.count_contacts( cutoff )
-                            all_pdb_names.append( pdb )
+                                # get activesite composition per ligandresidue
+                                ctct.get_activesite_AA_composition_per_lig_res()
+                                
+                                # count contacts
+                                ctct.count_contacts( cutoff )
+                                all_pdb_names.append( pdb )
                                 
         with open( "clean_PSMDB_90_pro_70_lig_7_atom_cutoff_list", 'wb' ) as fh:
             fh.writelines( all_pdb_names )
