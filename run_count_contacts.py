@@ -92,10 +92,10 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
                     ## use pymol to remove waters and hydrogens
                     #pymol_clean( pdb )
                             
-                    # split ATOM and HETATM
+                    # split ATOM, HETATM, and LINK lines
                     response = ctct.split_pdb_file( pdb, ignore_glycosylated_proteins, keep_clean_pdbs )
                         
-                    # if splitting the pdb was successful ( there is a ligand, no AA as ligand, no metal as ligand, no UNK residues )
+                    # if splitting the pdb was successful ( there is a ligand, no AA as ligand, no metal as ligand, no UNK residues, etc. )
                     if response:
                         # get ligand residue numbers from pose
                         response = ctct.get_ligand_residues( heavy_atoms, cutoff )
@@ -131,6 +131,7 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
                     os.remove( f )
             os.chdir( working_dir )
     print "\n\n\n"
+
 
  
 ###########################
@@ -181,6 +182,7 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
     AA_df["TYR"] = ctct.TYR
     
     print AA_df
+    print "\n\n\n\n"
     AA_df.to_csv( str( working_dir ) + '/' + filename + "activesite_AA_composition_at_" + str( cutoff ) + "_Ang_cutoff_and_" + str( heavy_atoms ) + "_heavy_atom_ligand.csv", index = 0, index_col = 0 )
 
     
@@ -220,6 +222,7 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
     AA_per_lig_df["TYR"] = ctct.TYR_per_lig
 
     print AA_per_lig_df
+    print "\n\n\n\n"
     AA_per_lig_df.to_csv( str( working_dir ) + '/' + filename + "activesite_AA_composition_per_ligand_at_" + str( cutoff ) + "_Ang_cutoff_and_" + str( heavy_atoms ) + "_heavy_atom_ligand.csv", index = 0, index_col = 0 )
             
     
@@ -235,6 +238,7 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
     CC_df["num_unk_contacts"] = ctct.CC_unk_contacts
     
     print CC_df
+    print "\n\n\n\n"
     CC_df.to_csv( str( working_dir ) + '/' + filename + "contact_counts_" + str( cutoff ) + "_Ang_cutoff_and_" + str( heavy_atoms ) + "_heavy_atom_ligand.csv", index = 0, index_col = 0 )
     
     

@@ -940,10 +940,17 @@ class CTCT:
     
 
     def get_ligand_residues( self, heavy_atoms, cutoff):
-        # dictionary: key = lig residue number, value: hetatm lines
+        # dictionary -- key: lig residue number, value: hetatm lines
         self.ligand_dict = {}
-        self.uniq_lig_res_names = []  # list of the 3-letter ligand names, not allowing repeats - used later to count the number of each ligand residue
-        self.lig_res_names = []  # list of only the 3-letter ligand names, allowing repeats - used for data analysis
+        
+        # list of the 3-letter ligand names, not allowing repeats
+        # used later to count the number of each ligand residue
+        self.uniq_lig_res_names = []
+        
+        # list of only the 3-letter ligand names, allowing repeats - used for data analysis
+        self.lig_res_names = []
+        
+        # ligand data holders
         self.num_ligand_residues = 0
         self.num_ligand_atoms = 0
         self.num_ligand_nonpolar_atoms = 0
@@ -980,20 +987,33 @@ class CTCT:
             # count the number of nonpolar and polar atoms
             for pdb_line in self.ligand_dict[ uniq_lig ]:
                 if pdb_line.element() in nonpolar_atoms:
-                    self.num_ligand_nonpolar_atoms += 1  # total nonpolar lig atoms
-                    self.lig_num_nonpolar_atoms[ uniq_lig ] += 1  # number of nonpolar atoms for this ligand residue
+                    # total nonpolar lig atoms
+                    self.num_ligand_nonpolar_atoms += 1
+                    
+                    # number of nonpolar atoms for this ligand residue
+                    self.lig_num_nonpolar_atoms[ uniq_lig ] += 1
+                    
                 elif pdb_line.element() in polar_atoms or pdb_line.element() in metal_list:
-                    self.num_ligand_polar_atoms += 1  # total polar lig atoms
-                    self.lig_num_polar_atoms[ uniq_lig ] += 1  # number of polar atoms for this ligand residue
+                    # total polar lig atoms
+                    self.num_ligand_polar_atoms += 1
+                    
+                    # number of polar atoms for this ligand residue
+                    self.lig_num_polar_atoms[ uniq_lig ] += 1
+                    
                 else:
+                    # this atom type is unknown - inform user
                     print "      * I didn't know what type of atom", "'%s'" %pdb_line.element(), "is. Please add it to the list"
-                    self.num_ligand_unk_atom_type += 1  # total unknown lig atoms
-                    self.lig_num_unk_atoms[ uniq_lig ] += 1  # number of unknown atoms for this ligand residue
+                    # total unknown lig atoms
+                    self.num_ligand_unk_atom_type += 1
+                    # number of unknown atoms for this ligand residue
+                    self.lig_num_unk_atoms[ uniq_lig ] += 1
                     
         # stop if there were no ligand residues with the given heavy atom cutoff
         if self.num_ligand_residues == 0:
             print "## Skipping", self.name, "because it had no ligand residues left given the", heavy_atoms, "heavy atom cutoff ##"
             return False
+        
+        # otherwise this ligand passed user requirements
         else:
             print "  ", self.name,
             print "has", self.num_ligand_residues, 
@@ -1030,9 +1050,19 @@ class CTCT:
     
     
     def get_activesite( self, cutoff ):
-        self.activesite_dict = {}  # key: unique protein name (resname_reschain_resnum), value: list of ATOM lines per residue
-        self.activesite_lig_pro_res_dict = {}  # unique ligand name (resname_reschain_resnum), value: list of 3-letter amino acid names
-        self.activesite_lig_pro_atms_dict = {} # unique ligand name (resname_reschain_resnum), value: list of atom_line for each AA ( to get atom count later )
+        # overall activesite dictionary
+        # key: unique protein name (resname_reschain_resnum), value: list of ATOM lines per residue
+        self.activesite_dict = {}
+        
+        # unique ligand name (resname_reschain_resnum)
+        #value: list of 3-letter amino acid names
+        self.activesite_lig_pro_res_dict = {}
+        
+        # unique ligand name (resname_reschain_resnum)
+        #value: list of atom_line for each AA ( to get atom count later )
+        self.activesite_lig_pro_atms_dict = {}
+        
+        # activesite data holders
         self.num_activesite_res = 0
         self.activesite_residues = []
         self.num_activesite_atms = 0
@@ -1107,21 +1137,38 @@ class CTCT:
             
             # count the number of nonpolar and polar atoms
             for pdb_line in self.activesite_lig_pro_atms_dict[ uniq_lig_name ]:
+                # if nonpolar
                 if pdb_line.element() in nonpolar_atoms:
-                    self.num_activesite_nonpolar_atoms += 1  # total nonpolar activesite atoms
-                    self.activesite_num_nonpolar_atoms[ uniq_lig_name ] += 1  # number of nonpolar atoms for this activesite residue
+                    # total nonpolar activesite atoms
+                    self.num_activesite_nonpolar_atoms += 1
+                    
+                    # number of nonpolar atoms for this activesite residue
+                    self.activesite_num_nonpolar_atoms[ uniq_lig_name ] += 1
+                    
+                # elif if metal
                 elif pdb_line.element() in polar_atoms or pdb_line.element() in metal_list:
-                    self.num_activesite_polar_atoms += 1  # total polar activesite atoms
-                    self.activesite_num_polar_atoms[ uniq_lig_name ] += 1  # number of polar atoms for this activesite residue
+                    # total polar activesite atoms
+                    self.num_activesite_polar_atoms += 1
+                    
+                    # number of polar atoms for this activesite residue
+                    self.activesite_num_polar_atoms[ uniq_lig_name ] += 1
+                    
+                # else I don't know what this is
                 else:
                     print "      * I didn't know what type of atom", "'%s'" %pdb_line.element(), "is. Please add it to the list"
-                    self.num_activesite_unk_atom_types += 1  # total unkown activesite atoms
-                    self.activesite_num_unk_atoms[ uniq_lig_name ] += 1  # number of unknown atoms for this activesite residue
+                    # total unkown activesite atoms
+                    self.num_activesite_unk_atom_types += 1
+                    
+                    # number of unknown atoms for this activesite residue
+                    self.activesite_num_unk_atoms[ uniq_lig_name ] += 1
             
         # return information
+        # if this ligand has no activesite for some reason
         if len( self.activesite_dict.keys() ) == 0:
             print "## Skipping", self.name, "because it had no activesite residues within", cutoff, "Angstroms of the ligand residue(s) ##"
             return False
+        
+        # otherwise print relevant information
         else:
             print "  ", self.name, "has", self.num_activesite_res, "activesite residues",
             print "and", self.num_activesite_atms, "non-hydrogen activesite atoms"
@@ -1200,7 +1247,6 @@ class CTCT:
         percentage_activesite_polar = round( float( self.num_activesite_polar_atoms ) / float( self.num_activesite_atms ), 3 )
         percentage_ligand_nonpolar = round( float( self.num_ligand_nonpolar_atoms ) / float( self.num_ligand_atoms ), 3 )
         percentage_ligand_polar = round( float( self.num_ligand_polar_atoms ) / float( self.num_ligand_atoms ), 3 )
-        
 
         # append all of the final data to the self.lists
         # because if the analysis got this far, that means there actually is data to collect
@@ -1304,7 +1350,8 @@ class CTCT:
         self.nonpolar_polar = 0
         self.nonpolar_nonpolar = 0
         self.unk_contact = 0
-        self.uniq_contact_list = []   # ligxyz_proxyz xyz coordinates unique for every atom, best way to collect unique contacts made
+        # ligxyz_proxyz xyz coordinates unique for every atom, best way to collect unique contacts made
+        self.uniq_contact_list = []
         
         for uniq_lig_name in self.ligand_dict.keys():
             # add pdb name and ligand name to list
@@ -1342,26 +1389,37 @@ class CTCT:
                         # check to see that this contact has not yet been counted
                        uniq_contact = lig_xyz_str + '.' + pro_xyz_str
                        if uniq_contact not in self.uniq_contact_list:
+                           # append unique contact to list
                            self.uniq_contact_list.append( uniq_contact )
-                        
+                           
+                           # check contact type
                            if lig_pdb_line.element() in polar_atoms or lig_pdb_line.element() in metal_list:
                                # polar polar
                                if pro_pdb_line.element() in polar_atoms or pro_pdb_line.element() in metal_list:
                                    lig_polar_polar += 1
+                                   
                                # polar nonpolar
                                elif pro_pdb_line.element() in nonpolar_atoms:
                                    lig_polar_nonpolar += 1
+                                   
+                               # unknown
                                else:
                                    lig_unk_contact += 1
+                                   
                            elif lig_pdb_line.element() in nonpolar_atoms:
                                # nonpolar polar
                                if pro_pdb_line.element() in polar_atoms or pro_pdb_line.element() in metal_list:
                                    lig_nonpolar_polar += 1
+                                   
                                # nonpolar nonpolar
                                elif pro_pdb_line.element() in nonpolar_atoms:
                                    lig_nonpolar_nonpolar += 1
+                               
+                               # unknown
                                else:
                                    lig_unk_contact += 1
+                                   
+                           # both unknown
                            else:
                                lig_unk_contact += 1
                             
