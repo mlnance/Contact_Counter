@@ -13,6 +13,11 @@ try:
     from colorama import Fore, Style
 except:
     pass
+try:
+    import pandas as pd
+except ImportError:
+    print "Trouble with imports - do you have pandas? Exiting"
+    sys.exit()
 import non_rosetta_count_contacts as contact
 
 
@@ -44,12 +49,9 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
     ctct = contact.CTCT( pdb_name_list, download_pdbs )
     
     # get current files as to not delete them later
-    cur_dir = os.getcwd() + '/'
-    cur_files_working = os.listdir( cur_dir )
+    working_dir = os.getcwd() + '/'
+    cur_files_working = os.listdir( working_dir )
     
-    # for storing only the first four letters of each PDB name
-    pdb_name_list = []
-
     # instantiate the data holders that will hold the data for all of the PDBs
     ctct.instantiate_data_holders()
     
@@ -69,10 +71,10 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
             ctct.name = pdb[0:4]
             
             # check to see if this PDB has already been looked at in this round
-            if not pdb[0:4] in pdb_name_list:
+            if not pdb[0:4] in all_pdb_names:
                 # also check lower case
-                if not pdb[0:4].lower() in pdb_name_list:
-                    pdb_name_list.append( pdb )
+                if not pdb[0:4].lower() in all_pdb_names:
+                    all_pdb_names.append( pdb )
                     
                     # download the pdb if needed
                     if download_pdbs:
@@ -114,142 +116,143 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
                                 # count contacts
                                 ctct.count_contacts( cutoff )
                                 all_pdb_names.append( pdb )
-                                
-        with open( "clean_PSMDB_90_pro_70_lig_7_atom_cutoff_list", 'wb' ) as fh:
-            fh.writelines( all_pdb_names )
+             
+        ##  ?? need ??  ##
+        #with open( "clean_PSMDB_90_pro_70_lig_7_atom_cutoff_list", 'wb' ) as fh:
+            #fh.writelines( all_pdb_names )
             
         # PDB files always end with .pdb and are 8 characters long
         # this program creates XXXX.clean.pdb files, so have to be specific on what gets deleted
         if not keep_pdbs:
-            os.chdir( cur_dir + 'pdbs' )
+            os.chdir( working_dir + 'pdbs' )
             pdb_files = os.listdir( os.getcwd() )
             for f in pdb_files:
                 if len( f ) == 8:
                     os.remove( f )
-            os.chdir( cur_dir )
-
+            os.chdir( working_dir )
+    print "\n\n\n"
 
  
 ###########################
 ##### DATA COLLECTION #####
 ###########################
-'''
-        # print the names of glycosylated proteins to a file including the name of the list passed
-        filename = pdb_name_list + "_glycosylated_protein_PDB_names.txt"
-        with open( filename, 'wb' ) as fh:
-            fh.writelines( glycosylated_proteins )
-            fh.write( "\n" )
+    
+    # print the names of glycosylated proteins to a file including the name of the list passed
+    filename = pdb_name_list + "_glycosylated_protein_PDB_names.txt"
+    with open( filename, 'wb' ) as fh:
+        fh.writelines( ctct.glycosylated_proteins )
+        fh.write( "\n" )
                 
-        # filename will be taken from the name of the PDB list passed through
-        filename = pdb_name_list.split( "list" )[0]
-                                
-        # collect AA composition data in a pandas dataframe
-        AA_df = pd.DataFrame()
-        AA_df["PDB"] = AA_pdb_names
-        AA_df["num_lig_res"] = AA_lig_res
-        AA_df["num_lig_atoms"] = AA_lig_atms
-        AA_df["num_lig_nonpolar_atoms"] = AA_num_ligand_nonpolar_atoms 
-        AA_df["num_lig_polar_atoms"] = AA_num_ligand_polar_atoms
-        AA_df["num_lig_unk_atom_type"] = AA_num_ligand_unk_atom_types
-        AA_df["num_activesite_res"] = AA_activesite_res
-        AA_df["num_activesite_atoms"] = AA_activesite_atms
-        AA_df["num_activesite_nonpolar_atoms"] = AA_num_activesite_nonpolar_atoms
-        AA_df["num_activesite_polar_atoms"] = AA_num_activesite_polar_atoms
-        AA_df["num_activesite_unk_atom_type"] = AA_num_activesite_unk_atom_types
-        AA_df["ALA"] = ALA
-        AA_df["CYS"] = CYS
-        AA_df["ASP"] = ASP
-        AA_df["GLU"] = GLU
-        AA_df["PHE"] = PHE
-        AA_df["GLY"] = GLY
-        AA_df["HIS"] = HIS
-        AA_df["ILE"] = ILE
-        AA_df["LYS"] = LYS
-        AA_df["LEU"] = LEU
-        AA_df["MET"] = MET
-        AA_df["ASN"] = ASN
-        AA_df["PRO"] = PRO
-        AA_df["GLN"] = GLN
-        AA_df["ARG"] = ARG
-        AA_df["SER"] = SER
-        AA_df["THR"] = THR
-        AA_df["VAL"] = VAL
-        AA_df["TRP"] = TRP
-        AA_df["TYR"] = TYR
-        
-        print AA_df
-        AA_df.to_csv( str( working_dir ) + '/' + filename + "activesite_AA_composition_at_" + str( cutoff ) + "_Ang_cutoff_and_" + str( heavy_atoms ) + "_heavy_atom_ligand.csv", index = 0, index_col = 0 )
+    # filename will be taken from the name of the PDB list passed through
+    filename = pdb_name_list.split( "list" )[0]
 
+    # collect AA composition data in a pandas dataframe
+    AA_df = pd.DataFrame()
+    AA_df["PDB"] = ctct.AA_pdb_names
+    AA_df["num_lig_res"] = ctct.AA_lig_res
+    AA_df["num_lig_atoms"] = ctct.AA_lig_atms
+    AA_df["num_lig_nonpolar_atoms"] = ctct.AA_num_ligand_nonpolar_atoms 
+    AA_df["num_lig_polar_atoms"] = ctct.AA_num_ligand_polar_atoms
+    AA_df["num_lig_unk_atom_type"] = ctct.AA_num_ligand_unk_atom_types
+    AA_df["num_activesite_res"] = ctct.AA_activesite_res
+    AA_df["num_activesite_atoms"] = ctct.AA_activesite_atms
+    AA_df["num_activesite_nonpolar_atoms"] = ctct.AA_num_activesite_nonpolar_atoms
+    AA_df["num_activesite_polar_atoms"] = ctct.AA_num_activesite_polar_atoms
+    AA_df["num_activesite_unk_atom_type"] = ctct.AA_num_activesite_unk_atom_types
+    AA_df["ALA"] = ctct.ALA
+    AA_df["CYS"] = ctct.CYS
+    AA_df["ASP"] = ctct.ASP
+    AA_df["GLU"] = ctct.GLU
+    AA_df["PHE"] = ctct.PHE
+    AA_df["GLY"] = ctct.GLY
+    AA_df["HIS"] = ctct.HIS
+    AA_df["ILE"] = ctct.ILE
+    AA_df["LYS"] = ctct.LYS
+    AA_df["LEU"] = ctct.LEU
+    AA_df["MET"] = ctct.MET
+    AA_df["ASN"] = ctct.ASN
+    AA_df["PRO"] = ctct.PRO
+    AA_df["GLN"] = ctct.GLN
+    AA_df["ARG"] = ctct.ARG
+    AA_df["SER"] = ctct.SER
+    AA_df["THR"] = ctct.THR
+    AA_df["VAL"] = ctct.VAL
+    AA_df["TRP"] = ctct.TRP
+    AA_df["TYR"] = ctct.TYR
+    
+    print AA_df
+    AA_df.to_csv( str( working_dir ) + '/' + filename + "activesite_AA_composition_at_" + str( cutoff ) + "_Ang_cutoff_and_" + str( heavy_atoms ) + "_heavy_atom_ligand.csv", index = 0, index_col = 0 )
 
+    
+    
+    # collect AA composition per ligand residue data in a pandas dataframe
+    AA_per_lig_df = pd.DataFrame()
+    AA_per_lig_df["PDB"] = ctct.AA_pdb_names_per_lig
+    AA_per_lig_df["uniq_lig_res_names"] = ctct.AA_lig_uniq_res_names_per_lig
+    AA_per_lig_df["lig_res_names"] = ctct.AA_lig_res_names_per_lig
+    AA_per_lig_df["num_lig_atoms"] = ctct.AA_lig_atms_per_lig
+    AA_per_lig_df["num_lig_nonpolar_atoms"] = ctct.AA_lig_num_ligand_nonpolar_atoms
+    AA_per_lig_df["num_lig_polar_atoms"] = ctct.AA_lig_num_ligand_polar_atoms
+    AA_per_lig_df["num_lig_unk_atoms"] = ctct.AA_lig_num_ligand_unk_atoms
+    AA_per_lig_df["num_activesite_res"] = ctct.AA_activesite_res_per_lig
+    AA_per_lig_df["num_activesite_atoms"] = ctct.AA_activesite_atms_per_lig
+    AA_per_lig_df["num_activesite_nonpolar_atoms"] = ctct.AA_lig_num_activesite_nonpolar_atoms
+    AA_per_lig_df["num_activesite_polar_atoms"] = ctct.AA_lig_num_activesite_polar_atoms
+    AA_per_lig_df["ALA"] = ctct.ALA_per_lig
+    AA_per_lig_df["CYS"] = ctct.CYS_per_lig
+    AA_per_lig_df["ASP"] = ctct.ASP_per_lig
+    AA_per_lig_df["GLU"] = ctct.GLU_per_lig
+    AA_per_lig_df["PHE"] = ctct.PHE_per_lig
+    AA_per_lig_df["GLY"] = ctct.GLY_per_lig
+    AA_per_lig_df["HIS"] = ctct.HIS_per_lig
+    AA_per_lig_df["ILE"] = ctct.ILE_per_lig
+    AA_per_lig_df["LYS"] = ctct.LYS_per_lig
+    AA_per_lig_df["LEU"] = ctct.LEU_per_lig
+    AA_per_lig_df["MET"] = ctct.MET_per_lig
+    AA_per_lig_df["ASN"] = ctct.ASN_per_lig
+    AA_per_lig_df["PRO"] = ctct.PRO_per_lig
+    AA_per_lig_df["GLN"] = ctct.GLN_per_lig
+    AA_per_lig_df["ARG"] = ctct.ARG_per_lig
+    AA_per_lig_df["SER"] = ctct.SER_per_lig
+    AA_per_lig_df["THR"] = ctct.THR_per_lig
+    AA_per_lig_df["VAL"] = ctct.VAL_per_lig
+    AA_per_lig_df["TRP"] = ctct.TRP_per_lig
+    AA_per_lig_df["TYR"] = ctct.TYR_per_lig
+
+    print AA_per_lig_df
+    AA_per_lig_df.to_csv( str( working_dir ) + '/' + filename + "activesite_AA_composition_per_ligand_at_" + str( cutoff ) + "_Ang_cutoff_and_" + str( heavy_atoms ) + "_heavy_atom_ligand.csv", index = 0, index_col = 0 )
             
-        # collect AA composition per ligand residue data in a pandas dataframe
-        AA_per_lig_df = pd.DataFrame()
-        AA_per_lig_df["PDB"] = AA_pdb_names_per_lig
-        AA_per_lig_df["uniq_lig_res_names"] = AA_lig_uniq_res_names_per_lig
-        AA_per_lig_df["lig_res_names"] = AA_lig_res_names_per_lig
-        AA_per_lig_df["num_lig_atoms"] = AA_lig_atms_per_lig
-        AA_per_lig_df["num_lig_nonpolar_atoms"] = AA_lig_num_ligand_nonpolar_atoms
-        AA_per_lig_df["num_lig_polar_atoms"] = AA_lig_num_ligand_polar_atoms
-        AA_per_lig_df["num_lig_unk_atoms"] = AA_lig_num_ligand_unk_atoms
-        AA_per_lig_df["num_activesite_res"] = AA_activesite_res_per_lig
-        AA_per_lig_df["num_activesite_atoms"] = AA_activesite_atms_per_lig
-        AA_per_lig_df["num_activesite_nonpolar_atoms"] = AA_lig_num_activesite_nonpolar_atoms
-        AA_per_lig_df["num_activesite_polar_atoms"] = AA_lig_num_activesite_polar_atoms
-        AA_per_lig_df["ALA"] = ALA_per_lig
-        AA_per_lig_df["CYS"] = CYS_per_lig
-        AA_per_lig_df["ASP"] = ASP_per_lig
-        AA_per_lig_df["GLU"] = GLU_per_lig
-        AA_per_lig_df["PHE"] = PHE_per_lig
-        AA_per_lig_df["GLY"] = GLY_per_lig
-        AA_per_lig_df["HIS"] = HIS_per_lig
-        AA_per_lig_df["ILE"] = ILE_per_lig
-        AA_per_lig_df["LYS"] = LYS_per_lig
-        AA_per_lig_df["LEU"] = LEU_per_lig
-        AA_per_lig_df["MET"] = MET_per_lig
-        AA_per_lig_df["ASN"] = ASN_per_lig
-        AA_per_lig_df["PRO"] = PRO_per_lig
-        AA_per_lig_df["GLN"] = GLN_per_lig
-        AA_per_lig_df["ARG"] = ARG_per_lig
-        AA_per_lig_df["SER"] = SER_per_lig
-        AA_per_lig_df["THR"] = THR_per_lig
-        AA_per_lig_df["VAL"] = VAL_per_lig
-        AA_per_lig_df["TRP"] = TRP_per_lig
-        AA_per_lig_df["TYR"] = TYR_per_lig
-        
-        print AA_per_lig_df
-        AA_per_lig_df.to_csv( str( working_dir ) + '/' + filename + "activesite_AA_composition_per_ligand_at_" + str( cutoff ) + "_Ang_cutoff_and_" + str( heavy_atoms ) + "_heavy_atom_ligand.csv", index = 0, index_col = 0 )
-            
+    
+    # contact counting data
+    CC_df = pd.DataFrame()
+    CC_df["pdb_names"] = ctct.CC_pdb_names
+    CC_df["num_lig_atoms"] = ctct.CC_lig_atms
+    CC_df["num_activesite_atms"] = ctct.CC_activesite_atms
+    CC_df["num_polar_polar_contacts"] = ctct.CC_pp_contacts
+    CC_df["num_polar_nonpolar_contacts"] = ctct.CC_pn_contacts
+    CC_df["num_nonpolar_polar_contacts"] = ctct.CC_np_contacts
+    CC_df["num_nonpolar_nonpolar_contacts"] = ctct.CC_nn_contacts
+    CC_df["num_unk_contacts"] = ctct.CC_unk_contacts
+    
+    print CC_df
+    CC_df.to_csv( str( working_dir ) + '/' + filename + "contact_counts_" + str( cutoff ) + "_Ang_cutoff_and_" + str( heavy_atoms ) + "_heavy_atom_ligand.csv", index = 0, index_col = 0 )
+    
+    
+    # make data lists to add over course of program for contact counts per lig - will be added to pandas df at end
+    CC_per_lig_df = pd.DataFrame()
+    CC_per_lig_df["pdb_names"] = ctct.CC_per_lig_pdb_names
+    CC_per_lig_df["lig_names"] = ctct.CC_per_lig_lig_names
+    CC_per_lig_df["num_lig_atms"] = ctct.CC_per_lig_lig_atms
+    CC_per_lig_df["num_activesite_atms"] = ctct.CC_per_lig_activesite_atms
+    CC_per_lig_df["polar_polar_contacts"] = ctct.CC_per_lig_pp_contacts
+    CC_per_lig_df["polar_nonpolar_contacts"] = ctct.CC_per_lig_pn_contacts
+    CC_per_lig_df["nonpolar_polar_contacts"] = ctct.CC_per_lig_np_contacts
+    CC_per_lig_df["nonpolar_nonpolar_contacts"] = ctct.CC_per_lig_nn_contacts
+    CC_per_lig_df["num_unk_contacts"] = ctct.CC_per_lig_unk_contacts
+    
+    print CC_per_lig_df
+    CC_per_lig_df.to_csv( str( working_dir ) + '/' + filename + "contact_counts_per_lig_res_" + str( cutoff ) + "_Ang_cutoff_and_" + str( heavy_atoms ) + "_heavy_atom_ligand.csv", index = 0, index_col = 0 )
 
-        # contact counting data
-        CC_df = pd.DataFrame()
-        CC_df["pdb_names"] = CC_pdb_names
-        CC_df["num_lig_atoms"] = CC_lig_atms
-        CC_df["num_activesite_atms"] = CC_activesite_atms
-        CC_df["num_polar_polar_contacts"] = CC_pp_contacts
-        CC_df["num_polar_nonpolar_contacts"] = CC_pn_contacts
-        CC_df["num_nonpolar_polar_contacts"] = CC_np_contacts
-        CC_df["num_nonpolar_nonpolar_contacts"] = CC_nn_contacts
-        CC_df["num_unk_contacts"] = CC_unk_contacts
-        
-        print CC_df
-        CC_df.to_csv( str( working_dir ) + '/' + filename + "contact_counts_" + str( cutoff ) + "_Ang_cutoff_and_" + str( heavy_atoms ) + "_heavy_atom_ligand.csv", index = 0, index_col = 0 )
-
-
-        # make data lists to add over course of program for contact counts per lig - will be added to pandas df at end
-        CC_per_lig_df = pd.DataFrame()
-        CC_per_lig_df["pdb_names"] = CC_per_lig_pdb_names
-        CC_per_lig_df["lig_names"] = CC_per_lig_lig_names
-        CC_per_lig_df["num_lig_atms"] = CC_per_lig_lig_atms
-        CC_per_lig_df["num_activesite_atms"] = CC_per_lig_activesite_atms
-        CC_per_lig_df["polar_polar_contacts"] = CC_per_lig_pp_contacts
-        CC_per_lig_df["polar_nonpolar_contacts"] = CC_per_lig_pn_contacts
-        CC_per_lig_df["nonpolar_polar_contacts"] = CC_per_lig_np_contacts
-        CC_per_lig_df["nonpolar_nonpolar_contacts"] = CC_per_lig_nn_contacts
-        CC_per_lig_df["num_unk_contacts"] = CC_per_lig_unk_contacts
-
-        print CC_per_lig_df
-        CC_per_lig_df.to_csv( str( working_dir ) + '/' + filename + "contact_counts_per_lig_res_" + str( cutoff ) + "_Ang_cutoff_and_" + str( heavy_atoms ) + "_heavy_atom_ligand.csv", index = 0, index_col = 0 )
-'''
 
 
 

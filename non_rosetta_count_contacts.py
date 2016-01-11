@@ -15,7 +15,7 @@
 #### IMPORTS ####
 #################
 
-print "Loading '%s' dependencies..." %__name__
+print "Loading '%s' dependencies...\n" %__name__
 
 import sys
 import os
@@ -24,11 +24,6 @@ try:
     from colorama import Fore, Style
 except:
     pass
-try:
-    import pandas as pd
-except ImportError:
-    print "Trouble with imports - do you have pandas? Exiting"
-    sys.exit()
 try:
     from Bio.PDB import *
 except ImportError:
@@ -909,20 +904,10 @@ class CTCT:
             # see if there are residues covalently bound to the protein
             self.covalently_bound_lig_residues = self.determine_covalently_bound_ligands( pdb_name, self.protein, self.ligand, self.link_records )
             
-            '''
-            # if it returns None, then there was a problem getting _struct_conn records
-            if self.covalently_bound_lig_residues is None:
-                print pdb_filename, "doesn't have _struct_conn records. Skipping", self.name
-                return False
-            
-            ### not skipping anymore, just ignoring those residues ###
-            # skip this particular PDB if covalently_bound_lig_residues is not empty
+            # add PDB to list if it had a glycan
             if len( self.covalently_bound_lig_residues ) != 0:
                 # add name of PDB to glycosylated_proteins list (to be dumped later)
                 self.glycosylated_proteins.append( self.name )
-                print "Skipping", self.name, "because it has a covalently attached HETATM residue"
-                return False
-            '''
             
         # remove covalently bound ligands from the list of unique ligand residue names
         for remove_this_lig in self.covalently_bound_lig_residues:
