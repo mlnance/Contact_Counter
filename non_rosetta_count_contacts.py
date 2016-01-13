@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# @author: morganlnance
+__author__ = "morganlnance"
 
 
 

@@ -1,5 +1,6 @@
 #!/usr/bin/python
-# @author: morganlnance
+
+__author__ = "morganlnance"
 
 
 
@@ -145,7 +146,10 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
         fh.write( "\n" )
                 
     # filename will be taken from the name of the PDB list passed through
-    filename = pdb_name_list.split( "list" )[0]
+    try:
+        filename = pdb_name_list.split( "list" )[0]
+    except:
+        filename = "program_input_"
 
     # collect AA composition data in a pandas dataframe
     AA_df = pd.DataFrame()
