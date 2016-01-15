@@ -814,7 +814,6 @@ class CTCT:
                     metals.append( line )
                 elif lig_res_name in AA_list:
                     AA_lig.append( line )
-                    break
                 # unknown amino acid
                 elif lig_res_name == "UNK":
                     unknown.append( line )
@@ -860,11 +859,6 @@ class CTCT:
                             # store the HETATM lines
                             self.hetatm_lines.append( pdb_line )
                             
-        # if there are any protein ligands, return an exception code
-        if len( AA_lig ) != 0:
-            print "## Skipping", self.name, "because it has an amino acid as a ligand ##"
-            return False
-        
         # if there were unknown residues, return an exception code
         if len( unknown ) != 0:
             print "## Skipping", self.name, "because it has unknown residues ##"
