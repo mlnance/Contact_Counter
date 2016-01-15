@@ -56,6 +56,7 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
     # instantiate the data holders that will hold the data for all of the PDBs
     ctct.instantiate_data_holders()
     
+    # for each PDB in the list, run the contact counter
     for pdb in ctct.pdb_names:
         if pdb != '':
             # try to print in color if user has colorama library
@@ -75,52 +76,48 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
             if not pdb[0:4] in all_pdb_names:
                 # also check lower case
                 if not pdb[0:4].lower() in all_pdb_names:
-                    all_pdb_names.append( pdb )
-                    
+
                     # download the pdb if needed
                     if download_pdbs:
                         pdb = ctct.download_pdb( pdb )
                             
-                    # otherwise, try opening the file in the current directory
-                    else:
-                        try:
-                            with open( pdb, 'r' ) as pdb_fh:
-                                pdb_lines = pdb_fh.readlines()
-                        except IOError:
-                            print pdb, "doesn't exist in this directory. Did you mean to download it? Add the '-d' argument in your command. Exiting."
-                            sys.exit()
-
-                    ## use pymol to remove waters and hydrogens
-                    #pymol_clean( pdb )
-                            
-                    # split ATOM, HETATM, and LINK lines
-                    response = ctct.split_pdb_file( pdb, ignore_glycosylated_proteins, keep_clean_pdbs )
+                    # check to see if the PDB path exists, otherwise it needed to be downlaoded
+                    if not os.path.isfile( pdb ):
+                        print "## Skipping", pdb.split( '/' )[-1][0:4], "because it doesn't seem to exist"
+                        pass
                         
-                    # if splitting the pdb was successful ( there is a ligand, no AA as ligand, no metal as ligand, no UNK residues, etc. )
-                    if response:
-                        # get ligand residue numbers from pose
-                        response = ctct.get_ligand_residues( heavy_atoms, cutoff )
-                            
-                        # if a ligand remains after the heavy atom cutoff
+                    # otherwise the PDB exists and the program continues
+                    else:
+                        # split ATOM, HETATM, and LINK lines
+                        response = ctct.split_pdb_file( pdb, ignore_glycosylated_proteins, keep_clean_pdbs )
+                        
+                        # if splitting the pdb was successful ( there is a ligand, no AA as ligand, no metal as ligand, no UNK residues, etc. )
                         if response:
-                            # get protein atoms in the activesite around the ligand
-                            response = ctct.get_activesite( cutoff )
+                            # get ligand residue numbers from pose
+                            response = ctct.get_ligand_residues( heavy_atoms, cutoff )
                             
-                            # if there is indeed an activesite
+                            # if a ligand remains after the heavy atom cutoff
                             if response:
-                                # get activesite composition
-                                ctct.get_activesite_AA_composition()
-                            
-                                # get activesite composition per ligandresidue
-                                ctct.get_activesite_AA_composition_per_lig_res()
+                                # get protein atoms in the activesite around the ligand
+                                response = ctct.get_activesite( cutoff )
                                 
-                                # count contacts
-                                ctct.count_contacts( cutoff )
-                                all_pdb_names.append( pdb )
-             
-        ##  ?? need ??  ##
-        #with open( "clean_PSMDB_90_pro_70_lig_7_atom_cutoff_list", 'wb' ) as fh:
-            #fh.writelines( all_pdb_names )
+                                # if there is indeed an activesite
+                                if response:
+                                    # get activesite composition
+                                    ctct.get_activesite_AA_composition()
+                                    
+                                    # get activesite composition per ligandresidue
+                                    ctct.get_activesite_AA_composition_per_lig_res()
+                                    
+                                    # count contacts
+                                    ctct.count_contacts( cutoff )
+                                    all_pdb_names.append( pdb.split( '/' )[-1][0:4] )
+
+        # write out all_pdb_names to a file as those were the PDBs actually analyzed
+        with open( "clean_PSMDB_90_non_red_pro_70_non_red_lig_13_ha_cutoff_list", 'wb' ) as fh:
+            for line in all_pdb_names:
+                fh.write( line )
+                fh.write( "\n" )
             
         # PDB files always end with .pdb and are 8 characters long
         # this program creates XXXX.clean.pdb files, so have to be specific on what gets deleted
@@ -139,11 +136,12 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
 ##### DATA COLLECTION #####
 ###########################
     
-    # print the names of glycosylated proteins to a file including the name of the list passed
-    filename = pdb_name_list + "_glycosylated_protein_PDB_names.txt"
-    with open( filename, 'wb' ) as fh:
-        fh.writelines( ctct.glycosylated_proteins )
-        fh.write( "\n" )
+    if input_args.ignore_glycosylated_proteins:
+        # print the names of glycosylated proteins to a file including the name of the list passed
+        filename = pdb_name_list + "_glycosylated_protein_PDB_names.txt"
+        with open( filename, 'wb' ) as fh:
+            fh.writelines( ctct.glycosylated_proteins )
+            fh.write( "\n" )
                 
     # filename will be taken from the name of the PDB list passed through
     try:

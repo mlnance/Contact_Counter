@@ -1,9 +1,17 @@
+#!/usr/bin/python
+
 from gzip import GzipFile
 from StringIO import StringIO
 import os
 import urllib2
 from io import BytesIO
 from os.path import isfile
+try:
+    from colorama import Fore, Style
+except:
+    pass
+
+
 
 def download_pdb(pdb_id, dest_dir):
     '''
@@ -35,7 +43,12 @@ def download_pdb(pdb_id, dest_dir):
         if ( os.path.isfile( filename[:-3] )):
             return dest[:-3]
         else:
-            print "Error: cannot download PDB %s!"%pdb_name
+            try:
+                text = "~~Error: cannot download PDB %s!" %pdb_name
+                print(Fore.BLUE + text + Style.RESET_ALL)
+            except:
+                print "~~Error: cannot download PDB %s!" %pdb_name
+                
 
     return dest[:-3]
 

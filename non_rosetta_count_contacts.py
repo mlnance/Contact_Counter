@@ -380,7 +380,7 @@ class cif_atom_site_lines:
         unique_hetatm_names = []
         for ii in range( len( atom_types ) ):
             if atom_types[ii] == "HETATM":
-                if res_names[ii] != "HOH":
+                if res_names[ii] != "HOH" and res_names[ii] != "DOD":
                     unique_name = res_names[ii] + '_' + res_chains[ii] + '_' + res_nums[ii]
                     if unique_name not in unique_hetatm_names:
                         unique_hetatm_names.append( unique_name )
@@ -412,6 +412,7 @@ class CTCT:
         # instantiate lists that will hold relevant PDB data
         self.protein_lines = []
         self.hetatm_lines = []
+        self.link_records = []
         self.protein = {}
         self.ligand = {}
 
@@ -457,7 +458,8 @@ class CTCT:
 
 
         # make data lists to add over course of program for AA composition per ligand residue in each pdb
-        self.AA_pdb_names_per_lig = []  # each pdb name should show up as many times as it has ligand residues that fit the user's criteria
+        # each pdb name should show up as many times as it has ligand residues that fit the user's criteria
+        self.AA_pdb_names_per_lig = []
         self.AA_lig_uniq_res_names_per_lig = []
         self.AA_lig_res_names_per_lig = []
         self.AA_lig_atms_per_lig = []
@@ -738,9 +740,6 @@ class CTCT:
         split_pdb_name = pdb_filename.split( '/' )[-1]
         pdb_name = split_pdb_name[:-4]
         
-        # holds LINK records
-        self.link_records = []
-        
         # instantiate lists that will hold relevant PDB data that is NOT wanted
         AA_lig = []
         water = []
@@ -756,7 +755,8 @@ class CTCT:
             with open( pdb_filename, 'r' ) as pdb_fh:
                 pdb = pdb_fh.readlines()
         except IOError:
-            print pdb_filename, "doesn't exist in this directory. Did you mean to download it? Exiting."
+            text = pdb_filename + " doesn't exist in this directory. Did you mean to download it? Exiting."
+            print(Fore.BLUE + text + Style.RESET_ALL)
             sys.exit()
         
         # parse through the PDB file
@@ -909,14 +909,14 @@ class CTCT:
                 # add name of PDB to glycosylated_proteins list (to be dumped later)
                 self.glycosylated_proteins.append( self.name )
             
-        # remove covalently bound ligands from the list of unique ligand residue names
-        for remove_this_lig in self.covalently_bound_lig_residues:
-            self.ligand.pop( remove_this_lig )
+            # remove covalently bound ligands from the list of unique ligand residue names
+                for remove_this_lig in self.covalently_bound_lig_residues:
+                    self.ligand.pop( remove_this_lig )
         
-        # if there is no ligand after removing glycans, return an exception code
-        if len( self.ligand.keys() ) == 0:
-            print "## Skipping", self.name, "because it did not have a ligand of interest after removing glycans ##"
-            return False
+            # if there is no ligand after removing glycans, return an exception code
+                    if len( self.ligand.keys() ) == 0:
+                        print "## Skipping", self.name, "because it did not have a ligand of interest after removing glycans ##"
+                        return False
         
         # make a clean PDB file that can be kept at the user's request to see if the program is doing what they think it is
         # only need to make the clean file if the user wants to keep it
