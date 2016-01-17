@@ -113,12 +113,6 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
                                     ctct.count_contacts( cutoff )
                                     all_pdb_names.append( pdb.split( '/' )[-1][0:4] )
 
-        # write out all_pdb_names to a file as those were the PDBs actually analyzed
-        with open( "clean_PSMDB_90_non_red_pro_70_non_red_lig_13_ha_cutoff_list", 'wb' ) as fh:
-            for line in all_pdb_names:
-                fh.write( line )
-                fh.write( "\n" )
-            
         # PDB files always end with .pdb and are 8 characters long
         # this program creates XXXX.clean.pdb files, so have to be specific on what gets deleted
         if not keep_pdbs:
@@ -128,6 +122,13 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
                 if len( f ) == 8:
                     os.remove( f )
             os.chdir( working_dir )
+
+    # write out all_pdb_names to a file as those were the PDBs actually analyzed
+    with open( "clean_PSMDB_90_non_red_pro_70_non_red_lig_13_ha_cutoff_list", 'wb' ) as fh:
+        for line in all_pdb_names:
+            fh.write( line )
+            fh.write( "\n" )
+            
     print "\n\n\n"
 
 
