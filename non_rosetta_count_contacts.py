@@ -903,9 +903,11 @@ class CTCT:
                 # add name of PDB to glycosylated_proteins list (to be dumped later)
                 self.glycosylated_proteins.append( self.name )
             
-            # remove covalently bound ligands from the list of unique ligand residue names
+                # remove covalently bound ligands from the list of unique ligand residue names
                 for remove_this_lig in self.covalently_bound_lig_residues:
-                    self.ligand.pop( remove_this_lig )
+                    # using an if statement because a covalently bound ligand residue could be an amino acid
+                    if remove_this_lig in self.ligand.keys():
+                        self.ligand.pop( remove_this_lig )
         
             # if there is no ligand after removing glycans, return an exception code
                     if len( self.ligand.keys() ) == 0:
