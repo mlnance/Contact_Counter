@@ -1461,6 +1461,7 @@ if __name__ == "__main__":
     parser.add_argument("--cutoff", "-c", type=int, default=5, help="how big do you want the activesite cutoff to be, in angstroms? default = 5")
     parser.add_argument("--heavy_atoms", "-ha", type=int, default=10, help="how many heavy atoms does a HETATM residue need to be considered a ligand? default = 10")
     parser.add_argument("--download_pdbs", "-d", action="store_true", help="do you need to download the pdbs from the database?")
+    parser.add_argument("--keep_cifs", action="store_true", help="do you want to keep the cif files you download?")
     parser.add_argument("--keep_pdbs", action="store_true", help="do you want to keep the pdbs you download?")
     parser.add_argument("--keep_clean_pdbs", action="store_true", help="do you want to keep the cleaned-up version of the pdbs you are working with?")
     input_args = parser.parse_args()
