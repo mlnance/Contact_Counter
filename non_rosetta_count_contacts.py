@@ -775,7 +775,7 @@ class CTCT:
                                 
             # if there are multiple models in this PDB file, add the line so this PDB will be skipped
             # TODO-write code so you don't have to skip a multi-model PDB and can instead just look at the first MODEL
-            if line[0:6] == "MODEL":
+            if line[0:5] == "MODEL":
                 models.append( line )
                 break
             
