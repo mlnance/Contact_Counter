@@ -45,7 +45,7 @@ input_args = parser.parse_args()
 #### MAIN PROGRAM ####
 ######################
 
-def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, download_pdbs, keep_pdbs, keep_clean_pdbs ):
+def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, download_pdbs, keep_cifs, keep_pdbs, keep_clean_pdbs ):
     # relevant variable instatiations
     all_pdb_names = []
     ctct = contact.CTCT( pdb_name_list, download_pdbs )
@@ -113,18 +113,32 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
                                     # count contacts
                                     ctct.count_contacts( cutoff )
                                     all_pdb_names.append( pdb.split( '/' )[-1][0:4] )
+                                    
+        # get file names in the 'pdbs' directory
+        os.chdir( working_dir + 'pdbs' )
+        pdb_files = os.listdir( os.getcwd() )
+        
+        # delete undownloaded .tar.gz files
+        for f in pdb_files:
+            if f.endswith( ".gz" ):
+                os.remove( f )
 
-        # PDB files always end with .pdb and are 8 characters long
-        # this program creates XXXX.clean.pdb files, so have to be specific on what gets deleted
-        if not keep_pdbs:
-            os.chdir( working_dir + 'pdbs' )
-            pdb_files = os.listdir( os.getcwd() )
+        # delete unwanted .cif, .pdb, and .clean.pdb files
+        if not keep_cifs:
             for f in pdb_files:
-                if f.endswith( "clean.pdb" ):
+                if f.endswith( ".cif" ):
                     os.remove( f )
-                elif f.endswith( ".gz" ):
+        if not keep_pdbs:
+            for f in pdb_files:
+                if f.endswith( ".pdb" ) and len( f ) == 8:
                     os.remove( f )
-            os.chdir( working_dir )
+        if not keep_clean_pdbs:
+            for f in pdb_files:
+                if f.endswith( ".clean.pdb" ):
+                    os.remove( f )
+        
+        # return to working directory
+        os.chdir( working_dir )
 
     # write out all_pdb_names to a file as those were the PDBs actually analyzed
     with open( "clean_PSMDB_90_non_red_pro_70_non_red_lig_13_ha_cutoff_list", 'wb' ) as fh:
@@ -270,4 +284,4 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
 #### RUNS PROGRAM ####
 ######################
 
-go( input_args.pdb_name_list, input_args.ignore_glycosylated_proteins, input_args.cutoff, input_args.heavy_atoms, input_args.download_pdbs, input_args.keep_pdbs, input_args.keep_clean_pdbs )
+go( input_args.pdb_name_list, input_args.ignore_glycosylated_proteins, input_args.cutoff, input_args.heavy_atoms, input_args.download_pdbs, input_args.keep_cifs, input_args.keep_pdbs, input_args.keep_clean_pdbs )
