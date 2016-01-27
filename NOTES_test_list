@@ -1,0 +1,13 @@
+1234  -  Not a PDB accession number. Should be skipped without having to exit the program.
+
+154l  -  3 NAG residues serve as the ligand. They are NOT covalently attached to the protein, so this should pass the filter even if -ignore_glycosylated_proteins is on.
+
+3ay4  -  No free ligands. All HETATMs are sugars covalently attached to the protein. If -ignore_glycosylated_proteins is on, then there should be no ligand residues left after the filter.
+
+16pk  -  No _struct_conn records in the .cif file. This should return 2 ligand residues using the LINK records.
+
+1d0k  -  Actually a crazy one. Gotta come back to this one. Has amino acids as ligands, but one is non-cononical
+
+2q4w  -  Should be skipped because it has multiple models in the PDB file. I rather just not deal with these casees.
+
+2r24  -  Should be skipped because it had D instead of H. Deuterium is a side case I rather overlook for now.
