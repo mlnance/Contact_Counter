@@ -745,6 +745,7 @@ class CTCT:
         water = []
         metals = []
         models = []
+        deuterium = []
         unknown = []
 
         # list of MODRES names to treat as ATOM lines
@@ -823,6 +824,12 @@ class CTCT:
                     unknown.append( line )
                     break
                 else:
+                    # skip PDBs that have deuterium as an element
+                    if pdb_line.element() == 'D':
+                        deuterium.append( line )
+                        break
+                    
+                    # otherwise, keep going
                     if pdb_line.element() != 'H':
                         # if this is a modified amino acid residue
                         if lig_res_name in modres_protein_res_names:
@@ -859,17 +866,22 @@ class CTCT:
                             # store the HETATM lines
                             self.hetatm_lines.append( pdb_line )
                             
-        # if there were unknown residues, return an exception code
+        # if there were unknown residues, skip
         if len( unknown ) != 0:
             print "## Skipping", self.name, "because it has unknown residues ##"
             return False
-        
-        # if there were PDBs with more than one model, return an exception code
+         
+        # if there were PDBs with more than one model, skip
         if len( models ) != 0:
             print "## Skipping", self.name, "because it has more than one model ##"
             return False
-        
-        # if there is no ligand, return an exception code
+ 
+        # if there were PDBs with more than deuterium, skip
+        if len( deuterium ) != 0:
+            print "## Skipping", self.name, "because it contains deuterium ##"
+            return False
+      
+        # if there is no ligand, skip
         if len( self.hetatm_lines ) == 0:
             print "## Skipping", self.name, "because it does not have a ligand of interest ##"
             return False
@@ -909,7 +921,7 @@ class CTCT:
                     if remove_this_lig in self.ligand.keys():
                         self.ligand.pop( remove_this_lig )
         
-            # if there is no ligand after removing glycans, return an exception code
+            # if there is no ligand after removing glycans, skip
                     if len( self.ligand.keys() ) == 0:
                         print "## Skipping", self.name, "because it did not have a ligand of interest after removing glycans ##"
                         return False
