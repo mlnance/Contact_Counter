@@ -20,7 +20,6 @@ except ImportError:
     print "Trouble with imports - do you have pandas? Exiting"
     sys.exit()
 import non_rosetta_count_contacts as contact
-import pp
 
 
 
