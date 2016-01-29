@@ -1,0 +1,1 @@
+run run_count_contacts.py PSMDB_90_non_red_pro_70_non_red_lig_13_ha_cutoff_list -d -i -ha=13 -c=5
