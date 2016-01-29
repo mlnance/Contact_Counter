@@ -47,9 +47,11 @@ polar_atoms = [ 'O', 'N', 'S', 'P', 'F', 'Cl', 'CL', 'Br', 'BR', 'I', 'Se', 'SE'
 
 # list of residues to remove if they are a ligand
 # ligand meaning it was defined as HETATM in the PDB
-metal_list = ['B', 'K', 'V', 'Y', 'W', 'U', "LI", "BE", "NA", "MG", "AL", "SI", "CA", "SC", "TI", "CR", "MN", "FE", "CO", "NI", "CU", "ZN", "GA", "GE", "AS", "RB", "SR", "ZR", "NB", "MO", "TC", "RU", "RH", "PD", "AG", "CD", "IN", "SN", "SB", "TE", "CS", "BA", "LU", "HF", "TA", "RE", "OS", "IR", "PT", "AU", "HG", "TI", "PB", "BI", "PO", "AT", "FR", "RA", "LR", "RF", "DB", "SG", "BH", "HS", "MT", "LA", "CE", "PR", "ND", "PM", "SM", "EU", "GD", "TB", "DY", "HO", "ER", "TM", "YB", "AC", "TH", "PA", "NP", "PU", "AM", "CM", "BK", "CF", "ES", "FM", "MD", "NO"]
+metal_list = [ 'B', 'K', 'V', 'Y', 'W', 'U', "LI", "BE", "NA", "MG", "AL", "SI", "CA", "SC", "TI", "CR", "MN", "FE", "CO", "NI", "CU", "ZN", "GA", "GE", "AS", "RB", "SR", "ZR", "NB", "MO", "TC", "RU", "RH", "PD", "AG", "CD", "IN", "SN", "SB", "TE", "CS", "BA", "LU", "HF", "TA", "RE", "OS", "IR", "PT", "AU", "HG", "TI", "PB", "BI", "PO", "AT", "FR", "RA", "LR", "RF", "DB", "SG", "BH", "HS", "MT", "LA", "CE", "PR", "ND", "PM", "SM", "EU", "GD", "TB", "DY", "HO", "ER", "TM", "YB", "AC", "TH", "PA", "NP", "PU", "AM", "CM", "BK", "CF", "ES", "FM", "MD", "NO" ]
 
-AA_list = ["ALA", "ARG", "ASN", "ASP", "CYS", "GLN", "GLU", "GLY", "HIS", "ILE", "LEU", "LYS", "MET", "PHE", "PRO", "SER", "THR", "TRP", "TRY", "VAL"]
+AA_list = [ "ALA", "ARG", "ASN", "ASP", "CYS", "GLN", "GLU", "GLY", "HIS", "ILE", "LEU", "LYS", "MET", "PHE", "PRO", "SER", "THR", "TRP", "TRY", "VAL" ]
+
+nucleic_acid_list = [ 'DA', 'A', 'DT', 'T', 'DG', 'G', 'DC', 'C' ]
 
 
 
@@ -437,8 +439,8 @@ class CTCT:
         
         # make data lists to add over course of program for AA composition
         self.AA_pdb_names = []
-        self.AA_lig_res = []
-        self.AA_lig_atms = []
+        self.AS_lig_res = []
+        self.AS_lig_atms = []
         self.AA_activesite_res = []
         self.AA_activesite_atms = []
         self.ALA = []
@@ -472,9 +474,9 @@ class CTCT:
         # make data lists to add over course of program for AA composition per ligand residue in each pdb
         # each pdb name should show up as many times as it has ligand residues that fit the user's criteria
         self.AA_pdb_names_per_lig = []
-        self.AA_lig_uniq_res_names_per_lig = []
-        self.AA_lig_res_names_per_lig = []
-        self.AA_lig_atms_per_lig = []
+        self.AS_lig_uniq_res_names_per_lig = []
+        self.AS_lig_res_names_per_lig = []
+        self.AS_lig_atms_per_lig = []
         self.AA_activesite_res_per_lig = []
         self.AA_activesite_atms_per_lig = []
         self.ALA_per_lig = []
@@ -497,12 +499,12 @@ class CTCT:
         self.VAL_per_lig = []
         self.TRP_per_lig = []
         self.TYR_per_lig = []
-        self.AA_lig_num_ligand_nonpolar_atoms = []
-        self.AA_lig_num_ligand_polar_atoms = []
-        self.AA_lig_num_ligand_unk_atoms = []
-        self.AA_lig_num_activesite_nonpolar_atoms = []
-        self.AA_lig_num_activesite_polar_atoms = []
-        self.AA_lig_num_activesite_unk_atoms = []
+        self.AS_lig_num_ligand_nonpolar_atoms = []
+        self.AS_lig_num_ligand_polar_atoms = []
+        self.AS_lig_num_ligand_unk_atoms = []
+        self.AS_lig_num_activesite_nonpolar_atoms = []
+        self.AS_lig_num_activesite_polar_atoms = []
+        self.AS_lig_num_activesite_unk_atoms = []
 
 
         # make data lists to add over course of program for contact counts - will be added to pandas df at end
@@ -750,10 +752,11 @@ class CTCT:
         
         # get the PDB name from the end of the full path given in pdb_filename
         split_pdb_name = pdb_filename.split( '/' )[-1]
-        pdb_name = split_pdb_name[:-4]
+        pdb_name = split_pdb_name[:-4].lower()
         
         # instantiate lists that will hold relevant PDB data that is NOT wanted
         AA_lig = []
+        nuc_acid_lig = []
         water = []
         metals = []
         models = []
@@ -780,26 +783,29 @@ class CTCT:
                 
                 # the res name being used in this PDB
                 res_name = modres_line.res_name()
+                
                 # the standard res name if this residue wasn't modified
                 std_res_name = modres_line.std_res_name()
+                
                 # if the standard residue name is a standard amino acid, add its modified res name to a list to be added later
                 if std_res_name in AA_list:
                     modres_protein_res_names.append( res_name )
                                 
             # if there are multiple models in this PDB file, add the line so this PDB will be skipped
-            # TODO-write code so you don't have to skip a multi-model PDB and can instead just look at the first MODEL
             if line[0:5] == "MODEL":
                 models.append( line )
                 break
             
             if line[0:4] == "LINK":
-                # store LINK records
+                # store LINK records used for determining any covalently bound ligands
                 link_line = LINK_line( line )
                 self.link_records.append( link_line )
             
             if line[0:4] == "ATOM":
                 # store the protein lines
                 pdb_line = PDB_line( line )
+                
+                # skip hydrogen atoms
                 if pdb_line.element() != 'H':
                     self.protein_lines.append( pdb_line )
                     
@@ -827,11 +833,13 @@ class CTCT:
                     metals.append( line )
                 elif lig_res_name in AA_list:
                     AA_lig.append( line )
-                # unknown amino acid
+                elif lig_res_name in nucleic_acid_list:
+                    nuc_acid_lig.append( line )
+                # unknown amino acid - skip the PDB
                 elif lig_res_name == "UNK":
                     unknown.append( line )
                     break
-                # unknown nucleic acid
+                # unknown nucleic acid - skip the PDB
                 elif lig_res_name == 'N':
                     unknown.append( line )
                     break
@@ -933,7 +941,7 @@ class CTCT:
                     if remove_this_lig in self.ligand.keys():
                         self.ligand.pop( remove_this_lig )
         
-            # if there is no ligand after removing glycans, skip
+                    # if there is no ligand after removing glycans, skip
                     if len( self.ligand.keys() ) == 0:
                         print "## Skipping", self.name, "because it did not have a ligand of interest after removing glycans ##"
                         return False
@@ -1271,8 +1279,8 @@ class CTCT:
         # append all of the final data to the self.lists
         # because if the analysis got this far, that means there actually is data to collect
         self.AA_pdb_names.append( self.name )
-        self.AA_lig_res.append( self.num_ligand_residues )
-        self.AA_lig_atms.append( self.num_ligand_atoms )
+        self.AS_lig_res.append( self.num_ligand_residues )
+        self.AS_lig_atms.append( self.num_ligand_atoms )
         self.AA_activesite_res.append( self.num_activesite_res )
         self.AA_activesite_atms.append( self.num_activesite_atms )
         self.ALA.append( len( ALA ) )
@@ -1311,18 +1319,18 @@ class CTCT:
             self.AA_pdb_names_per_lig.append( self.name )
             
             # append information about each ligand residue
-            self.AA_lig_res_names_per_lig.append( uniq_lig_name.split( '_' )[0] )
-            self.AA_lig_uniq_res_names_per_lig.append( uniq_lig_name )
-            self.AA_lig_atms_per_lig.append( len( self.ligand_dict[ uniq_lig_name ] ) )
+            self.AS_lig_res_names_per_lig.append( uniq_lig_name.split( '_' )[0] )
+            self.AS_lig_uniq_res_names_per_lig.append( uniq_lig_name )
+            self.AS_lig_atms_per_lig.append( len( self.ligand_dict[ uniq_lig_name ] ) )
             
             # count and append the number of nonpolar and polar ligand atoms
             num_nonpolar_lig_atoms = self.lig_num_nonpolar_atoms[ uniq_lig_name ]
             num_polar_lig_atoms = self.lig_num_polar_atoms[ uniq_lig_name ]
             num_unk_lig_atoms = self.lig_num_unk_atoms[ uniq_lig_name ]
                     
-            self.AA_lig_num_ligand_nonpolar_atoms.append( num_nonpolar_lig_atoms )
-            self.AA_lig_num_ligand_polar_atoms.append( num_polar_lig_atoms )
-            self.AA_lig_num_ligand_unk_atoms.append( num_unk_lig_atoms )
+            self.AS_lig_num_ligand_nonpolar_atoms.append( num_nonpolar_lig_atoms )
+            self.AS_lig_num_ligand_polar_atoms.append( num_polar_lig_atoms )
+            self.AS_lig_num_ligand_unk_atoms.append( num_unk_lig_atoms )
             
             # append information about all the activesite residues
             self.AA_activesite_res_per_lig.append( len( self.activesite_lig_pro_res_dict[ uniq_lig_name ] ) )
@@ -1333,9 +1341,9 @@ class CTCT:
             num_polar_activesite_atoms = self.activesite_num_polar_atoms[ uniq_lig_name ]
             num_unk_activesite_atoms = self.activesite_num_unk_atoms[ uniq_lig_name ]
             
-            self.AA_lig_num_activesite_nonpolar_atoms.append( num_nonpolar_activesite_atoms )
-            self.AA_lig_num_activesite_polar_atoms.append( num_polar_activesite_atoms )
-            self.AA_lig_num_activesite_unk_atoms.append( num_unk_activesite_atoms )
+            self.AS_lig_num_activesite_nonpolar_atoms.append( num_nonpolar_activesite_atoms )
+            self.AS_lig_num_activesite_polar_atoms.append( num_polar_activesite_atoms )
+            self.AS_lig_num_activesite_unk_atoms.append( num_unk_activesite_atoms )
             
             # count the number of amino acid residues around the ligand and append to data lists
             self.ALA_per_lig.append( self.activesite_lig_pro_res_dict[ uniq_lig_name ].count( "ALA" ) )

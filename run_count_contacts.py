@@ -1,5 +1,4 @@
 #!/usr/bin/python
-
 __author__ = "morganlnance"
 
 
@@ -170,8 +169,8 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
     # collect AA composition data in a pandas dataframe
     AA_df = pd.DataFrame()
     AA_df["PDB"] = ctct.AA_pdb_names
-    AA_df["num_lig_res"] = ctct.AA_lig_res
-    AA_df["num_lig_atoms"] = ctct.AA_lig_atms
+    AA_df["num_lig_res"] = ctct.AS_lig_res
+    AA_df["num_lig_atoms"] = ctct.AS_lig_atms
     AA_df["num_lig_nonpolar_atoms"] = ctct.AA_num_ligand_nonpolar_atoms 
     AA_df["num_lig_polar_atoms"] = ctct.AA_num_ligand_polar_atoms
     AA_df["num_lig_unk_atom_type"] = ctct.AA_num_ligand_unk_atom_types
@@ -210,16 +209,16 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
     # collect AA composition per ligand residue data in a pandas dataframe
     AA_per_lig_df = pd.DataFrame()
     AA_per_lig_df["PDB"] = ctct.AA_pdb_names_per_lig
-    AA_per_lig_df["uniq_lig_res_names"] = ctct.AA_lig_uniq_res_names_per_lig
-    AA_per_lig_df["lig_res_names"] = ctct.AA_lig_res_names_per_lig
-    AA_per_lig_df["num_lig_atoms"] = ctct.AA_lig_atms_per_lig
-    AA_per_lig_df["num_lig_nonpolar_atoms"] = ctct.AA_lig_num_ligand_nonpolar_atoms
-    AA_per_lig_df["num_lig_polar_atoms"] = ctct.AA_lig_num_ligand_polar_atoms
-    AA_per_lig_df["num_lig_unk_atoms"] = ctct.AA_lig_num_ligand_unk_atoms
+    AA_per_lig_df["uniq_lig_res_names"] = ctct.AS_lig_uniq_res_names_per_lig
+    AA_per_lig_df["lig_res_names"] = ctct.AS_lig_res_names_per_lig
+    AA_per_lig_df["num_lig_atoms"] = ctct.AS_lig_atms_per_lig
+    AA_per_lig_df["num_lig_nonpolar_atoms"] = ctct.AS_lig_num_ligand_nonpolar_atoms
+    AA_per_lig_df["num_lig_polar_atoms"] = ctct.AS_lig_num_ligand_polar_atoms
+    AA_per_lig_df["num_lig_unk_atoms"] = ctct.AS_lig_num_ligand_unk_atoms
     AA_per_lig_df["num_activesite_res"] = ctct.AA_activesite_res_per_lig
     AA_per_lig_df["num_activesite_atoms"] = ctct.AA_activesite_atms_per_lig
-    AA_per_lig_df["num_activesite_nonpolar_atoms"] = ctct.AA_lig_num_activesite_nonpolar_atoms
-    AA_per_lig_df["num_activesite_polar_atoms"] = ctct.AA_lig_num_activesite_polar_atoms
+    AA_per_lig_df["num_activesite_nonpolar_atoms"] = ctct.AS_lig_num_activesite_nonpolar_atoms
+    AA_per_lig_df["num_activesite_polar_atoms"] = ctct.AS_lig_num_activesite_polar_atoms
     AA_per_lig_df["ALA"] = ctct.ALA_per_lig
     AA_per_lig_df["CYS"] = ctct.CYS_per_lig
     AA_per_lig_df["ASP"] = ctct.ASP_per_lig
