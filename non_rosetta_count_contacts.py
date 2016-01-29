@@ -736,7 +736,7 @@ class CTCT:
         
     
 
-    def split_pdb_file( self, pdb_filename, ignore_glycosylated_proteins, keep_clean_pdbs ):
+    def split_pdb_file( self, pdb_filename, ignore_glycosylated_proteins ):
         """
         Splits up the PDB file into ATOM and HETATM lines.
         Doesn't keep HETATM lines that are 1) lone metal atoms, 2) amino acids, or 3) unknown
@@ -756,7 +756,6 @@ class CTCT:
         AA_lig = []
         nuc_acid_lig = []
         water = []
-#        metals = []
         models = []
         deuterium = []
         unknown = []
@@ -809,6 +808,7 @@ class CTCT:
                 
                 # unknown amino acid - skip the PDB
                 if pdb_line.res_name() == "UNK" or pdb_line.res_name() == "UNL":
+#                if pdb_line.res_name() == "UNK":
                     unknown.append( line )
                     self.unknown_res_pdb_names.append( pdb_name )
                     break
@@ -855,19 +855,18 @@ class CTCT:
                 pdb_line = PDB_line( line )
                 lig_res_name = pdb_line.res_name()
                 
-                # check what each residue is by its name (water, metal, ligand)
+                # check what each residue is by its name ( water, unknown, or a ligand etc )
                 if lig_res_name == "HOH":
                     water.append( line )
                 elif lig_res_name == "DOD":
                     water.append( line )
-#                elif lig_res_name in metal_list:
-#                    metals.append( line )
                 elif lig_res_name in AA_list:
                     AA_lig.append( line )
                 elif lig_res_name in nucleic_acid_list:
                     nuc_acid_lig.append( line )
                 # unknown ligand - skip the PDB
                 elif lig_res_name == "UNK" or lig_res_name == "UNL":
+#                elif lig_res_name == "UNK":
                     unknown.append( line )
                     self.unknown_res_pdb_names.append( pdb_name )
                     break
@@ -1010,28 +1009,11 @@ class CTCT:
                         print "## Skipping", self.name, "because it did not have a ligand of interest after removing glycans ##"
                         return False
         
-        # make a clean PDB file that can be kept at the user's request to see if the program is doing what they think it is
-        # only need to make the clean file if the user wants to keep it
-        if keep_clean_pdbs:
-            # create and open a XXXX.clean.pdb file name in the pdb directory
-            cur_dir = os.getcwd() + '/'
-            pdb_dir = cur_dir + 'pdbs/'
-            clean_pdb_filename = pdb_dir + pdb_name + ".clean.pdb"
-            
-            # write the protein and ligand lines that are kept after this round of splitting
-            with open( clean_pdb_filename, 'wb' ) as pdb_fh:
-                for atom_key in self.protein.keys():
-                    for atom_line in self.protein[ atom_key ]:
-                        pdb_fh.write( atom_line.line )
-                for hetatm_key in self.ligand.keys():
-                    for hetatm_line in self.ligand[ hetatm_key ]:
-                        pdb_fh.write( hetatm_line.line )
-        
         return True
 
     
 
-    def get_ligand_residues( self, heavy_atoms, cutoff):
+    def get_ligand_residues( self, heavy_atoms, cutoff, keep_clean_pdbs ):
         # dictionary -- key: lig residue number, value: hetatm lines
         self.ligand_dict = {}
         
@@ -1137,6 +1119,24 @@ class CTCT:
                 for pdb_line in self.ligand_dict[ uniq_lig ]:
                     self.hetatm_lines.append( pdb_line.line )
             
+        
+        # make a clean PDB file that can be kept at the user's request to see if the program is doing what they think it is
+        # only need to make the clean file if the user wants to keep it
+        if keep_clean_pdbs:
+            # create and open a XXXX.clean.pdb file name in the pdb directory
+            cur_dir = os.getcwd() + '/'
+            pdb_dir = cur_dir + 'pdbs/'
+            clean_pdb_filename = pdb_dir + pdb_name + ".clean.pdb"
+            
+            # write the protein and ligand lines that are kept after this round of splitting
+            with open( clean_pdb_filename, 'wb' ) as pdb_fh:
+                for atom_key in self.protein.keys():
+                    for atom_line in self.protein[ atom_key ]:
+                        pdb_fh.write( atom_line.line )
+                for hetatm_key in self.ligand.keys():
+                    for hetatm_line in self.ligand[ hetatm_key ]:
+                        pdb_fh.write( hetatm_line.line )
+                        
             return True
         
         
