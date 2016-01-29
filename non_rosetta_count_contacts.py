@@ -787,15 +787,18 @@ class CTCT:
             if line[0:6] == "MODRES":
                 modres_line = MODRES_line( line )
                 
-                # the res name being used in this PDB
-                res_name = modres_line.res_name()
+                # unique residue name
+                modres_name = modres_line.res_name()
+                modres_chain = modres_line.res_chain()
+                modres_num = str( modres_line.res_num() )
+                uniq_modres_name = modres_name + '_' + modres_chain + '_' + modres_num
                 
                 # the standard res name if this residue wasn't modified
                 std_res_name = modres_line.std_res_name()
                 
                 # if the standard residue name is a standard amino acid, add its modified res name to a list to be added later
                 if std_res_name in AA_list:
-                    modres_protein_res_names.append( res_name )
+                    modres_protein_res_names.append( uniq_modres_name )
                                 
             # if there are multiple models in this PDB file, add the line so this PDB will be skipped
             if line[0:5] == "MODEL":
@@ -825,18 +828,18 @@ class CTCT:
                     break
                     
                 # skip hydrogen atoms
-                if pdb_line.element() != 'H':
-                    self.protein_lines.append( pdb_line )
-                    
-                    # store each unique protein residue as a key in the dictionary and instantiate a list as its value
+                if pdb_line.element() != 'H':                    
+                    # collect the residue's unique name
                     pro_res_name = pdb_line.res_name()
                     pro_res_chain = pdb_line.res_chain()
                     pro_res_num = str( pdb_line.res_num() )
                     uniq_pro_name = pro_res_name + '_' + pro_res_chain + '_' + pro_res_num
                     
-                    # instantiate a dictionary key for this specific protein residue (will be filled with the non-hydrogen ATOM lines later
+                    # instantiate a dictionary key for this specific protein residue using its unique name 
+                    # will be filled with the non-hydrogen ATOM lines later
                     if uniq_pro_name not in self.protein.keys():
                         self.protein[ uniq_pro_name ] = []
+                    self.protein_lines.append( pdb_line )
                 
             if line[0:6] == "HETATM":
                 # get each ligand residue name to see what it is and store it in the appropriate list
@@ -873,8 +876,13 @@ class CTCT:
                     
                     # otherwise, keep going
                     if pdb_line.element() != 'H':
+                        # get the ligand residue's unique name
+                        lig_res_chain = pdb_line.res_chain()
+                        lig_res_num = str( pdb_line.res_num() )
+                        uniq_lig_name = lig_res_name + '_' + lig_res_chain + '_' + lig_res_num
+                            
                         # if this is a modified amino acid residue
-                        if lig_res_name in modres_protein_res_names:
+                        if uniq_lig_name in modres_protein_res_names:
                             # change the HETATM to ATOM in the line
                             line = pdb_line.line
                             line = line.replace( "HETATM", "ATOM  " )
@@ -883,10 +891,8 @@ class CTCT:
                             # append the altered PDB line to the protein lines
                             self.protein_lines.append( pdb_line )
                             
-                            # store each unique modified protein residue as a key in the dictionary
-                            pro_res_chain = pdb_line.res_chain()
-                            pro_res_num = str( pdb_line.res_num() )
-                            uniq_pro_name = lig_res_name + '_' + pro_res_chain + '_' + pro_res_num
+                            # now this is a unique protein name, not ligand
+                            uniq_pro_name = uniq_lig_name
                             
                             # instantiate a dictionary key for this specific modified protein residue 
                             # will be filled with the non-hydrogen HETATM lines later
@@ -895,11 +901,6 @@ class CTCT:
                         
                         # otherwise, this is a ligand residue
                         else:
-                            # store each unique ligand residue as a key in the dictionary
-                            lig_res_chain = pdb_line.res_chain()
-                            lig_res_num = str( pdb_line.res_num() )
-                            uniq_lig_name = lig_res_name + '_' + lig_res_chain + '_' + lig_res_num
-                            
                             # instantiate a dictionary key for this specific ligand residue
                             # will be filled with the non-hydrogen HETATM lines later
                             if uniq_lig_name not in self.ligand.keys():
