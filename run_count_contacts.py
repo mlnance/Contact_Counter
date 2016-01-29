@@ -192,83 +192,83 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
     except:
         filename = "program_input_"
 
-    # collect AA composition data in a pandas dataframe
-    AA_df = pd.DataFrame()
-    AA_df["PDB"] = ctct.AA_pdb_names
-    AA_df["num_lig_res"] = ctct.AS_lig_res
-    AA_df["num_lig_atoms"] = ctct.AS_lig_atms
-    AA_df["num_lig_nonpolar_atoms"] = ctct.AA_num_ligand_nonpolar_atoms 
-    AA_df["num_lig_polar_atoms"] = ctct.AA_num_ligand_polar_atoms
-    AA_df["num_lig_unk_atom_type"] = ctct.AA_num_ligand_unk_atom_types
-    AA_df["num_activesite_res"] = ctct.AA_activesite_res
-    AA_df["num_activesite_atoms"] = ctct.AA_activesite_atms
-    AA_df["num_activesite_nonpolar_atoms"] = ctct.AA_num_activesite_nonpolar_atoms
-    AA_df["num_activesite_polar_atoms"] = ctct.AA_num_activesite_polar_atoms
-    AA_df["num_activesite_unk_atom_type"] = ctct.AA_num_activesite_unk_atom_types
-    AA_df["ALA"] = ctct.ALA
-    AA_df["CYS"] = ctct.CYS
-    AA_df["ASP"] = ctct.ASP
-    AA_df["GLU"] = ctct.GLU
-    AA_df["PHE"] = ctct.PHE
-    AA_df["GLY"] = ctct.GLY
-    AA_df["HIS"] = ctct.HIS
-    AA_df["ILE"] = ctct.ILE
-    AA_df["LYS"] = ctct.LYS
-    AA_df["LEU"] = ctct.LEU
-    AA_df["MET"] = ctct.MET
-    AA_df["ASN"] = ctct.ASN
-    AA_df["PRO"] = ctct.PRO
-    AA_df["GLN"] = ctct.GLN
-    AA_df["ARG"] = ctct.ARG
-    AA_df["SER"] = ctct.SER
-    AA_df["THR"] = ctct.THR
-    AA_df["VAL"] = ctct.VAL
-    AA_df["TRP"] = ctct.TRP
-    AA_df["TYR"] = ctct.TYR
+    # collect AS composition data in a pandas dataframe
+    AS_df = pd.DataFrame()
+    AS_df["PDB"] = ctct.AS_pdb_names
+    AS_df["num_lig_res"] = ctct.AS_lig_res
+    AS_df["num_lig_atoms"] = ctct.AS_lig_atms
+    AS_df["num_lig_nonpolar_atoms"] = ctct.AS_num_ligand_nonpolar_atoms 
+    AS_df["num_lig_polar_atoms"] = ctct.AS_num_ligand_polar_atoms
+    AS_df["num_lig_unk_atom_type"] = ctct.AS_num_ligand_unk_atom_types
+    AS_df["num_activesite_res"] = ctct.AS_activesite_res
+    AS_df["num_activesite_atoms"] = ctct.AS_activesite_atms
+    AS_df["num_activesite_nonpolar_atoms"] = ctct.AS_num_activesite_nonpolar_atoms
+    AS_df["num_activesite_polar_atoms"] = ctct.AS_num_activesite_polar_atoms
+    AS_df["num_activesite_unk_atom_type"] = ctct.AS_num_activesite_unk_atom_types
+    AS_df["ALA"] = ctct.ALA
+    AS_df["CYS"] = ctct.CYS
+    AS_df["ASP"] = ctct.ASP
+    AS_df["GLU"] = ctct.GLU
+    AS_df["PHE"] = ctct.PHE
+    AS_df["GLY"] = ctct.GLY
+    AS_df["HIS"] = ctct.HIS
+    AS_df["ILE"] = ctct.ILE
+    AS_df["LYS"] = ctct.LYS
+    AS_df["LEU"] = ctct.LEU
+    AS_df["MET"] = ctct.MET
+    AS_df["ASN"] = ctct.ASN
+    AS_df["PRO"] = ctct.PRO
+    AS_df["GLN"] = ctct.GLN
+    AS_df["ARG"] = ctct.ARG
+    AS_df["SER"] = ctct.SER
+    AS_df["THR"] = ctct.THR
+    AS_df["VAL"] = ctct.VAL
+    AS_df["TRP"] = ctct.TRP
+    AS_df["TYR"] = ctct.TYR
     
-    print AA_df
+    print AS_df
     print "\n\n\n\n"
-    AA_df.to_csv( str( working_dir ) + '/' + filename + "activesite_AA_composition_at_" + str( cutoff ) + "_Ang_cutoff_and_" + str( heavy_atoms ) + "_heavy_atom_ligand.csv", index = 0, index_col = 0 )
+    AS_df.to_csv( str( working_dir ) + '/' + filename + "activesite_AS_composition_at_" + str( cutoff ) + "_Ang_cutoff_and_" + str( heavy_atoms ) + "_heavy_atom_ligand.csv", index = 0, index_col = 0 )
 
     
     
-    # collect AA composition per ligand residue data in a pandas dataframe
-    AA_per_lig_df = pd.DataFrame()
-    AA_per_lig_df["PDB"] = ctct.AA_pdb_names_per_lig
-    AA_per_lig_df["uniq_lig_res_names"] = ctct.AS_lig_uniq_res_names_per_lig
-    AA_per_lig_df["lig_res_names"] = ctct.AS_lig_res_names_per_lig
-    AA_per_lig_df["num_lig_atoms"] = ctct.AS_lig_atms_per_lig
-    AA_per_lig_df["num_lig_nonpolar_atoms"] = ctct.AS_lig_num_ligand_nonpolar_atoms
-    AA_per_lig_df["num_lig_polar_atoms"] = ctct.AS_lig_num_ligand_polar_atoms
-    AA_per_lig_df["num_lig_unk_atoms"] = ctct.AS_lig_num_ligand_unk_atoms
-    AA_per_lig_df["num_activesite_res"] = ctct.AA_activesite_res_per_lig
-    AA_per_lig_df["num_activesite_atoms"] = ctct.AA_activesite_atms_per_lig
-    AA_per_lig_df["num_activesite_nonpolar_atoms"] = ctct.AS_lig_num_activesite_nonpolar_atoms
-    AA_per_lig_df["num_activesite_polar_atoms"] = ctct.AS_lig_num_activesite_polar_atoms
-    AA_per_lig_df["ALA"] = ctct.ALA_per_lig
-    AA_per_lig_df["CYS"] = ctct.CYS_per_lig
-    AA_per_lig_df["ASP"] = ctct.ASP_per_lig
-    AA_per_lig_df["GLU"] = ctct.GLU_per_lig
-    AA_per_lig_df["PHE"] = ctct.PHE_per_lig
-    AA_per_lig_df["GLY"] = ctct.GLY_per_lig
-    AA_per_lig_df["HIS"] = ctct.HIS_per_lig
-    AA_per_lig_df["ILE"] = ctct.ILE_per_lig
-    AA_per_lig_df["LYS"] = ctct.LYS_per_lig
-    AA_per_lig_df["LEU"] = ctct.LEU_per_lig
-    AA_per_lig_df["MET"] = ctct.MET_per_lig
-    AA_per_lig_df["ASN"] = ctct.ASN_per_lig
-    AA_per_lig_df["PRO"] = ctct.PRO_per_lig
-    AA_per_lig_df["GLN"] = ctct.GLN_per_lig
-    AA_per_lig_df["ARG"] = ctct.ARG_per_lig
-    AA_per_lig_df["SER"] = ctct.SER_per_lig
-    AA_per_lig_df["THR"] = ctct.THR_per_lig
-    AA_per_lig_df["VAL"] = ctct.VAL_per_lig
-    AA_per_lig_df["TRP"] = ctct.TRP_per_lig
-    AA_per_lig_df["TYR"] = ctct.TYR_per_lig
+    # collect AS composition per ligand residue data in a pandas dataframe
+    AS_per_lig_df = pd.DataFrame()
+    AS_per_lig_df["PDB"] = ctct.AS_pdb_names_per_lig
+    AS_per_lig_df["uniq_lig_res_names"] = ctct.AS_lig_uniq_res_names_per_lig
+    AS_per_lig_df["lig_res_names"] = ctct.AS_lig_res_names_per_lig
+    AS_per_lig_df["num_lig_atoms"] = ctct.AS_lig_atms_per_lig
+    AS_per_lig_df["num_lig_nonpolar_atoms"] = ctct.AS_lig_num_ligand_nonpolar_atoms
+    AS_per_lig_df["num_lig_polar_atoms"] = ctct.AS_lig_num_ligand_polar_atoms
+    AS_per_lig_df["num_lig_unk_atoms"] = ctct.AS_lig_num_ligand_unk_atoms
+    AS_per_lig_df["num_activesite_res"] = ctct.AS_activesite_res_per_lig
+    AS_per_lig_df["num_activesite_atoms"] = ctct.AS_activesite_atms_per_lig
+    AS_per_lig_df["num_activesite_nonpolar_atoms"] = ctct.AS_lig_num_activesite_nonpolar_atoms
+    AS_per_lig_df["num_activesite_polar_atoms"] = ctct.AS_lig_num_activesite_polar_atoms
+    AS_per_lig_df["ALA"] = ctct.ALA_per_lig
+    AS_per_lig_df["CYS"] = ctct.CYS_per_lig
+    AS_per_lig_df["ASP"] = ctct.ASP_per_lig
+    AS_per_lig_df["GLU"] = ctct.GLU_per_lig
+    AS_per_lig_df["PHE"] = ctct.PHE_per_lig
+    AS_per_lig_df["GLY"] = ctct.GLY_per_lig
+    AS_per_lig_df["HIS"] = ctct.HIS_per_lig
+    AS_per_lig_df["ILE"] = ctct.ILE_per_lig
+    AS_per_lig_df["LYS"] = ctct.LYS_per_lig
+    AS_per_lig_df["LEU"] = ctct.LEU_per_lig
+    AS_per_lig_df["MET"] = ctct.MET_per_lig
+    AS_per_lig_df["ASN"] = ctct.ASN_per_lig
+    AS_per_lig_df["PRO"] = ctct.PRO_per_lig
+    AS_per_lig_df["GLN"] = ctct.GLN_per_lig
+    AS_per_lig_df["ARG"] = ctct.ARG_per_lig
+    AS_per_lig_df["SER"] = ctct.SER_per_lig
+    AS_per_lig_df["THR"] = ctct.THR_per_lig
+    AS_per_lig_df["VAL"] = ctct.VAL_per_lig
+    AS_per_lig_df["TRP"] = ctct.TRP_per_lig
+    AS_per_lig_df["TYR"] = ctct.TYR_per_lig
 
-    print AA_per_lig_df
+    print AS_per_lig_df
     print "\n\n\n\n"
-    AA_per_lig_df.to_csv( str( working_dir ) + '/' + filename + "activesite_AA_composition_per_ligand_at_" + str( cutoff ) + "_Ang_cutoff_and_" + str( heavy_atoms ) + "_heavy_atom_ligand.csv", index = 0, index_col = 0 )
+    AS_per_lig_df.to_csv( str( working_dir ) + '/' + filename + "activesite_AS_composition_per_ligand_at_" + str( cutoff ) + "_Ang_cutoff_and_" + str( heavy_atoms ) + "_heavy_atom_ligand.csv", index = 0, index_col = 0 )
             
     
     # contact counting data

@@ -434,7 +434,6 @@ class CTCT:
     def instantiate_data_holders( self ):
         ## initialize all the data holders
         # make on/off switches for skipping 
-        self.has_covalently_attached_hetatm = False
         self.glycosylated_proteins = []
         
         # hold the name of PDBs that contain undesirables like multiple models or an unknown HETATM
@@ -443,12 +442,12 @@ class CTCT:
         self.deuterium_pdb_names = []
         self.not_full_occupancy_pdb_names = []
         
-        # make data lists to add over course of program for AA composition
-        self.AA_pdb_names = []
+        # make data lists to add over course of program for AS composition
+        self.AS_pdb_names = []
         self.AS_lig_res = []
         self.AS_lig_atms = []
-        self.AA_activesite_res = []
-        self.AA_activesite_atms = []
+        self.AS_activesite_res = []
+        self.AS_activesite_atms = []
         self.ALA = []
         self.CYS = []
         self.ASP = []
@@ -469,22 +468,22 @@ class CTCT:
         self.VAL = []
         self.TRP = []
         self.TYR = []
-        self.AA_num_activesite_nonpolar_atoms = []
-        self.AA_num_activesite_polar_atoms = []
-        self.AA_num_activesite_unk_atom_types = []
-        self.AA_num_ligand_nonpolar_atoms = []
-        self.AA_num_ligand_polar_atoms = []
-        self.AA_num_ligand_unk_atom_types = []
+        self.AS_num_activesite_nonpolar_atoms = []
+        self.AS_num_activesite_polar_atoms = []
+        self.AS_num_activesite_unk_atom_types = []
+        self.AS_num_ligand_nonpolar_atoms = []
+        self.AS_num_ligand_polar_atoms = []
+        self.AS_num_ligand_unk_atom_types = []
 
 
         # make data lists to add over course of program for AA composition per ligand residue in each pdb
         # each pdb name should show up as many times as it has ligand residues that fit the user's criteria
-        self.AA_pdb_names_per_lig = []
+        self.AS_pdb_names_per_lig = []
         self.AS_lig_uniq_res_names_per_lig = []
         self.AS_lig_res_names_per_lig = []
         self.AS_lig_atms_per_lig = []
-        self.AA_activesite_res_per_lig = []
-        self.AA_activesite_atms_per_lig = []
+        self.AS_activesite_res_per_lig = []
+        self.AS_activesite_atms_per_lig = []
         self.ALA_per_lig = []
         self.CYS_per_lig = []
         self.ASP_per_lig = []
@@ -1056,6 +1055,7 @@ class CTCT:
             
             # count the number of nonpolar and polar atoms
             for pdb_line in self.ligand_dict[ uniq_lig ]:
+                # if the element is nonpolar
                 if pdb_line.element() in nonpolar_atoms:
                     # total nonpolar lig atoms
                     self.num_ligand_nonpolar_atoms += 1
@@ -1063,6 +1063,7 @@ class CTCT:
                     # number of nonpolar atoms for this ligand residue
                     self.lig_num_nonpolar_atoms[ uniq_lig ] += 1
                     
+                # if the element is polar
                 elif pdb_line.element() in polar_atoms or pdb_line.element() in metal_list:
                     # total polar lig atoms
                     self.num_ligand_polar_atoms += 1
@@ -1145,8 +1146,8 @@ class CTCT:
         
         for uniq_lig_name in self.ligand_dict.keys():
             # list to store the 3 letter names of all of the protein residues within the cutoff distance of each ligand residue (by unique name)
-            AA_names_in_activesite = []
-            AA_atms_in_activesite = []
+            AS_names_in_activesite = []
+            AS_atms_in_activesite = []
             
             for hetatm_line in self.ligand_dict[ uniq_lig_name ]:
                 # extract coordinates
@@ -1183,15 +1184,15 @@ class CTCT:
                             
                             # store the 3 letter name of the amino acid within the activesite
                             three_letter_name = pro_uniq_res[0:3]
-                            AA_names_in_activesite.append( three_letter_name )
+                            AS_names_in_activesite.append( three_letter_name )
                             
                         # store atom_line for each unique amino acid within the activesite to get an atom count later
-                        if atom_line not in AA_atms_in_activesite:
-                            AA_atms_in_activesite.append( atom_line )
+                        if atom_line not in AS_atms_in_activesite:
+                            AS_atms_in_activesite.append( atom_line )
                         
             # store the list of the 3 letter names for the amino acid within the self.activesite_lig_pro_dict according to which ligand its near
-            self.activesite_lig_pro_res_dict[ uniq_lig_name ] = AA_names_in_activesite
-            self.activesite_lig_pro_atms_dict[ uniq_lig_name ] = AA_atms_in_activesite
+            self.activesite_lig_pro_res_dict[ uniq_lig_name ] = AS_names_in_activesite
+            self.activesite_lig_pro_atms_dict[ uniq_lig_name ] = AS_atms_in_activesite
                 
         # get number of activesite residues
         self.num_activesite_res = len( self.activesite_dict.keys() )
@@ -1215,7 +1216,7 @@ class CTCT:
                     # number of nonpolar atoms for this activesite residue
                     self.activesite_num_nonpolar_atoms[ uniq_lig_name ] += 1
                     
-                # elif if metal
+                # elif if polar
                 elif pdb_line.element() in polar_atoms or pdb_line.element() in metal_list:
                     # total polar activesite atoms
                     self.num_activesite_polar_atoms += 1
@@ -1320,11 +1321,11 @@ class CTCT:
 
         # append all of the final data to the self.lists
         # because if the analysis got this far, that means there actually is data to collect
-        self.AA_pdb_names.append( self.name )
+        self.AS_pdb_names.append( self.name )
         self.AS_lig_res.append( self.num_ligand_residues )
         self.AS_lig_atms.append( self.num_ligand_atoms )
-        self.AA_activesite_res.append( self.num_activesite_res )
-        self.AA_activesite_atms.append( self.num_activesite_atms )
+        self.AS_activesite_res.append( self.num_activesite_res )
+        self.AS_activesite_atms.append( self.num_activesite_atms )
         self.ALA.append( len( ALA ) )
         self.CYS.append( len( CYS ) )
         self.ASP.append( len( ASP ) )
@@ -1345,12 +1346,12 @@ class CTCT:
         self.VAL.append( len( VAL ) )
         self.TRP.append( len( TRP ) )
         self.TYR.append( len( TYR ) )
-        self.AA_num_activesite_nonpolar_atoms.append( self.num_activesite_nonpolar_atoms )
-        self.AA_num_activesite_polar_atoms.append( self.num_activesite_polar_atoms )
-        self.AA_num_activesite_unk_atom_types.append( self.num_activesite_unk_atom_types )
-        self.AA_num_ligand_nonpolar_atoms.append( self.num_ligand_nonpolar_atoms )
-        self.AA_num_ligand_polar_atoms.append( self.num_ligand_polar_atoms )
-        self.AA_num_ligand_unk_atom_types.append( self.num_ligand_unk_atom_type )
+        self.AS_num_activesite_nonpolar_atoms.append( self.num_activesite_nonpolar_atoms )
+        self.AS_num_activesite_polar_atoms.append( self.num_activesite_polar_atoms )
+        self.AS_num_activesite_unk_atom_types.append( self.num_activesite_unk_atom_types )
+        self.AS_num_ligand_nonpolar_atoms.append( self.num_ligand_nonpolar_atoms )
+        self.AS_num_ligand_polar_atoms.append( self.num_ligand_polar_atoms )
+        self.AS_num_ligand_unk_atom_types.append( self.num_ligand_unk_atom_type )
 
 
 
@@ -1358,7 +1359,7 @@ class CTCT:
         # goes through each unique ligand residue and counts the number of each amino acid within the cutoff distance around it
         for uniq_lig_name in self.activesite_lig_pro_res_dict.keys():
             # append the pdb names to the data list
-            self.AA_pdb_names_per_lig.append( self.name )
+            self.AS_pdb_names_per_lig.append( self.name )
             
             # append information about each ligand residue
             self.AS_lig_res_names_per_lig.append( uniq_lig_name.split( '_' )[0] )
@@ -1375,8 +1376,8 @@ class CTCT:
             self.AS_lig_num_ligand_unk_atoms.append( num_unk_lig_atoms )
             
             # append information about all the activesite residues
-            self.AA_activesite_res_per_lig.append( len( self.activesite_lig_pro_res_dict[ uniq_lig_name ] ) )
-            self.AA_activesite_atms_per_lig.append( len( self.activesite_lig_pro_atms_dict[ uniq_lig_name ] ) )
+            self.AS_activesite_res_per_lig.append( len( self.activesite_lig_pro_res_dict[ uniq_lig_name ] ) )
+            self.AS_activesite_atms_per_lig.append( len( self.activesite_lig_pro_atms_dict[ uniq_lig_name ] ) )
             
             # count and append the number of nonpolar and polar activesite atoms
             num_nonpolar_activesite_atoms = self.activesite_num_nonpolar_atoms[ uniq_lig_name ]
