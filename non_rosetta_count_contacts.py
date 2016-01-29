@@ -473,6 +473,7 @@ class CTCT:
         self.AS_num_activesite_unk_atom_types = []
         self.AS_num_ligand_nonpolar_atoms = []
         self.AS_num_ligand_polar_atoms = []
+        self.AS_num_ligand_metal_atoms = []
         self.AS_num_ligand_unk_atom_types = []
 
 
@@ -506,6 +507,7 @@ class CTCT:
         self.TYR_per_lig = []
         self.AS_lig_num_ligand_nonpolar_atoms = []
         self.AS_lig_num_ligand_polar_atoms = []
+        self.AS_lig_num_ligand_metal_atoms = []
         self.AS_lig_num_ligand_unk_atoms = []
         self.AS_lig_num_activesite_nonpolar_atoms = []
         self.AS_lig_num_activesite_polar_atoms = []
@@ -1024,9 +1026,11 @@ class CTCT:
         self.num_ligand_atoms = 0
         self.num_ligand_nonpolar_atoms = 0
         self.num_ligand_polar_atoms = 0
+        self.num_ligand_metal_atoms = 0
         self.num_ligand_unk_atom_type = 0
         self.lig_num_nonpolar_atoms = {}
         self.lig_num_polar_atoms = {}
+        self.lig_num_metal_atoms = {}
         self.lig_num_unk_atoms = {}
         
         # this makes a new dictionary of ligands only if there are more than the specified number of heavy atoms in the lig residue
@@ -1036,8 +1040,10 @@ class CTCT:
         
         # get the 3-letter names of each remaining ligand residue
         for uniq_lig in self.ligand_dict.keys():
-            lig_res_name = uniq_lig[0:3]
+            lig_res_name = uniq_lig[ 0:3 ]
             self.lig_res_names.append( lig_res_name )
+            
+            # add unique ligand residue names to the set
             if lig_res_name not in self.uniq_lig_res_names:
                 self.uniq_lig_res_names.append( lig_res_name )
         
@@ -1045,16 +1051,18 @@ class CTCT:
         self.num_ligand_residues = len( self.ligand_dict.keys() )
         
         # count the number of heavy ligand atoms by looping through the dictionary
+        # hydrogens were skipped so just count the number of values for each key
         for uniq_lig in self.ligand_dict:
             self.num_ligand_atoms += len( self.ligand_dict[ uniq_lig ] )
             
-            # prepare the counter for nonpolar, polar, and unknown atom types for each unique ligand residue
+            # prepare the counter for nonpolar, polar, metal, and unknown atom types for each unique ligand residue
             self.lig_num_nonpolar_atoms[ uniq_lig ] = 0
             self.lig_num_polar_atoms[ uniq_lig ] = 0
+            self.lig_num_metal_atoms[ uniq_lig ] = 0
             self.lig_num_unk_atoms[ uniq_lig ] = 0
             
             # count the number of nonpolar and polar atoms
-            for pdb_line in self.ligand_dict[ uniq_lig ]:
+            for pdb_line in self.ligand_dict[ uniq_lig ]:                
                 # if the element is nonpolar
                 if pdb_line.element() in nonpolar_atoms:
                     # total nonpolar lig atoms
@@ -1064,18 +1072,28 @@ class CTCT:
                     self.lig_num_nonpolar_atoms[ uniq_lig ] += 1
                     
                 # if the element is polar
-                elif pdb_line.element() in polar_atoms or pdb_line.element() in metal_list:
+                elif pdb_line.element() in polar_atoms:
                     # total polar lig atoms
                     self.num_ligand_polar_atoms += 1
                     
                     # number of polar atoms for this ligand residue
                     self.lig_num_polar_atoms[ uniq_lig ] += 1
                     
+                # if the element is metal
+                elif pdb_line.element() in metal_list:
+                    # total metal lig atoms
+                    self.num_ligand_metal_atoms += 1
+                    
+                    # number of metal atoms for this ligand residue
+                    self.lig_num_metal_atoms[ uniq_lig ] += 1
+                    
+                    
                 else:
                     # this atom type is unknown - inform user
                     print "      * I didn't know what type of atom", "'%s'" %pdb_line.element(), "is. Please add it to the list"
                     # total unknown lig atoms
                     self.num_ligand_unk_atom_type += 1
+                    
                     # number of unknown atoms for this ligand residue
                     self.lig_num_unk_atoms[ uniq_lig ] += 1
                     
@@ -1208,7 +1226,7 @@ class CTCT:
             
             # count the number of nonpolar and polar atoms
             for pdb_line in self.activesite_lig_pro_atms_dict[ uniq_lig_name ]:
-                # if nonpolar
+                # if element is nonpolar
                 if pdb_line.element() in nonpolar_atoms:
                     # total nonpolar activesite atoms
                     self.num_activesite_nonpolar_atoms += 1
@@ -1216,8 +1234,8 @@ class CTCT:
                     # number of nonpolar atoms for this activesite residue
                     self.activesite_num_nonpolar_atoms[ uniq_lig_name ] += 1
                     
-                # elif if polar
-                elif pdb_line.element() in polar_atoms or pdb_line.element() in metal_list:
+                # if element is polar
+                elif pdb_line.element() in polar_atoms:
                     # total polar activesite atoms
                     self.num_activesite_polar_atoms += 1
                     
@@ -1318,6 +1336,7 @@ class CTCT:
         percentage_activesite_polar = round( float( self.num_activesite_polar_atoms ) / float( self.num_activesite_atms ), 3 )
         percentage_ligand_nonpolar = round( float( self.num_ligand_nonpolar_atoms ) / float( self.num_ligand_atoms ), 3 )
         percentage_ligand_polar = round( float( self.num_ligand_polar_atoms ) / float( self.num_ligand_atoms ), 3 )
+        percentage_ligand_metal = round( float( self.num_ligand_metal_atoms ) / float( self.num_ligand_atoms ), 3 )
 
         # append all of the final data to the self.lists
         # because if the analysis got this far, that means there actually is data to collect
@@ -1351,6 +1370,7 @@ class CTCT:
         self.AS_num_activesite_unk_atom_types.append( self.num_activesite_unk_atom_types )
         self.AS_num_ligand_nonpolar_atoms.append( self.num_ligand_nonpolar_atoms )
         self.AS_num_ligand_polar_atoms.append( self.num_ligand_polar_atoms )
+        self.AS_num_ligand_metal_atoms.append( self.num_ligand_metal_atoms )
         self.AS_num_ligand_unk_atom_types.append( self.num_ligand_unk_atom_type )
 
 
@@ -1369,10 +1389,12 @@ class CTCT:
             # count and append the number of nonpolar and polar ligand atoms
             num_nonpolar_lig_atoms = self.lig_num_nonpolar_atoms[ uniq_lig_name ]
             num_polar_lig_atoms = self.lig_num_polar_atoms[ uniq_lig_name ]
+            num_metal_lig_atoms = self.lig_num_metal_atoms[ uniq_lig_name ]
             num_unk_lig_atoms = self.lig_num_unk_atoms[ uniq_lig_name ]
                     
             self.AS_lig_num_ligand_nonpolar_atoms.append( num_nonpolar_lig_atoms )
             self.AS_lig_num_ligand_polar_atoms.append( num_polar_lig_atoms )
+            self.AS_lig_num_ligand_metal_atoms.append( num_metal_lig_atoms )
             self.AS_lig_num_ligand_unk_atoms.append( num_unk_lig_atoms )
             
             # append information about all the activesite residues

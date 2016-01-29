@@ -199,6 +199,7 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
     AS_df["num_lig_atoms"] = ctct.AS_lig_atms
     AS_df["num_lig_nonpolar_atoms"] = ctct.AS_num_ligand_nonpolar_atoms 
     AS_df["num_lig_polar_atoms"] = ctct.AS_num_ligand_polar_atoms
+    AS_df["num_lig_metal_atoms"] = ctct.AS_num_ligand_metal_atoms
     AS_df["num_lig_unk_atom_type"] = ctct.AS_num_ligand_unk_atom_types
     AS_df["num_activesite_res"] = ctct.AS_activesite_res
     AS_df["num_activesite_atoms"] = ctct.AS_activesite_atms
@@ -228,7 +229,7 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
     
     print AS_df
     print "\n\n\n\n"
-    AS_df.to_csv( str( working_dir ) + '/' + filename + "activesite_AS_composition_at_" + str( cutoff ) + "_Ang_cutoff_and_" + str( heavy_atoms ) + "_heavy_atom_ligand.csv", index = 0, index_col = 0 )
+    AS_df.to_csv( str( working_dir ) + '/' + filename + "activesite_AA_composition_at_" + str( cutoff ) + "_Ang_cutoff_and_" + str( heavy_atoms ) + "_heavy_atom_ligand.csv", index = 0, index_col = 0 )
 
     
     
@@ -240,6 +241,7 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
     AS_per_lig_df["num_lig_atoms"] = ctct.AS_lig_atms_per_lig
     AS_per_lig_df["num_lig_nonpolar_atoms"] = ctct.AS_lig_num_ligand_nonpolar_atoms
     AS_per_lig_df["num_lig_polar_atoms"] = ctct.AS_lig_num_ligand_polar_atoms
+    AS_per_lig_df["num_lig_metal_atoms"] = ctct.AS_lig_num_ligand_metal_atoms
     AS_per_lig_df["num_lig_unk_atoms"] = ctct.AS_lig_num_ligand_unk_atoms
     AS_per_lig_df["num_activesite_res"] = ctct.AS_activesite_res_per_lig
     AS_per_lig_df["num_activesite_atoms"] = ctct.AS_activesite_atms_per_lig
@@ -268,7 +270,7 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
 
     print AS_per_lig_df
     print "\n\n\n\n"
-    AS_per_lig_df.to_csv( str( working_dir ) + '/' + filename + "activesite_AS_composition_per_ligand_at_" + str( cutoff ) + "_Ang_cutoff_and_" + str( heavy_atoms ) + "_heavy_atom_ligand.csv", index = 0, index_col = 0 )
+    AS_per_lig_df.to_csv( str( working_dir ) + '/' + filename + "activesite_AA_composition_per_ligand_at_" + str( cutoff ) + "_Ang_cutoff_and_" + str( heavy_atoms ) + "_heavy_atom_ligand.csv", index = 0, index_col = 0 )
             
     
     # contact counting data
