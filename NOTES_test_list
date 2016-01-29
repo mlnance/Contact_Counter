@@ -13,3 +13,5 @@
 2r24  -  Should be skipped because it had D instead of H. Deuterium is a side case I rather overlook for now.
 
 5ejt  -  Should come out with one ligand (HEM) where the program recognizes the metal in the ligand as a polar atom.
+
+2feo  -  Should not include the DC residue as a ligand. Currently skips over nucleic acids.

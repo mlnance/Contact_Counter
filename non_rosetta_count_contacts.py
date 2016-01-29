@@ -922,7 +922,8 @@ class CTCT:
             uniq_lig_name = lig_res_name + '_' + lig_res_chain + '_' + lig_res_num
             
             self.ligand[ uniq_lig_name ].append( lig_pdb_line )
-                
+        print
+        print self.ligand
         # if user wants to ignore glycosylated proteins (proteins with a HETATM attached to them)
         if ignore_glycosylated_proteins: 
             self.covalently_bound_lig_residues = []
