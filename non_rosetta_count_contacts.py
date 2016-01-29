@@ -53,6 +53,10 @@ AA_list = ["ALA", "ARG", "ASN", "ASP", "CYS", "GLN", "GLU", "GLY", "HIS", "ILE",
 
 
 
+##############################
+#### PDB LINE DEFINITIONS ####
+##############################
+
 class PDB_line:
     def __init__(self, line):
         # only works for ATOM and HETATM lines ( TER lines don't have coordinates for instance, thus would crash )
@@ -256,6 +260,10 @@ class MODRES_line:
 
 
 
+##############################
+#### CIF LINE DEFINITIONS ####
+##############################
+
 class cif_struct_conn_lines:
     def __init__(self, cif_filename):
         """
@@ -387,7 +395,11 @@ class cif_atom_site_lines:
         return unique_hetatm_names
 
 
-        
+
+###############################
+#### CONTACT COUNTING CODE ####
+###############################
+
 class CTCT:
     def __init__( self, pdb_name_list, download_pdbs ):
         """
@@ -1460,9 +1472,9 @@ class CTCT:
 
 
 
-####################
-### RUNS PROGRAM ###
-####################
+######################
+#### RUNS PROGRAM ####
+######################
 
 if __name__ == "__main__":
     import argparse
@@ -1477,6 +1489,3 @@ if __name__ == "__main__":
     parser.add_argument("--keep_pdbs", action="store_true", help="do you want to keep the pdbs you download?")
     parser.add_argument("--keep_clean_pdbs", action="store_true", help="do you want to keep the cleaned-up version of the pdbs you are working with?")
     input_args = parser.parse_args()
-    
-    #my_obj = CTCT( input_args.pdb_name_list, input_args.download_pdbs )
-    #my_obj.test()

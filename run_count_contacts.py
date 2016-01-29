@@ -45,15 +45,6 @@ input_args = parser.parse_args()
 #### MAIN PROGRAM ####
 ######################
 
-## try Python parallel processing
-# python server creation
-ppservers = ()
-
-# creates job server with automatically detected number of cores to work with
-job_server = pp.Server( ppservers = ppservers )
-print "Starting pp with", job_server.get_ncpus(), "workers\n"
-
-
 def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, download_pdbs, keep_cifs, keep_pdbs, keep_clean_pdbs ):
     # relevant variable instatiations
     all_pdb_names = []
