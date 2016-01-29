@@ -816,7 +816,7 @@ class CTCT:
                 pdb_line = PDB_line( line )
                 
                 # unknown amino acid - skip the PDB
-                if pdb_line.res_name() == "UNK":
+                if pdb_line.res_name() == "UNK" or pdb_line.res_name() == "UNL":
                     unknown.append( line )
                     self.unknown_res_pdb_names.append( pdb_name )
                     break
@@ -874,8 +874,8 @@ class CTCT:
                     AA_lig.append( line )
                 elif lig_res_name in nucleic_acid_list:
                     nuc_acid_lig.append( line )
-                # unknown amino acid - skip the PDB
-                elif lig_res_name == "UNK":
+                # unknown ligand - skip the PDB
+                elif lig_res_name == "UNK" or lig_res_name == "UNL":
                     unknown.append( line )
                     self.unknown_res_pdb_names.append( pdb_name )
                     break
