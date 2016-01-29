@@ -92,7 +92,7 @@ class PDB_line:
         Example: 'A' or 'B'
         :return: str( alternate location identifier )
         """
-        return str( self.line[16:17] )
+        return str( self.line[16:17].replace( ' ', '' ) )
     
     def res_name(self):
         """
@@ -828,18 +828,36 @@ class CTCT:
                     break
                     
                 # skip hydrogen atoms
-                if pdb_line.element() != 'H':                    
+                if pdb_line.element() != 'H':
                     # collect the residue's unique name
                     pro_res_name = pdb_line.res_name()
                     pro_res_chain = pdb_line.res_chain()
                     pro_res_num = str( pdb_line.res_num() )
                     uniq_pro_name = pro_res_name + '_' + pro_res_chain + '_' + pro_res_num
                     
-                    # instantiate a dictionary key for this specific protein residue using its unique name 
-                    # will be filled with the non-hydrogen ATOM lines later
-                    if uniq_pro_name not in self.protein.keys():
-                        self.protein[ uniq_pro_name ] = []
-                    self.protein_lines.append( pdb_line )
+                    # check occupancy level
+                    if pdb_line.occupancy() != 1.00:
+                        # skip this PDB if they don't use letters for the alternate location identifiers
+                        if pdb_line.alt_loc() == '':
+                            print "## Skipping", self.name, "because it did not specify a residue's alternate location code ##"
+                            return False
+                    
+                        # keep the 'A' alternate location residues
+                        if pdb_line.alt_loc() == 'A':
+                            # instantiate a dictionary key for this specific protein residue using its unique name 
+                            # will be filled with the non-hydrogen ATOM lines later
+                            if uniq_pro_name not in self.protein.keys():
+                                self.protein[ uniq_pro_name ] = []
+                            self.protein_lines.append( pdb_line )
+                            
+                    # otherwise this protein residue is at full occupancy so store the line
+                    else:
+                        # instantiate a dictionary key for this specific protein residue using its unique name 
+                        # will be filled with the non-hydrogen ATOM lines later
+                        if uniq_pro_name not in self.protein.keys():
+                            self.protein[ uniq_pro_name ] = []
+                        self.protein_lines.append( pdb_line )
+
                 
             if line[0:6] == "HETATM":
                 # get each ligand residue name to see what it is and store it in the appropriate list
@@ -880,7 +898,7 @@ class CTCT:
                         lig_res_chain = pdb_line.res_chain()
                         lig_res_num = str( pdb_line.res_num() )
                         uniq_lig_name = lig_res_name + '_' + lig_res_chain + '_' + lig_res_num
-                            
+                        
                         # if this is a modified amino acid residue
                         if uniq_lig_name in modres_protein_res_names:
                             # change the HETATM to ATOM in the line
@@ -888,26 +906,64 @@ class CTCT:
                             line = line.replace( "HETATM", "ATOM  " )
                             pdb_line = PDB_line( line )
                             
-                            # append the altered PDB line to the protein lines
-                            self.protein_lines.append( pdb_line )
-                            
                             # now this is a unique protein name, not ligand
                             uniq_pro_name = uniq_lig_name
-                            
-                            # instantiate a dictionary key for this specific modified protein residue 
-                            # will be filled with the non-hydrogen HETATM lines later
-                            if uniq_pro_name not in self.protein.keys():
-                                self.protein[ uniq_pro_name ] = []
+                                
+                            # check occupancy level
+                            if pdb_line.occupancy() != 1.00:
+                                # skip this PDB if they don't use letters for the alternate location identifiers
+                                if pdb_line.alt_loc() == '':
+                                    print "## Skipping", self.name, "because it did not specify a residue's alternate location code ##"
+                                    return False
+                                
+                                # keep the 'A' alternate location residues
+                                if pdb_line.alt_loc() == 'A':
+                                    # instantiate a dictionary key for this specific protein residue using its unique name 
+                                    # will be filled with the non-hydrogen ATOM lines later
+                                    if uniq_pro_name not in self.protein.keys():
+                                        self.protein[ uniq_pro_name ] = []
+                                    self.protein_lines.append( pdb_line )
+                                    
+                            # otherwise this modified residue is at full occupancy
+                            else:
+                                # instantiate a dictionary key for this specific modified protein residue 
+                                # will be filled with the non-hydrogen HETATM lines later
+                                if uniq_pro_name not in self.protein.keys():
+                                    self.protein[ uniq_pro_name ] = []
+                                    
+                                # append the altered PDB line to the protein lines
+                                self.protein_lines.append( pdb_line )
+                                
                         
                         # otherwise, this is a ligand residue
                         else:
-                            # instantiate a dictionary key for this specific ligand residue
-                            # will be filled with the non-hydrogen HETATM lines later
-                            if uniq_lig_name not in self.ligand.keys():
-                                self.ligand[ uniq_lig_name ] = []
+                            # check occupancy level
+                            if pdb_line.occupancy() != 1.00:
+                                # skip this PDB if they don't use letters for the alternate location identifiers
+                                if pdb_line.alt_loc() == '':
+                                    print "## Skipping", self.name, "because it did not specify a residue's alternate location code ##"
+                                    return False
+                                
+                                # keep the 'A' alternate location residues
+                                if pdb_line.alt_loc() == 'A':
+                                    # instantiate a dictionary key for this specific ligand residue
+                                    # will be filled with the non-hydrogen HETATM lines later
+                                    if uniq_lig_name not in self.ligand.keys():
+                                        self.ligand[ uniq_lig_name ] = []
+                                        
+                                    # store the HETATM lines
+                                    self.hetatm_lines.append( pdb_line )
                                     
-                            # store the HETATM lines
-                            self.hetatm_lines.append( pdb_line )
+                            # otherwise residue is at full occupancy so store the line
+                            else:
+                                # instantiate a dictionary key for this specific ligand residue
+                                # will be filled with the non-hydrogen HETATM lines later
+                                if uniq_lig_name not in self.ligand.keys():
+                                    self.ligand[ uniq_lig_name ] = []
+                                    
+                                # store the HETATM lines
+                                self.hetatm_lines.append( pdb_line )
+
                             
         # if there were unknown residues, skip
         if len( unknown ) != 0:
@@ -931,19 +987,23 @@ class CTCT:
 
         # move all ATOM and HETATM lines to their appropriate place in the dictionaries based on their unique names
         for pro_pdb_line in self.protein_lines:
+            # get the residue's unique name again
             pro_res_name = pro_pdb_line.res_name()
             pro_res_chain = pro_pdb_line.res_chain()
             pro_res_num = str( pro_pdb_line.res_num() )
             uniq_pro_name = pro_res_name + '_' + pro_res_chain + '_' + pro_res_num
             
+            # otherwise just a normal residue
             self.protein[ uniq_pro_name ].append( pro_pdb_line )
         
+
         for lig_pdb_line in self.hetatm_lines:
             lig_res_name = lig_pdb_line.res_name()
             lig_res_chain = lig_pdb_line.res_chain()
             lig_res_num = str( lig_pdb_line.res_num() )
             uniq_lig_name = lig_res_name + '_' + lig_res_chain + '_' + lig_res_num
             
+            # otherwise just a normal residue
             self.ligand[ uniq_lig_name ].append( lig_pdb_line )
 
         # if user wants to ignore glycosylated proteins (proteins with a HETATM attached to them)
