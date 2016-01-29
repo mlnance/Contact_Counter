@@ -326,7 +326,7 @@ class cif_struct_conn_lines:
         
         unique_connection_names = []
         for ii in range( len( connection_types ) ):
-            if connection_types[ii] == "covale":
+            if connection_types[ii] == "covale" or connection_types[ii] == "metalc":
                 res1_unique_name = res1_names[ii] + '_' + res1_chains[ii] + '_' + res1_nums[ii]
                 res2_unique_name = res2_names[ii] + '_' + res2_chains[ii] + '_' + res2_nums[ii]
                 uniq_connection_name = res1_unique_name + '+' + res2_unique_name
