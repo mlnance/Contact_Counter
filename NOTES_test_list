@@ -15,3 +15,5 @@
 2feo  -  Should not include the DC residue as a ligand. Currently skips over nucleic acids.
 
 1a54  -  Should be skipped because it has residues not in full occupancy.
+
+4ac8  -  Should be able to remove the MYR ligand because it is connected to a metal atom that is connected to the protein.

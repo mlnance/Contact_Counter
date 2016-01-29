@@ -626,13 +626,13 @@ class CTCT:
         unique_connection_names = []
         
         for link_line in LINK_records:
-            res1_unique_name = link_line.res1_name + '_' + link_line.res1_chain + '_' + link_line.res1_seq
-            res2_unique_name = link_line.res2_name + '_' + link_line.res2_chain + '_' + link_line.res2_seq
+            res1_unique_name = link_line.res1_name() + '_' + link_line.res1_chain() + '_' + str( link_line.res1_seq() )
+            res2_unique_name = link_line.res2_name() + '_' + link_line.res2_chain() + '_' + str( link_line.res2_seq() )
             uniq_connection_name = res1_unique_name + '+' + res2_unique_name
             
             if uniq_connection_name not in unique_connection_names:
                 unique_connection_names.append( uniq_connection_name )
-        
+
         return unique_connection_names
 
 
@@ -695,7 +695,7 @@ class CTCT:
                 if remove:
                     for mynode in g.nodes_iter():
                         # if this node is a ligand
-                        if g.node[mynode]["HETATM"]:
+                        if g.node[ mynode ][ "HETATM" ]:
                             # if you haven't already added it
                             if mynode not in remove_these_ligs:
                                 remove_these_ligs.append( mynode )
@@ -709,14 +709,6 @@ class CTCT:
         # download the mmcif file
         cif_filename = self.download_cif( pdb_filename[:4] )
         
-        '''
-        # get the unique protein and hetatm names from the mmcif file
-        # unique name = resname_reschain_resnum
-        _atom_site = cif_atom_site_lines( cif_filename )
-        unique_protein_names = _atom_site.cif_uniq_pro_names()
-        unique_hetatm_names = _atom_site.cif_uniq_het_names()
-        '''
-        
         # get _struct_conn lines to determine HETATM connections
         _struct_conn = cif_struct_conn_lines( cif_filename )
         
@@ -724,7 +716,7 @@ class CTCT:
         response = _struct_conn.check_if_has_mmcif_dict()
         
         # if this PDB has an mmcif file
-        if response is True:        
+        if response is True:
             # unique name = res1name_res1chain_res1num+res2name_res2chain_res2num
             unique_partner_names = _struct_conn.get_uniq_connection_names()
             
@@ -764,7 +756,7 @@ class CTCT:
         AA_lig = []
         nuc_acid_lig = []
         water = []
-        metals = []
+#        metals = []
         models = []
         deuterium = []
         unknown = []
@@ -868,8 +860,8 @@ class CTCT:
                     water.append( line )
                 elif lig_res_name == "DOD":
                     water.append( line )
-                elif lig_res_name in metal_list:
-                    metals.append( line )
+#                elif lig_res_name in metal_list:
+#                    metals.append( line )
                 elif lig_res_name in AA_list:
                     AA_lig.append( line )
                 elif lig_res_name in nucleic_acid_list:
@@ -994,7 +986,7 @@ class CTCT:
             
             # otherwise just a normal residue
             self.ligand[ uniq_lig_name ].append( lig_pdb_line )
-
+            
         # if user wants to ignore glycosylated proteins (proteins with a HETATM attached to them)
         if ignore_glycosylated_proteins: 
             self.covalently_bound_lig_residues = []
