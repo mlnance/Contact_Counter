@@ -827,7 +827,7 @@ class CTCT:
                     
                 # skip PDBs that don't have full occupancy
                 # I rather just ensure a non-bias look than try to work around occupancy
-                if pdb_line.occupancy != 1.00:
+                if pdb_line.occupancy() != 1.00:
                     not_full_occupancy.append( line )
                     self.not_full_occupancy_pdb_names.append( pdb_name )
                     break
@@ -881,7 +881,7 @@ class CTCT:
                     
                     # skip PDBs that don't have full occupancy
                     # rather just ensure a non-bias look than try to work around occupancy
-                    if pdb_line.occupancy != 1.00:
+                    if pdb_line.occupancy() != 1.00:
                         not_full_occupancy.append( line )
                         self.not_full_occupancy_pdb_names.append( pdb_name )
                         break
