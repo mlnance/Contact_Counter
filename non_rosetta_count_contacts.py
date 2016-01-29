@@ -1137,7 +1137,7 @@ class CTCT:
                     for hetatm_line in self.ligand[ hetatm_key ]:
                         pdb_fh.write( hetatm_line.line )
                         
-            return True
+        return True
         
         
         
