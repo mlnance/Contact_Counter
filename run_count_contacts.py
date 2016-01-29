@@ -183,9 +183,9 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
         fh.write( "\n\n" )
     
     # filename will be taken from the name of the PDB list passed through
-    try:
+    if pdb_name_list.endswith( "list" ):
         filename = pdb_name_list.split( "list" )[0]
-    except:
+    else:
         filename = "program_input_"
 
     # collect AS composition data in a pandas dataframe
