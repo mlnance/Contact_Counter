@@ -437,6 +437,11 @@ class CTCT:
         self.has_covalently_attached_hetatm = False
         self.glycosylated_proteins = []
         
+        # hold the name of PDBs that contain undesirables like multiple models or an unknown HETATM
+        self.unknown_lig_pdb_names = []
+        self.multiple_models_pdb_names = []
+        self.deuterium_pdb_names = []
+        
         # make data lists to add over course of program for AA composition
         self.AA_pdb_names = []
         self.AS_lig_res = []
@@ -794,6 +799,7 @@ class CTCT:
             # if there are multiple models in this PDB file, add the line so this PDB will be skipped
             if line[0:5] == "MODEL":
                 models.append( line )
+                self.multiple_models_pdb_names.append( pdb_name )
                 break
             
             if line[0:4] == "LINK":
@@ -838,15 +844,18 @@ class CTCT:
                 # unknown amino acid - skip the PDB
                 elif lig_res_name == "UNK":
                     unknown.append( line )
+                    self.unknown_lig_pdb_names.append( pdb_name )
                     break
                 # unknown nucleic acid - skip the PDB
                 elif lig_res_name == 'N':
                     unknown.append( line )
+                    self.unknown_lig_pdb_names.append( pdb_name )
                     break
                 else:
                     # skip PDBs that have deuterium as an element
                     if pdb_line.element() == 'D':
                         deuterium.append( line )
+                        self.deuterium_pdb_names.append( pdb_name )
                         break
                     
                     # otherwise, keep going
@@ -922,8 +931,7 @@ class CTCT:
             uniq_lig_name = lig_res_name + '_' + lig_res_chain + '_' + lig_res_num
             
             self.ligand[ uniq_lig_name ].append( lig_pdb_line )
-        print
-        print self.ligand
+
         # if user wants to ignore glycosylated proteins (proteins with a HETATM attached to them)
         if ignore_glycosylated_proteins: 
             self.covalently_bound_lig_residues = []

@@ -53,6 +53,9 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
     working_dir = os.getcwd() + '/'
     cur_files_working = os.listdir( working_dir )
     
+    # holds the name of PDBs that couldn't be downloaded
+    unable_to_download_pdb_names = []
+    
     # instantiate the data holders that will hold the data for all of the PDBs
     ctct.instantiate_data_holders()
     
@@ -70,12 +73,13 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
             ctct.instantiate_holders()
             
             # store pdb name in the contact counting class
-            ctct.name = pdb[0:4]
+            pdb_name = pdb[ 0:4 ]
+            ctct.name = pdb_name
             
             # check to see if this PDB has already been looked at in this round
-            if not pdb[0:4] in all_pdb_names:
+            if not pdb_name in all_pdb_names:
                 # also check lower case
-                if not pdb[0:4].lower() in all_pdb_names:
+                if not pdb_name.lower() in all_pdb_names:
 
                     # download the pdb if needed
                     if download_pdbs:
@@ -84,6 +88,7 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
                     # check to see if the PDB path exists, otherwise it needed to be downlaoded
                     if not os.path.isfile( pdb ):
                         print "## Skipping", pdb.split( '/' )[-1][0:4], "because it doesn't seem to exist"
+                        unable_to_download_pdb_names.append( pdb_name )
                         pass
                         
                     # otherwise the PDB exists and the program continues
@@ -153,13 +158,30 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
 ##### DATA COLLECTION #####
 ###########################
     
-    if input_args.ignore_glycosylated_proteins:
-        # print the names of glycosylated proteins to a file including the name of the list passed
-        filename = pdb_name_list + "_glycosylated_protein_PDB_names.txt"
-        with open( filename, 'wb' ) as fh:
-            fh.writelines( ctct.glycosylated_proteins )
-            fh.write( "\n" )
-                
+    # write all the PDB names that were either skipped or unable to be downloaded because of the flags given to the program
+    # example) skip glycosylated proteins, skip nucleic acids as ligands, skip PDBs with multiple models
+    filename = "PDB_files_that_were_skipped.txt"
+    with open( filename, 'wb' ) as fh:
+        fh.write( "## PDBs unable to be downloaded\n" )
+        fh.writelines( unable_to_download_pdb_names )
+        fh.write( "\n\n" )
+
+        fh.write( "## PDBs with covalently attached HETATMs\n" )
+        fh.writelines( ctct.glycosylated_proteins )
+        fh.write( "\n\n" )
+    
+        fh.write( "## PDBs with an unknown ligand\n" )
+        fh.writelines( ctct.unknown_lig_pdb_names )
+        fh.write( "\n\n" )
+
+        fh.write( "## PDBs with deuterium\n" )
+        fh.writelines( ctct.deuterium_pdb_names )
+        fh.write( "\n\n" )
+
+        fh.write( "## PDBs with multiple MODELs\n" )
+        fh.writelines( ctct.multiple_models_pdb_names )
+        fh.write( "\n\n" )
+    
     # filename will be taken from the name of the PDB list passed through
     try:
         filename = pdb_name_list.split( "list" )[0]
