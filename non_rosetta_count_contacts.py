@@ -440,7 +440,6 @@ class CTCT:
         self.unknown_res_pdb_names = []
         self.multiple_models_pdb_names = []
         self.deuterium_pdb_names = []
-        self.not_full_occupancy_pdb_names = []
         
         # make data lists to add over course of program for AS composition
         self.AS_pdb_names = []
@@ -768,7 +767,6 @@ class CTCT:
         metals = []
         models = []
         deuterium = []
-        not_full_occupancy = []
         unknown = []
 
         # list of MODRES names to treat as ATOM lines
@@ -826,13 +824,6 @@ class CTCT:
                     self.deuterium_pdb_names.append( pdb_name )
                     break
                     
-                # skip PDBs that don't have full occupancy
-                # I rather just ensure a non-bias look than try to work around occupancy
-                if pdb_line.occupancy() != 1.00:
-                    not_full_occupancy.append( line )
-                    self.not_full_occupancy_pdb_names.append( pdb_name )
-                    break
-                
                 # skip hydrogen atoms
                 if pdb_line.element() != 'H':
                     self.protein_lines.append( pdb_line )
@@ -878,13 +869,6 @@ class CTCT:
                     if pdb_line.element() == 'D':
                         deuterium.append( line )
                         self.deuterium_pdb_names.append( pdb_name )
-                        break
-                    
-                    # skip PDBs that don't have full occupancy
-                    # rather just ensure a non-bias look than try to work around occupancy
-                    if pdb_line.occupancy() != 1.00:
-                        not_full_occupancy.append( line )
-                        self.not_full_occupancy_pdb_names.append( pdb_name )
                         break
                     
                     # otherwise, keep going
@@ -939,11 +923,6 @@ class CTCT:
             print "## Skipping", self.name, "because it contains deuterium ##"
             return False
         
-        # if there were PDBs with an ATOM or HETATM with not 100% occupancy, skip
-        if len( not_full_occupancy ) != 0:
-            print "## Skipping", self.name, "because it contains residues not in full occupancy ##"
-            return False
-      
         # if there is no ligand, skip
         if len( self.hetatm_lines ) == 0:
             print "## Skipping", self.name, "because it does not have a ligand of interest ##"

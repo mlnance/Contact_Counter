@@ -174,10 +174,6 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
         fh.writelines( ctct.unknown_res_pdb_names )
         fh.write( "\n\n" )
 
-        fh.write( "## PDBs with residues not in full occupancy\n" )
-        fh.writelines( ctct.not_full_occupancy_pdb_names )
-        fh.write( "\n\n" )
-
         fh.write( "## PDBs with deuterium\n" )
         fh.writelines( ctct.deuterium_pdb_names )
         fh.write( "\n\n" )
