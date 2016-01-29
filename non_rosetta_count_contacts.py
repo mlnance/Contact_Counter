@@ -438,9 +438,10 @@ class CTCT:
         self.glycosylated_proteins = []
         
         # hold the name of PDBs that contain undesirables like multiple models or an unknown HETATM
-        self.unknown_lig_pdb_names = []
+        self.unknown_res_pdb_names = []
         self.multiple_models_pdb_names = []
         self.deuterium_pdb_names = []
+        self.not_full_occupancy_pdb_names = []
         
         # make data lists to add over course of program for AA composition
         self.AA_pdb_names = []
@@ -766,6 +767,7 @@ class CTCT:
         metals = []
         models = []
         deuterium = []
+        not_full_occupancy = []
         unknown = []
 
         # list of MODRES names to treat as ATOM lines
@@ -811,6 +813,25 @@ class CTCT:
                 # store the protein lines
                 pdb_line = PDB_line( line )
                 
+                # unknown amino acid - skip the PDB
+                if pdb_line.res_name() == "UNK":
+                    unknown.append( line )
+                    self.unknown_res_pdb_names.append( pdb_name )
+                    break
+                
+                # skip PDBs that have deuterium as an element
+                if pdb_line.element() == 'D':
+                    deuterium.append( line )
+                    self.deuterium_pdb_names.append( pdb_name )
+                    break
+                    
+                # skip PDBs that don't have full occupancy
+                # I rather just ensure a non-bias look than try to work around occupancy
+                if pdb_line.occupancy != 1.00:
+                    not_full_occupancy.append( line )
+                    self.not_full_occupancy_pdb_names.append( pdb_name )
+                    break
+                
                 # skip hydrogen atoms
                 if pdb_line.element() != 'H':
                     self.protein_lines.append( pdb_line )
@@ -844,18 +865,25 @@ class CTCT:
                 # unknown amino acid - skip the PDB
                 elif lig_res_name == "UNK":
                     unknown.append( line )
-                    self.unknown_lig_pdb_names.append( pdb_name )
+                    self.unknown_res_pdb_names.append( pdb_name )
                     break
                 # unknown nucleic acid - skip the PDB
                 elif lig_res_name == 'N':
                     unknown.append( line )
-                    self.unknown_lig_pdb_names.append( pdb_name )
+                    self.unknown_res_pdb_names.append( pdb_name )
                     break
                 else:
                     # skip PDBs that have deuterium as an element
                     if pdb_line.element() == 'D':
                         deuterium.append( line )
                         self.deuterium_pdb_names.append( pdb_name )
+                        break
+                    
+                    # skip PDBs that don't have full occupancy
+                    # rather just ensure a non-bias look than try to work around occupancy
+                    if pdb_line.occupancy != 1.00:
+                        not_full_occupancy.append( line )
+                        self.not_full_occupancy_pdb_names.append( pdb_name )
                         break
                     
                     # otherwise, keep going
@@ -908,6 +936,11 @@ class CTCT:
         # if there were PDBs with more than deuterium, skip
         if len( deuterium ) != 0:
             print "## Skipping", self.name, "because it contains deuterium ##"
+            return False
+        
+        # if there were PDBs with an ATOM or HETATM with not 100% occupancy, skip
+        if len( not_full_occupancy ) != 0:
+            print "## Skipping", self.name, "because it contains residues not in full occupancy ##"
             return False
       
         # if there is no ligand, skip
