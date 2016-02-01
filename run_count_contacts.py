@@ -273,24 +273,20 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
     CC_df["pdb_names"] = ctct.CC_pdb_names
     CC_df["num_lig_atoms"] = ctct.CC_lig_atms
     CC_df["num_activesite_atms"] = ctct.CC_activesite_atms
-    CC_df["num_pp_contacts_within_1/4_cutoff"] = ctct.CC_pp_one_fourth_cutoff_contacts
-    CC_df["num_pp_contacts_within_1/2_cutoff"] = ctct.CC_pp_one_half_cutoff_contacts
-    CC_df["num_pp_contacts_within_3/4_cutoff"] = ctct.CC_pp_three_fourths_cutoff_contacts
+    CC_df["num_pp_contacts_within_1/3_cutoff"] = ctct.CC_pp_one_third_cutoff_contacts
+    CC_df["num_pp_contacts_within_2/3_cutoff"] = ctct.CC_pp_two_thirds_cutoff_contacts
     CC_df["num_pp_contacts_within_cutoff"] = ctct.CC_pp_contacts
 
-    CC_df["num_pn_contacts_within_1/4_cutoff"] = ctct.CC_pn_one_fourth_cutoff_contacts
-    CC_df["num_pn_contacts_within_1/2_cutoff"] = ctct.CC_pn_one_half_cutoff_contacts
-    CC_df["num_pn_contacts_within_3/4_cutoff"] = ctct.CC_pn_three_fourths_cutoff_contacts
+    CC_df["num_pn_contacts_within_1/3_cutoff"] = ctct.CC_pn_one_third_cutoff_contacts
+    CC_df["num_pn_contacts_within_2/3_cutoff"] = ctct.CC_pn_two_thirds_cutoff_contacts
     CC_df["num_pn_contacts_within_cutoff"] = ctct.CC_pn_contacts
 
-    CC_df["num_np_contacts_within_1/4_cutoff"] = ctct.CC_np_one_fourth_cutoff_contacts
-    CC_df["num_np_contacts_within_1/2_cutoff"] = ctct.CC_np_one_half_cutoff_contacts
-    CC_df["num_np_contacts_within_3/4_cutoff"] = ctct.CC_np_three_fourths_cutoff_contacts
+    CC_df["num_np_contacts_within_1/3_cutoff"] = ctct.CC_np_one_third_cutoff_contacts
+    CC_df["num_np_contacts_within_2/3_cutoff"] = ctct.CC_np_two_thirds_cutoff_contacts
     CC_df["num_np_contacts_within_cutoff"] = ctct.CC_np_contacts
 
-    CC_df["num_nn_contacts_within_1/4_cutoff"] = ctct.CC_nn_one_fourth_cutoff_contacts
-    CC_df["num_nn_contacts_within_1/2_cutoff"] = ctct.CC_nn_one_half_cutoff_contacts
-    CC_df["num_nn_contacts_within_3/4_cutoff"] = ctct.CC_nn_three_fourths_cutoff_contacts
+    CC_df["num_nn_contacts_within_1/3_cutoff"] = ctct.CC_nn_one_third_cutoff_contacts
+    CC_df["num_nn_contacts_within_2/3_cutoff"] = ctct.CC_nn_two_thirds_cutoff_contacts
     CC_df["num_nn_contacts_within_cutoff"] = ctct.CC_nn_contacts
     CC_df["num_unk_contacts"] = ctct.CC_unk_contacts
     
@@ -305,24 +301,20 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
     CC_per_lig_df["lig_names"] = ctct.CC_per_lig_lig_names
     CC_per_lig_df["num_lig_atms"] = ctct.CC_per_lig_lig_atms
     CC_per_lig_df["num_activesite_atms"] = ctct.CC_per_lig_activesite_atms
-    CC_per_lig_df["pp_contacts_within_1/4_cutoff"] = ctct.CC_per_lig_pp_one_fourth_cutoff_contacts
-    CC_per_lig_df["pp_contacts_within_1/2_cutoff"] = ctct.CC_per_lig_pp_one_half_cutoff_contacts
-    CC_per_lig_df["pp_contacts_within_3/4_cutoff"] = ctct.CC_per_lig_pp_three_fourths_cutoff_contacts
+    CC_per_lig_df["pp_contacts_within_1/3_cutoff"] = ctct.CC_per_lig_pp_one_third_cutoff_contacts
+    CC_per_lig_df["pp_contacts_within_2/3_cutoff"] = ctct.CC_per_lig_pp_two_thirds_cutoff_contacts
     CC_per_lig_df["pp_contacts_within_cutoff"] = ctct.CC_per_lig_pp_contacts
 
-    CC_per_lig_df["pn_contacts_within_1/4_cutoff"] = ctct.CC_per_lig_pn_one_fourth_cutoff_contacts
-    CC_per_lig_df["pn_contacts_within_1/2_cutoff"] = ctct.CC_per_lig_pn_one_half_cutoff_contacts
-    CC_per_lig_df["pn_contacts_within_3/4_cutoff"] = ctct.CC_per_lig_pn_three_fourths_cutoff_contacts
+    CC_per_lig_df["pn_contacts_within_1/3_cutoff"] = ctct.CC_per_lig_pn_one_third_cutoff_contacts
+    CC_per_lig_df["pn_contacts_within_2/3_cutoff"] = ctct.CC_per_lig_pn_two_thirds_cutoff_contacts
     CC_per_lig_df["pn_contacts_within_cutoff"] = ctct.CC_per_lig_pn_contacts
 
-    CC_per_lig_df["np_contacts_within_1/4_cutoff"] = ctct.CC_per_lig_np_one_fourth_cutoff_contacts
-    CC_per_lig_df["np_contacts_within_1/2_cutoff"] = ctct.CC_per_lig_np_one_half_cutoff_contacts
-    CC_per_lig_df["np_contacts_within_3/4_cutoff"] = ctct.CC_per_lig_np_three_fourths_cutoff_contacts
+    CC_per_lig_df["np_contacts_within_1/3_cutoff"] = ctct.CC_per_lig_np_one_third_cutoff_contacts
+    CC_per_lig_df["np_contacts_within_2/3_cutoff"] = ctct.CC_per_lig_np_two_thirds_cutoff_contacts
     CC_per_lig_df["np_contacts_within_cutoff"] = ctct.CC_per_lig_np_contacts
     
-    CC_per_lig_df["nn_contacts_within_1/4_cutoff"] = ctct.CC_per_lig_nn_one_fourth_cutoff_contacts
-    CC_per_lig_df["nn_contacts_within_1/2_cutoff"] = ctct.CC_per_lig_nn_one_half_cutoff_contacts
-    CC_per_lig_df["nn_contacts_within_3/4_cutoff"] = ctct.CC_per_lig_nn_three_fourths_cutoff_contacts
+    CC_per_lig_df["nn_contacts_within_1/3_cutoff"] = ctct.CC_per_lig_nn_one_third_cutoff_contacts
+    CC_per_lig_df["nn_contacts_within_2/3_cutoff"] = ctct.CC_per_lig_nn_two_thirds_cutoff_contacts
     CC_per_lig_df["nn_contacts_within_cutoff"] = ctct.CC_per_lig_nn_contacts
     CC_per_lig_df["num_unk_contacts"] = ctct.CC_per_lig_unk_contacts
     
