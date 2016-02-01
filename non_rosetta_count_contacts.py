@@ -2,7 +2,6 @@
 __author__ = "morganlnance"
 
 
-
 #####
 # path to pymol executable
 # must change for each machine!
@@ -524,6 +523,20 @@ class CTCT:
         self.CC_unk_contacts = []
 
 
+        # for counting density of contacts
+        self.CC_pp_one_fourth_cutoff_contacts = []
+        self.CC_pp_one_half_cutoff_contacts = []
+        self.CC_pp_three_fourths_cutoff_contacts = []
+        self.CC_pn_one_fourth_cutoff_contacts = []
+        self.CC_pn_one_half_cutoff_contacts = []
+        self.CC_pn_three_fourths_cutoff_contacts = []
+        self.CC_np_one_fourth_cutoff_contacts = []
+        self.CC_np_one_half_cutoff_contacts = []
+        self.CC_np_three_fourths_cutoff_contacts = []
+        self.CC_nn_one_fourth_cutoff_contacts = []
+        self.CC_nn_one_half_cutoff_contacts = []
+        self.CC_nn_three_fourths_cutoff_contacts = []
+        
         # make data lists to add over course of program for contact counts per lig - will be added to pandas df at end
         self.CC_per_lig_pdb_names = []
         self.CC_per_lig_lig_names = []
@@ -534,6 +547,20 @@ class CTCT:
         self.CC_per_lig_np_contacts = []
         self.CC_per_lig_nn_contacts = []
         self.CC_per_lig_unk_contacts = []
+        
+        # for counting density of contacts per ligand
+        self.CC_per_lig_pp_one_fourth_cutoff_contacts = []
+        self.CC_per_lig_pp_one_half_cutoff_contacts = []
+        self.CC_per_lig_pp_three_fourths_cutoff_contacts = []
+        self.CC_per_lig_pn_one_fourth_cutoff_contacts = []
+        self.CC_per_lig_pn_one_half_cutoff_contacts = []
+        self.CC_per_lig_pn_three_fourths_cutoff_contacts = []
+        self.CC_per_lig_np_one_fourth_cutoff_contacts = []
+        self.CC_per_lig_np_one_half_cutoff_contacts = []
+        self.CC_per_lig_np_three_fourths_cutoff_contacts = []
+        self.CC_per_lig_nn_one_fourth_cutoff_contacts = []
+        self.CC_per_lig_nn_one_half_cutoff_contacts = []
+        self.CC_per_lig_nn_three_fourths_cutoff_contacts = []
 
 
 
@@ -1458,12 +1485,34 @@ class CTCT:
         
     def count_contacts( self, cutoff ):
         # must have already found all residues within the activesite
-        # ligand to protein!!
+        # counted as ligand to protein!!
         self.polar_polar = 0
         self.polar_nonpolar = 0
         self.nonpolar_polar = 0
         self.nonpolar_nonpolar = 0
         self.unk_contact = 0
+        
+        # determine different proportions of the cutoff distance
+        one_fourth_cutoff = round( float( cutoff ) * 0.25, 3 )
+        one_half_cutoff = round( float( cutoff ) * 0.50, 3 )
+        three_fourths_cutoff = round( float( cutoff ) * 0.75, 3 )
+        
+        # holds all contact counts within an arbitrary density within the cutoff distance
+        self.polar_polar_contacts_within_one_fourth_of_cutoff = 0
+        self.polar_nonpolar_contacts_within_one_fourth_of_cutoff = 0
+        self.nonpolar_polar_contacts_within_one_fourth_of_cutoff = 0
+        self.nonpolar_nonpolar_contacts_within_one_fourth_of_cutoff = 0
+
+        self.polar_polar_contacts_within_one_half_of_cutoff = 0
+        self.polar_nonpolar_contacts_within_one_half_of_cutoff = 0
+        self.nonpolar_polar_contacts_within_one_half_of_cutoff = 0
+        self.nonpolar_nonpolar_contacts_within_one_half_of_cutoff = 0
+        
+        self.polar_polar_contacts_within_three_fourths_of_cutoff = 0
+        self.polar_nonpolar_contacts_within_three_fourths_of_cutoff = 0
+        self.nonpolar_polar_contacts_within_three_fourths_of_cutoff = 0
+        self.nonpolar_nonpolar_contacts_within_three_fourths_of_cutoff = 0
+        
         # ligxyz_proxyz xyz coordinates unique for every atom, best way to collect unique contacts made
         self.uniq_contact_list = []
         
@@ -1474,12 +1523,28 @@ class CTCT:
             self.CC_per_lig_lig_atms.append( len( self.ligand_dict[ uniq_lig_name ] ) )
             self.CC_per_lig_activesite_atms.append( len( self.activesite_lig_pro_atms_dict[ uniq_lig_name ] ) )
             
-            # make empty counters
+            # make empty counters - used for counting contacts per ligand
             lig_polar_polar = 0
             lig_polar_nonpolar = 0
             lig_nonpolar_polar = 0
             lig_nonpolar_nonpolar = 0
             lig_unk_contact = 0
+            
+            # make empty counters - used for counting density contacts per ligand
+            polar_polar_contacts_within_one_fourth_of_cutoff = 0
+            polar_nonpolar_contacts_within_one_fourth_of_cutoff = 0
+            nonpolar_polar_contacts_within_one_fourth_of_cutoff = 0
+            nonpolar_nonpolar_contacts_within_one_fourth_of_cutoff = 0
+            
+            polar_polar_contacts_within_one_half_of_cutoff = 0
+            polar_nonpolar_contacts_within_one_half_of_cutoff = 0
+            nonpolar_polar_contacts_within_one_half_of_cutoff = 0
+            nonpolar_nonpolar_contacts_within_one_half_of_cutoff = 0
+            
+            polar_polar_contacts_within_three_fourths_of_cutoff = 0
+            polar_nonpolar_contacts_within_three_fourths_of_cutoff = 0
+            nonpolar_polar_contacts_within_three_fourths_of_cutoff = 0
+            nonpolar_nonpolar_contacts_within_three_fourths_of_cutoff = 0
             
             # for every ligand residue
             for lig_pdb_line in self.ligand_dict[ uniq_lig_name ]:
@@ -1499,50 +1564,98 @@ class CTCT:
                     pro_xyz_str = str( x_pro ) + '_' + str( y_pro ) + '_' + str( z_pro )
                     
                     # check atomic distance
-                    if self.calc_distance( lig_xyz, pro_xyz ) < cutoff:
+                    contact_distance = self.calc_distance( lig_xyz, pro_xyz )
+                    if contact_distance < cutoff:
                         # check to see that this contact has not yet been counted
-                       uniq_contact = lig_xyz_str + '.' + pro_xyz_str
-                       if uniq_contact not in self.uniq_contact_list:
-                           # append unique contact to list
-                           self.uniq_contact_list.append( uniq_contact )
-                           
-                           # check contact type
-                           if lig_pdb_line.element() in polar_atoms or lig_pdb_line.element() in metal_list:
-                               # polar polar
-                               if pro_pdb_line.element() in polar_atoms or pro_pdb_line.element() in metal_list:
-                                   lig_polar_polar += 1
-                                   
-                               # polar nonpolar
-                               elif pro_pdb_line.element() in nonpolar_atoms:
-                                   lig_polar_nonpolar += 1
-                                   
-                               # unknown
-                               else:
-                                   lig_unk_contact += 1
-                                   
-                           elif lig_pdb_line.element() in nonpolar_atoms:
-                               # nonpolar polar
-                               if pro_pdb_line.element() in polar_atoms or pro_pdb_line.element() in metal_list:
-                                   lig_nonpolar_polar += 1
-                                   
-                               # nonpolar nonpolar
-                               elif pro_pdb_line.element() in nonpolar_atoms:
-                                   lig_nonpolar_nonpolar += 1
-                               
-                               # unknown
-                               else:
-                                   lig_unk_contact += 1
-                                   
-                           # both unknown
-                           else:
-                               lig_unk_contact += 1
+                        uniq_contact = lig_xyz_str + '.' + pro_xyz_str
+                        if uniq_contact not in self.uniq_contact_list:
+                            # append unique contact to list
+                            self.uniq_contact_list.append( uniq_contact )
                             
-            # append this info the per ligand data frame lists
+                            # check contact type
+                            if lig_pdb_line.element() in polar_atoms or lig_pdb_line.element() in metal_list:
+                                # polar polar
+                                if pro_pdb_line.element() in polar_atoms or pro_pdb_line.element() in metal_list:
+                                    lig_polar_polar += 1
+                                    
+                                    # determine density count
+                                    if contact_distance <= one_fourth_cutoff:
+                                        polar_polar_contacts_within_one_fourth_of_cutoff += 1 
+                                    elif contact_distance <= one_half_cutoff:
+                                        polar_polar_contacts_within_one_half_of_cutoff += 1
+                                    elif contact_distance <= three_fourths_cutoff:
+                                        polar_polar_contacts_within_three_fourths_of_cutoff += 1
+                                
+                                # polar nonpolar
+                                elif pro_pdb_line.element() in nonpolar_atoms:
+                                    lig_polar_nonpolar += 1
+                                   
+                                    # determine density count
+                                    if contact_distance <= one_fourth_cutoff:
+                                        polar_nonpolar_contacts_within_one_fourth_of_cutoff += 1 
+                                    elif contact_distance <= one_half_cutoff:
+                                        polar_nonpolar_contacts_within_one_half_of_cutoff += 1
+                                    elif contact_distance <= three_fourths_cutoff:
+                                        polar_nonpolar_contacts_within_three_fourths_of_cutoff += 1
+                                
+                                # unknown
+                                else:
+                                    lig_unk_contact += 1
+                                   
+                            elif lig_pdb_line.element() in nonpolar_atoms:
+                                # nonpolar polar
+                                if pro_pdb_line.element() in polar_atoms or pro_pdb_line.element() in metal_list:
+                                    lig_nonpolar_polar += 1
+                                   
+                                    # determine density count
+                                    if contact_distance <= one_fourth_cutoff:
+                                        nonpolar_polar_contacts_within_one_fourth_of_cutoff += 1 
+                                    elif contact_distance <= one_half_cutoff:
+                                        nonpolar_polar_contacts_within_one_half_of_cutoff += 1
+                                    elif contact_distance <= three_fourths_cutoff:
+                                        nonpolar_polar_contacts_within_three_fourths_of_cutoff += 1
+                                
+                                # nonpolar nonpolar
+                                elif pro_pdb_line.element() in nonpolar_atoms:
+                                    lig_nonpolar_nonpolar += 1
+                                    
+                                    # determine density count
+                                    if contact_distance <= one_fourth_cutoff:
+                                        nonpolar_nonpolar_contacts_within_one_fourth_of_cutoff += 1 
+                                    elif contact_distance <= one_half_cutoff:
+                                        nonpolar_nonpolar_contacts_within_one_half_of_cutoff += 1
+                                    elif contact_distance <= three_fourths_cutoff:
+                                        nonpolar_nonpolar_contacts_within_three_fourths_of_cutoff += 1
+                                
+                                # unknown
+                                else:
+                                    lig_unk_contact += 1
+                                   
+                            # both unknown
+                            else:
+                                lig_unk_contact += 1
+                                
+            # append this info to the per ligand data frame lists
             self.CC_per_lig_pp_contacts.append( lig_polar_polar )
             self.CC_per_lig_pn_contacts.append( lig_polar_nonpolar )
             self.CC_per_lig_np_contacts.append( lig_nonpolar_polar )
             self.CC_per_lig_nn_contacts.append( lig_nonpolar_nonpolar )
             self.CC_per_lig_unk_contacts.append( lig_unk_contact )
+            
+            # append this info to the per ligand within density data frame lists
+            self.CC_per_lig_pp_one_fourth_cutoff_contacts.append( polar_polar_contacts_within_one_fourth_of_cutoff ) 
+            self.CC_per_lig_pp_one_half_cutoff_contacts.append( polar_polar_contacts_within_one_half_of_cutoff )
+            self.CC_per_lig_pp_three_fourths_cutoff_contacts.append( polar_polar_contacts_within_three_fourths_of_cutoff )
+            self.CC_per_lig_pn_one_fourth_cutoff_contacts.append( polar_nonpolar_contacts_within_one_fourth_of_cutoff )
+            self.CC_per_lig_pn_one_half_cutoff_contacts.append( polar_nonpolar_contacts_within_one_half_of_cutoff )
+            self.CC_per_lig_pn_three_fourths_cutoff_contacts.append( polar_nonpolar_contacts_within_three_fourths_of_cutoff )
+            self.CC_per_lig_np_one_fourth_cutoff_contacts.append( nonpolar_polar_contacts_within_one_fourth_of_cutoff )
+            self.CC_per_lig_np_one_half_cutoff_contacts.append( nonpolar_polar_contacts_within_one_half_of_cutoff )
+            self.CC_per_lig_np_three_fourths_cutoff_contacts.append( nonpolar_polar_contacts_within_three_fourths_of_cutoff )
+            self.CC_per_lig_nn_one_fourth_cutoff_contacts.append( nonpolar_nonpolar_contacts_within_one_fourth_of_cutoff )
+            self.CC_per_lig_nn_one_half_cutoff_contacts.append( nonpolar_nonpolar_contacts_within_one_half_of_cutoff )
+            self.CC_per_lig_nn_three_fourths_cutoff_contacts.append( nonpolar_nonpolar_contacts_within_three_fourths_of_cutoff )
+            
             
             # add the counts for this particular ligand to the total count
             self.polar_polar += lig_polar_polar
@@ -1550,6 +1663,22 @@ class CTCT:
             self.nonpolar_polar += lig_nonpolar_polar
             self.nonpolar_nonpolar += lig_nonpolar_nonpolar
             self.unk_contact += lig_unk_contact
+            
+            # add the density counts for this particular ligand to the total count
+            self.polar_polar_contacts_within_one_fourth_of_cutoff += polar_polar_contacts_within_one_fourth_of_cutoff
+            self.polar_nonpolar_contacts_within_one_fourth_of_cutoff += polar_nonpolar_contacts_within_one_fourth_of_cutoff
+            self.nonpolar_polar_contacts_within_one_fourth_of_cutoff += nonpolar_polar_contacts_within_one_fourth_of_cutoff
+            self.nonpolar_nonpolar_contacts_within_one_fourth_of_cutoff += nonpolar_nonpolar_contacts_within_one_fourth_of_cutoff
+            
+            self.polar_polar_contacts_within_one_half_of_cutoff += polar_polar_contacts_within_one_half_of_cutoff
+            self.polar_nonpolar_contacts_within_one_half_of_cutoff += polar_nonpolar_contacts_within_one_half_of_cutoff
+            self.nonpolar_polar_contacts_within_one_half_of_cutoff += nonpolar_polar_contacts_within_one_half_of_cutoff
+            self.nonpolar_nonpolar_contacts_within_one_half_of_cutoff += nonpolar_nonpolar_contacts_within_one_half_of_cutoff
+            
+            self.polar_polar_contacts_within_three_fourths_of_cutoff += polar_polar_contacts_within_three_fourths_of_cutoff
+            self.polar_nonpolar_contacts_within_three_fourths_of_cutoff += polar_nonpolar_contacts_within_three_fourths_of_cutoff
+            self.nonpolar_polar_contacts_within_three_fourths_of_cutoff += nonpolar_polar_contacts_within_three_fourths_of_cutoff
+            self.nonpolar_nonpolar_contacts_within_three_fourths_of_cutoff += nonpolar_nonpolar_contacts_within_three_fourths_of_cutoff
             
             
         # store all data in global list
@@ -1563,6 +1692,19 @@ class CTCT:
         self.CC_nn_contacts.append( self.nonpolar_nonpolar )
         self.CC_unk_contacts.append( self.unk_contact )
         
+        self.CC_pp_one_fourth_cutoff_contacts.append( self.polar_polar_contacts_within_one_fourth_of_cutoff )
+        self.CC_pp_one_half_cutoff_contacts.append( self.polar_polar_contacts_within_one_half_of_cutoff )
+        self.CC_pp_three_fourths_cutoff_contacts.append( self.polar_polar_contacts_within_three_fourths_of_cutoff )
+        self.CC_pn_one_fourth_cutoff_contacts.append( self.polar_nonpolar_contacts_within_one_fourth_of_cutoff )
+        self.CC_pn_one_half_cutoff_contacts.append( self.polar_nonpolar_contacts_within_one_half_of_cutoff )
+        self.CC_pn_three_fourths_cutoff_contacts.append( self.polar_nonpolar_contacts_within_three_fourths_of_cutoff )
+        self.CC_np_one_fourth_cutoff_contacts.append( self.nonpolar_polar_contacts_within_one_fourth_of_cutoff )
+        self.CC_np_one_half_cutoff_contacts.append( self.nonpolar_polar_contacts_within_one_half_of_cutoff )
+        self.CC_np_three_fourths_cutoff_contacts.append( self.nonpolar_polar_contacts_within_three_fourths_of_cutoff )
+        self.CC_nn_one_fourth_cutoff_contacts.append( self.nonpolar_nonpolar_contacts_within_one_fourth_of_cutoff )
+        self.CC_nn_one_half_cutoff_contacts.append( self.nonpolar_nonpolar_contacts_within_one_half_of_cutoff )
+        self.CC_nn_three_fourths_cutoff_contacts.append( self.nonpolar_nonpolar_contacts_within_three_fourths_of_cutoff )
+
 
 
 
