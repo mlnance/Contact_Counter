@@ -2,6 +2,23 @@
 __author__ = "morganlnance"
 
 
+###########################
+#### PROGRAM ARGUMENTS ####
+###########################
+
+import argparse
+parser = argparse.ArgumentParser(description="Use Python to count contacts.")
+parser.add_argument("pdb_name_list", help="a file of the pdbs to be analyzed")
+parser.add_argument("--ignore_glycosylated_proteins", "-i", action="store_true", help="do you want to skip PDBs that have a covalently attached HETATM group? This is most likely a glycan")
+parser.add_argument("--cutoff", "-c", type=int, default=5, help="how big do you want the activesite cutoff to be, in angstroms? default = 5")
+parser.add_argument("--heavy_atoms", "-ha", type=int, default=10, help="how many heavy atoms does a HETATM residue need to be considered a ligand? default = 10")
+parser.add_argument("--download_pdbs", "-d", action="store_true", help="do you need to download the pdbs from the database?")
+parser.add_argument("--keep_cifs", "-kc", action="store_true", help="do you want to keep the cif files you download?")
+parser.add_argument("--keep_pdbs", "-kp", action="store_true", help="do you want to keep the pdbs you download?")
+parser.add_argument("--keep_clean_pdbs", "-kcp", action="store_true", help="do you want to keep the cleaned-up version of the pdbs you are working with?")
+input_args = parser.parse_args()
+
+
 
 #################
 #### IMPORTS ####
@@ -19,24 +36,6 @@ except ImportError:
     print "Trouble with imports - do you have pandas? Exiting"
     sys.exit()
 import non_rosetta_count_contacts as contact
-
-
-
-###########################
-#### PROGRAM ARGUMENTS ####
-###########################
-
-import argparse
-parser = argparse.ArgumentParser(description="Use Python to count contacts.")
-parser.add_argument("pdb_name_list", help="a file of the pdbs to be analyzed")
-parser.add_argument("--ignore_glycosylated_proteins", "-i", action="store_true", help="do you want to skip PDBs that have a covalently attached HETATM group? This is most likely a glycan")
-parser.add_argument("--cutoff", "-c", type=int, default=5, help="how big do you want the activesite cutoff to be, in angstroms? default = 5")
-parser.add_argument("--heavy_atoms", "-ha", type=int, default=10, help="how many heavy atoms does a HETATM residue need to be considered a ligand? default = 10")
-parser.add_argument("--download_pdbs", "-d", action="store_true", help="do you need to download the pdbs from the database?")
-parser.add_argument("--keep_cifs", "-kc", action="store_true", help="do you want to keep the cif files you download?")
-parser.add_argument("--keep_pdbs", "-kp", action="store_true", help="do you want to keep the pdbs you download?")
-parser.add_argument("--keep_clean_pdbs", "-kcp", action="store_true", help="do you want to keep the cleaned-up version of the pdbs you are working with?")
-input_args = parser.parse_args()
 
 
 
