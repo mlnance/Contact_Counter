@@ -98,7 +98,7 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
                         # if splitting the pdb was successful ( there is a ligand, no AA as ligand, no metal as ligand, no UNK residues, etc. )
                         if response:
                             # get ligand residue numbers from pose
-                            response = ctct.get_ligand_residues( heavy_atoms, cutoff, keep_clean_pdbs )
+                            response = ctct.get_ligand_residues( heavy_atoms, cutoff, pdb, keep_clean_pdbs )
                             
                             # if a ligand remains after the heavy atom cutoff
                             if response:

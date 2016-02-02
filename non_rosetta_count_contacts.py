@@ -1032,7 +1032,7 @@ class CTCT:
 
     
 
-    def get_ligand_residues( self, heavy_atoms, cutoff, keep_clean_pdbs ):
+    def get_ligand_residues( self, heavy_atoms, cutoff, pdb_name, keep_clean_pdbs ):
         # dictionary -- key: lig residue number, value: hetatm lines
         self.ligand_dict = {}
         
@@ -1145,16 +1145,32 @@ class CTCT:
                 # create and open a XXXX.clean.pdb file name in the pdb directory
                 cur_dir = os.getcwd() + '/'
                 pdb_dir = cur_dir + 'pdbs/'
+                
+                # get the four letter code in case a file path was given
+                pdb_name = pdb_name.split( '/' )[-1][:4]
                 clean_pdb_filename = pdb_dir + pdb_name + ".clean.pdb"
                 
+                # put the ATOM and HETATM lines into a list to be sorted on atom number
+                atom_num_pdb_lines = {}
+                for atom_res_key in self.protein.keys():
+                    for atom_line in self.protein[ atom_res_key ]:
+                        atom_num_pdb_lines[ atom_line.atom_num() ] = atom_line.line
+                for hetatm_res_key in self.ligand.keys():
+                    for hetatm_line in self.ligand[ hetatm_res_key ]:
+                        atom_num_pdb_lines[ hetatm_line.atom_num() ] = hetatm_line.line
+                        
+                # get the atom numbers in order from the dictionary
+                ordered_atom_numbers = atom_num_pdb_lines.keys()
+                ordered_atom_numbers.sort()
+                
+                # order the PDB lines based on their atom number
+                ordered_pdb_lines = []
+                for atom_num_key in ordered_atom_numbers:
+                    ordered_pdb_lines.append( atom_num_pdb_lines[ atom_num_key ] )
+
                 # write the protein and ligand lines that are kept after this round of splitting
                 with open( clean_pdb_filename, 'wb' ) as pdb_fh:
-                    for atom_key in self.protein.keys():
-                        for atom_line in self.protein[ atom_key ]:
-                            pdb_fh.write( atom_line.line )
-                    for hetatm_key in self.ligand.keys():
-                        for hetatm_line in self.ligand[ hetatm_key ]:
-                            pdb_fh.write( hetatm_line.line )
+                    pdb_fh.writelines( ordered_pdb_lines )
                             
         return True
         
