@@ -1139,23 +1139,23 @@ class CTCT:
                     self.hetatm_lines.append( pdb_line.line )
             
         
-        # make a clean PDB file that can be kept at the user's request to see if the program is doing what they think it is
-        # only need to make the clean file if the user wants to keep it
-        if keep_clean_pdbs:
-            # create and open a XXXX.clean.pdb file name in the pdb directory
-            cur_dir = os.getcwd() + '/'
-            pdb_dir = cur_dir + 'pdbs/'
-            clean_pdb_filename = pdb_dir + pdb_name + ".clean.pdb"
-            
-            # write the protein and ligand lines that are kept after this round of splitting
-            with open( clean_pdb_filename, 'wb' ) as pdb_fh:
-                for atom_key in self.protein.keys():
-                    for atom_line in self.protein[ atom_key ]:
-                        pdb_fh.write( atom_line.line )
-                for hetatm_key in self.ligand.keys():
-                    for hetatm_line in self.ligand[ hetatm_key ]:
-                        pdb_fh.write( hetatm_line.line )
-                        
+            # make a clean PDB file that can be kept at the user's request to see if the program is doing what they think it is
+            # only need to make the clean file if the user wants to keep it
+            if keep_clean_pdbs:
+                # create and open a XXXX.clean.pdb file name in the pdb directory
+                cur_dir = os.getcwd() + '/'
+                pdb_dir = cur_dir + 'pdbs/'
+                clean_pdb_filename = pdb_dir + pdb_name + ".clean.pdb"
+                
+                # write the protein and ligand lines that are kept after this round of splitting
+                with open( clean_pdb_filename, 'wb' ) as pdb_fh:
+                    for atom_key in self.protein.keys():
+                        for atom_line in self.protein[ atom_key ]:
+                            pdb_fh.write( atom_line.line )
+                    for hetatm_key in self.ligand.keys():
+                        for hetatm_line in self.ligand[ hetatm_key ]:
+                            pdb_fh.write( hetatm_line.line )
+                            
         return True
         
         
