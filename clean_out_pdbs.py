@@ -175,6 +175,30 @@ class PDB_line:
         return str( self.line[78:80].replace( ' ', '' ) )
 
 
+class TER_line:
+    def __init__(self, line):
+        # only works for TER lines
+        # line locations taken from the PDB databases's pdb format description page
+        # ftp://ftp.wwpdb.org/pub/pdb/doc/format_descriptions/Format_v33_Letter.pdf
+        # page 192
+        self.line = line.rstrip( '/n' )
+        
+    def serial_number(self):
+        return int( self.line[ 6:11 ].replace( ' ', '' ) )
+        
+    def res_name(self):
+        return str( self.line[ 17:20 ].replace( ' ', '' ) )
+        
+    def res_chain(self):
+        return str( self.line[ 21:22 ] )
+        
+    def res_seq(self):
+        return int( self.line[ 22:26 ].replace( ' ', '' ) )
+        
+    def i_code(self):
+        return str( self.line[ 26:27 ] )
+
+
 
 class LINK_line:
     def __init__(self, line):
@@ -185,43 +209,43 @@ class LINK_line:
         self.line = line.rstrip( '/n' )
         
     def atom_name1(self):
-        return str( self.line[ 12:16 ] )
+        return str( self.line[ 12:16 ].replace( ' ', '' ) )
     
     def alt_loc1(self):
-        return str( self.line[ 16:17] )
+        return str( self.line[ 16:17].replace( ' ', '' ) )
     
     def res1_name(self):
-        return str( self.line[17:20] )
+        return str( self.line[17:20].replace( ' ', '' ) )
     
     def res1_chain(self):
-        return str( self.line[21:22] )
+        return str( self.line[21:22].replace( ' ', '' ) )
     
     def res1_seq(self):
-        return int( self.line[22:26] )
+        return int( self.line[22:26].replace( ' ', '' ) )
     
     def i_code1(self):
-        return str( self.line[26:27] )
+        return str( self.line[26:27].replace( ' ', '' ) )
     
     def atom_name2(self):
-        return str( self.line[42:46] )
+        return str( self.line[42:46].replace( ' ', '' ) )
     
     def alt_loc2(self):
-        return str( self.line[46:47] )
+        return str( self.line[46:47].replace( ' ', '' ) )
     
     def res2_name(self):
-        return str( self.line[47:50] )
+        return str( self.line[47:50].replace( ' ', '' ) )
     
     def res2_chain(self):
-        return str( self.line[51:52] )
+        return str( self.line[51:52].replace( ' ', '' ) )
     
     def res2_seq(self):
-        return int( self.line[52:56] )
+        return int( self.line[52:56].replace( ' ', '' ) )
     
     def i_code2(self):
-        return str( self.line[56:57] )
+        return str( self.line[56:57].replace( ' ', '' ) )
     
     def link_dist(self):
-        return int( self.line[73:78] )
+        return int( self.line[73:78].replace( ' ', '' ) )
 
 
 
@@ -417,6 +441,7 @@ class Clean:
         # instantiate lists that will hold relevant PDB data
         self.protein_lines = []
         self.hetatm_lines = []
+        self.ter_lines = []
         self.link_records = []
         self.protein = {}
         self.ligand = {}        
@@ -702,6 +727,11 @@ class Clean:
                 # store LINK records used for determining any covalently bound ligands
                 link_line = LINK_line( line )
                 self.link_records.append( link_line )
+                
+            if line[0:3] == "TER":
+                # store TER lines to write to a clean PDB file
+                ter_line = TER_line( line )
+                self.ter_lines.append( ter_line )
             
             if line[0:4] == "ATOM":
                 # store the protein lines
@@ -964,7 +994,7 @@ class Clean:
         pdb_name = pdb_filename.split( '/' )[-1][:4]
         clean_pdb_filename = pdb_dir + pdb_name + ".clean.pdb"
         
-        # put the ATOM and HETATM lines into a list to be sorted on atom number
+        # put the ATOM, HETATM, and TER lines into a list to be sorted on atom number
         atom_num_pdb_lines = {}
         for atom_res_key in self.protein.keys():
             for atom_line in self.protein[ atom_res_key ]:
@@ -972,6 +1002,9 @@ class Clean:
         for hetatm_res_key in self.ligand.keys():
             for hetatm_line in self.ligand[ hetatm_res_key ]:
                 atom_num_pdb_lines[ hetatm_line.atom_num() ] = hetatm_line.line
+        for ter_line in self.ter_lines:
+            # serial_number == atom_number
+            atom_num_pdb_lines[ ter_line.serial_number() ] = ter_line.line
                         
         # get the atom numbers in order from the dictionary
         ordered_atom_numbers = atom_num_pdb_lines.keys()
