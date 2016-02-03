@@ -60,10 +60,8 @@ def go( pdb_name_list, ignore_glycosylated_proteins, heavy_atoms, download_pdbs,
     unable_to_download_pdb_names = []
     
     # instantiate an instance of the Clean object
+    # this also instantiates the data holders for PDBs that don't pass the qualifications
     clean = clean_out_pdbs.Clean()
-    
-    # instantiate the data holders that will hold the data for all of the PDBs
-    clean.instantiate_data_holders()
     
     # for each PDB in the list, run the contact counter
     for pdb in pdb_names_from_list:

@@ -403,6 +403,14 @@ class Clean:
     def __init__( self ):
         self.working_dir = os.getcwd()
         
+        # make on/off switch for skipping covalently bound ligand residues
+        self.glycosylated_proteins = []
+        
+        # hold the name of PDBs that contain undesirables like multiple models or an unknown HETATM
+        self.unknown_res_pdb_names = []
+        self.multiple_models_pdb_names = []
+        self.deuterium_pdb_names = []
+        
         
 
     def instantiate_pdb_info_holders( self ):
@@ -420,19 +428,6 @@ class Clean:
         # ligand data holders for print PDB information to screen
         self.num_ligand_residues = 0
         self.num_ligand_atoms = 0
-        
-        return True
-
-
-        
-    def instantiate_data_holders( self ):        
-        # make on/off switch for skipping covalently bound ligand residues
-        self.glycosylated_proteins = []
-        
-        # hold the name of PDBs that contain undesirables like multiple models or an unknown HETATM
-        self.unknown_res_pdb_names = []
-        self.multiple_models_pdb_names = []
-        self.deuterium_pdb_names = []
         
         return True
 
