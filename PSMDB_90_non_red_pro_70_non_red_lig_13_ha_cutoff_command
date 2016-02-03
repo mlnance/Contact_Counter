@@ -1,1 +1,1 @@
-run run_count_contacts.py PSMDB_90_non_red_pro_70_non_red_lig_13_ha_cutoff_list -d -i -ha=13 -c=5
+run run_clean_out_pdbs.py PSMDB_90_non_red_pro_70_non_red_lig_13_ha_cutoff_list --download_pdbs --ignore_glycosylated_proteins --heavy_atoms=13 --keep_clean_pdbs
