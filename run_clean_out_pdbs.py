@@ -152,25 +152,55 @@ def go( pdb_name_list, ignore_glycosylated_proteins, heavy_atoms, download_pdbs,
     filename = "PDB_files_that_were_skipped.txt"
     with open( filename, 'wb' ) as fh:
         fh.write( "## PDBs unable to be downloaded\n" )
-        fh.writelines( unable_to_download_pdb_names )
+        for line in unable_to_download_pdb_names:
+            fh.write( line )
+            fh.write( '\n' )
         fh.write( "\n\n" )
 
         fh.write( "## PDBs with covalently attached HETATMs\n" )
-        fh.writelines( clean.glycosylated_proteins )
+        for line in clean.glycosylated_proteins:
+            fh.write( line )
+            fh.write( '\n'  )
         fh.write( "\n\n" )
-    
+        
         fh.write( "## PDBs with an unknown residues\n" )
-        fh.writelines( clean.unknown_res_pdb_names )
+        for line in clean.unknown_res_pdb_names:
+            fh.write( line )
+            fh.write( '\n'  )
         fh.write( "\n\n" )
 
         fh.write( "## PDBs with deuterium\n" )
-        fh.writelines( clean.deuterium_pdb_names )
+        for line in clean.deuterium_pdb_names:
+            fh.write( line )
+            fh.write( '\n'  )
         fh.write( "\n\n" )
 
         fh.write( "## PDBs with multiple MODELs\n" )
-        fh.writelines( clean.multiple_models_pdb_names )
-        fh.write( "\n\n" )
+        for line in clean.multiple_models_pdb_names:
+            fh.write( line )
+            fh.write( '\n'  )
         
+    # write out the unique three letter codes for ligands that were kept
+    filename = "ligand_residues_that_were_kept.txt"
+    with open( filename, 'wb' ) as fh:
+        for line in clean.uniq_lig_three_letter_codes_kept:
+            fh.write( line )
+            fh.write( '\n'  )
+        
+    # write out the unique three letter codes for ligands that were skipped due to size or linkage
+    filename = "ligand_residues_that_were_skipped.txt"
+    with open( filename, 'wb' ) as fh:
+        fh.write( "## ligand residues that were smaller than %s heavy atoms\n" %heavy_atoms )
+        for line in clean.uniq_lig_three_letter_codes_skipped_size:
+            fh.write( line )
+            fh.write( '\n'  )
+        fh.write( '\n\n' )
+        
+        fh.write( "## ligand residues that were skipped because they were linked to the protein\n" )
+        for line in clean.uniq_lig_three_letter_codes_skipped_link:
+            fh.write( line )
+            fh.write( '\n'  )
+    
     print "\nDone! :D\n"
 
 

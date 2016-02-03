@@ -435,6 +435,11 @@ class Clean:
         self.multiple_models_pdb_names = []
         self.deuterium_pdb_names = []
         
+        # hold unique ligand residue names for post-analysis
+        self.uniq_lig_three_letter_codes_kept = []
+        self.uniq_lig_three_letter_codes_skipped_size = []
+        self.uniq_lig_three_letter_codes_skipped_link = []
+        
         
 
     def instantiate_pdb_info_holders( self ):
@@ -786,9 +791,7 @@ class Clean:
                 lig_res_name = pdb_line.res_name()
                 
                 # check what each residue is by its name ( water, unknown, or a ligand etc )
-                if lig_res_name == "HOH":
-                    water.append( line )
-                elif lig_res_name == "DOD":
+                if lig_res_name == "HOH" or lig_res_name == "DOD":
                     water.append( line )
                 elif lig_res_name in AA_list:
                     AA_lig.append( line )
@@ -931,10 +934,15 @@ class Clean:
                     if remove_this_lig in self.ligand.keys():
                         self.ligand.pop( remove_this_lig )
                         
-                    # if there is no ligand after removing glycans, skip
-                    if len( self.ligand.keys() ) == 0:
-                        print "## Skipping", pdb_name, "because it did not have a ligand of interest after removing glycans ##"
-                        return False
+                        # store the unique three letter code of the ligand residues that were skipped
+                        three_letter_code = remove_this_lig.split( '_' )[0]
+                        if three_letter_code not in self.uniq_lig_three_letter_codes_skipped_link:
+                            self.uniq_lig_three_letter_codes_skipped_link.append( three_letter_code )
+                        
+                # if there is no ligand after removing glycans, skip
+                if len( self.ligand.keys() ) == 0:
+                    print "## Skipping", pdb_name, "because it did not have a ligand of interest after removing glycans ##"
+                    return False
                 
         return True
     
@@ -947,9 +955,21 @@ class Clean:
         
         # this makes a new dictionary of ligands only if there are more than the specified number of heavy atoms in the lig residue
         for uniq_lig in self.ligand.keys():
+            # keep PDB based on its unique name and corresponding HETATM lines
             if len( self.ligand[ uniq_lig ] ) >= heavy_atoms:
                 self.ligands_with_heavy_atom_cutoff[ uniq_lig ] = self.ligand[ uniq_lig ]
                 
+                # keep unique three letter codes for ligand residues kept
+                three_letter_code = uniq_lig.split( '_' )[0]
+                if three_letter_code not in self.uniq_lig_three_letter_codes_kept:
+                    self.uniq_lig_three_letter_codes_kept.append( three_letter_code )
+            else:                
+                # otherwise it didn't pass the size cutoff
+                # so keep unique three letter codes for ligand residues skipped 
+                three_letter_code = uniq_lig.split( '_' )[0]
+                if three_letter_code not in self.uniq_lig_three_letter_codes_skipped_size:
+                    self.uniq_lig_three_letter_codes_skipped_size.append( three_letter_code )
+               
         # get number of ligand residues
         self.num_ligand_residues = len( self.ligands_with_heavy_atom_cutoff.keys() )
         
