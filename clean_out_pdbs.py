@@ -615,10 +615,10 @@ class Clean:
     
     def determine_covalently_bound_ligands( self, pdb_filename, unique_protein_names, unique_hetatm_names, link_records ):
         # download the mmcif file
-        cif_filename = download_cif( pdb_filename[:4] )
+        cif_filename = self.download_cif( pdb_filename[:4] )
         
         # get _struct_conn lines to determine HETATM connections
-        _struct_conn = self.cif_struct_conn_lines( cif_filename )
+        _struct_conn = cif_struct_conn_lines( cif_filename )
         
         # check to see if check_if_has_mmcif_dict() by using return value
         response = _struct_conn.check_if_has_mmcif_dict()
