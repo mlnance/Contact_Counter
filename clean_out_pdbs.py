@@ -650,6 +650,7 @@ class Clean:
         if response is True:
             # unique name = res1name_res1chain_res1num+res2name_res2chain_res2num
             unique_partner_names = _struct_conn.get_uniq_connection_names()
+            print unique_partner_names
             
             # get list of ligand residues to remove
             remove_these_ligs = self.graph_out_residue_connections( unique_partner_names, unique_protein_names, unique_hetatm_names )
