@@ -19,7 +19,9 @@ print "Loading '%s' dependencies...\n" %__name__
 import sys
 import os
 import shutil
+sys.path.append( "utilities" )
 from line_definitions import *
+from util import download_pdb
 try:
     from colorama import Fore, Style
 except:
