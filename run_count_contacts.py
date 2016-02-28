@@ -110,12 +110,6 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
                                 
                                 # if there is indeed an activesite
                                 if response:
-                                    # get activesite composition
-                                    ctct.get_activesite_AA_composition()
-                                    
-                                    # get activesite composition per ligandresidue
-                                    ctct.get_activesite_AA_composition_per_lig_res()
-                                    
                                     # count contacts
                                     ctct.count_contacts( cutoff )
                                     all_pdb_names.append( pdb.split( '/' )[-1][0:4] )
@@ -197,186 +191,14 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
     else:
         filename = "program_input_"
 
-    # collect AS composition data in a pandas dataframe
-    AS_df = pd.DataFrame()
-    AS_df["PDB"] = ctct.AS_pdb_names
-    AS_df["num_lig_res"] = ctct.AS_lig_res
-    AS_df["num_lig_atoms"] = ctct.AS_lig_atms
-    AS_df["num_lig_nonpolar_atoms"] = ctct.AS_num_ligand_nonpolar_atoms 
-    AS_df["num_lig_polar_atoms"] = ctct.AS_num_ligand_polar_atoms
-    AS_df["num_lig_metal_atoms"] = ctct.AS_num_ligand_metal_atoms
-    AS_df["num_lig_unk_atom_type"] = ctct.AS_num_ligand_unk_atom_types
-    AS_df["num_activesite_res"] = ctct.AS_activesite_res
-    AS_df["num_activesite_atoms"] = ctct.AS_activesite_atms
-    AS_df["num_activesite_nonpolar_atoms"] = ctct.AS_num_activesite_nonpolar_atoms
-    AS_df["num_activesite_polar_atoms"] = ctct.AS_num_activesite_polar_atoms
-    AS_df["num_activesite_unk_atom_type"] = ctct.AS_num_activesite_unk_atom_types
-    AS_df["ALA"] = ctct.ALA
-    AS_df["ALA_%_activesite_composition"] = ctct.percentage_activesite_ALA
-    AS_df["ALA_%_in_full_protein"] = ctct.percentage_tot_ALA
-    AS_df["CYS"] = ctct.CYS
-    AS_df["CYS_%_activesite_composition"] = ctct.percentage_activesite_CYS
-    AS_df["CYS_%_in_full_protein"] = ctct.percentage_tot_CYS
-    AS_df["ASP"] = ctct.ASP
-    AS_df["ASP_%_activesite_composition"] = ctct.percentage_activesite_ASP
-    AS_df["ASP_%_in_full_protein"] = ctct.percentage_tot_ASP
-    AS_df["GLU"] = ctct.GLU
-    AS_df["GLU_%_activesite_composition"] = ctct.percentage_activesite_GLU
-    AS_df["GLU_%_in_full_protein"] = ctct.percentage_tot_GLU
-    AS_df["PHE"] = ctct.PHE
-    AS_df["PHE_%_activesite_composition"] = ctct.percentage_activesite_PHE
-    AS_df["PHE_%_in_full_protein"] = ctct.percentage_tot_PHE
-    AS_df["GLY"] = ctct.GLY
-    AS_df["GLY_%_activesite_composition"] = ctct.percentage_activesite_GLY
-    AS_df["GLY_%_in_full_protein"] = ctct.percentage_tot_GLY
-    AS_df["HIS"] = ctct.HIS
-    AS_df["HIS_%_activesite_composition"] = ctct.percentage_activesite_HIS
-    AS_df["HIS_%_in_full_protein"] = ctct.percentage_tot_HIS
-    AS_df["ILE"] = ctct.ILE
-    AS_df["ILE_%_activesite_composition"] = ctct.percentage_activesite_ILE
-    AS_df["ILE_%_in_full_protein"] = ctct.percentage_tot_ILE
-    AS_df["LYS"] = ctct.LYS
-    AS_df["LYS_%_activesite_composition"] = ctct.percentage_activesite_LYS
-    AS_df["LYS_%_in_full_protein"] = ctct.percentage_tot_LYS
-    AS_df["LEU"] = ctct.LEU
-    AS_df["LEU_%_activesite_composition"] = ctct.percentage_activesite_LEU
-    AS_df["LEU_%_in_full_protein"] = ctct.percentage_tot_LEU
-    AS_df["MET"] = ctct.MET
-    AS_df["MET_%_activesite_composition"] = ctct.percentage_activesite_MET
-    AS_df["MET_%_in_full_protein"] = ctct.percentage_tot_MET
-    AS_df["ASN"] = ctct.ASN
-    AS_df["ASN_%_activesite_composition"] = ctct.percentage_activesite_ASN
-    AS_df["ASN_%_in_full_protein"] = ctct.percentage_tot_ASN
-    AS_df["PRO"] = ctct.PRO
-    AS_df["PRO_%_activesite_composition"] = ctct.percentage_activesite_PRO
-    AS_df["PRO_%_in_full_protein"] = ctct.percentage_tot_PRO
-    AS_df["GLN"] = ctct.GLN
-    AS_df["GLN_%_activesite_composition"] = ctct.percentage_activesite_GLN
-    AS_df["GLN_%_in_full_protein"] = ctct.percentage_tot_GLN
-    AS_df["ARG"] = ctct.ARG
-    AS_df["ARG_%_activesite_composition"] = ctct.percentage_activesite_ARG
-    AS_df["ARG_%_in_full_protein"] = ctct.percentage_tot_ARG
-    AS_df["SER"] = ctct.SER
-    AS_df["SER_%_activesite_composition"] = ctct.percentage_activesite_SER
-    AS_df["SER_%_in_full_protein"] = ctct.percentage_tot_SER
-    AS_df["THR"] = ctct.THR
-    AS_df["THR_%_activesite_composition"] = ctct.percentage_activesite_THR
-    AS_df["THR_%_in_full_protein"] = ctct.percentage_tot_THR
-    AS_df["VAL"] = ctct.VAL
-    AS_df["VAL_%_activesite_composition"] = ctct.percentage_activesite_VAL
-    AS_df["VAL_%_in_full_protein"] = ctct.percentage_tot_VAL
-    AS_df["TRP"] = ctct.TRP
-    AS_df["TRP_%_activesite_composition"] = ctct.percentage_activesite_TRP
-    AS_df["TRP_%_in_full_protein"] = ctct.percentage_tot_TRP
-    AS_df["TYR"] = ctct.TYR
-    AS_df["TYR_%_activesite_composition"] = ctct.percentage_activesite_TYR
-    AS_df["TYR_%_in_full_protein"] = ctct.percentage_tot_TYR
-    
-    print AS_df
-    print "\n\n\n\n"
-    AS_df.to_csv( str( working_dir ) + '/' + filename + "activesite_AA_composition_at_" + str( cutoff ) + "_Ang_cutoff_and_" + str( heavy_atoms ) + "_heavy_atom_ligand.csv", index = 0, index_col = 0 )
-
-    
-    
-    # collect AS composition per ligand residue data in a pandas dataframe
-    AS_per_lig_df = pd.DataFrame()
-    AS_per_lig_df["PDB"] = ctct.AS_pdb_names_per_lig
-    AS_per_lig_df["uniq_lig_res_names"] = ctct.AS_lig_uniq_res_names_per_lig
-    AS_per_lig_df["lig_res_names"] = ctct.AS_lig_res_names_per_lig
-    AS_per_lig_df["num_lig_atoms"] = ctct.AS_lig_atms_per_lig
-    AS_per_lig_df["num_lig_nonpolar_atoms"] = ctct.AS_lig_num_ligand_nonpolar_atoms
-    AS_per_lig_df["num_lig_polar_atoms"] = ctct.AS_lig_num_ligand_polar_atoms
-    AS_per_lig_df["num_lig_metal_atoms"] = ctct.AS_lig_num_ligand_metal_atoms
-    AS_per_lig_df["num_lig_unk_atoms"] = ctct.AS_lig_num_ligand_unk_atoms
-    AS_per_lig_df["num_activesite_res"] = ctct.AS_activesite_res_per_lig
-    AS_per_lig_df["num_activesite_atoms"] = ctct.AS_activesite_atms_per_lig
-    AS_per_lig_df["num_activesite_nonpolar_atoms"] = ctct.AS_lig_num_activesite_nonpolar_atoms
-    AS_per_lig_df["num_activesite_polar_atoms"] = ctct.AS_lig_num_activesite_polar_atoms
-    AS_per_lig_df["ALA"] = ctct.ALA_per_lig
-    AS_per_lig_df["ALA_%_activesite_composition"] = ctct.percentage_activesite_per_lig_ALA
-    AS_per_lig_df["ALA_%_in_full_protein"] = ctct.percentage_tot_per_lig_ALA
-    AS_per_lig_df["CYS"] = ctct.CYS_per_lig
-    AS_per_lig_df["CYS_%_activesite_composition"] = ctct.percentage_activesite_per_lig_CYS
-    AS_per_lig_df["CYS_%_in_full_protein"] = ctct.percentage_tot_per_lig_CYS
-    AS_per_lig_df["ASP"] = ctct.ASP_per_lig
-    AS_per_lig_df["ASP_%_activesite_composition"] = ctct.percentage_activesite_per_lig_ASP
-    AS_per_lig_df["ASP_%_in_full_protein"] = ctct.percentage_tot_per_lig_ASP
-    AS_per_lig_df["GLU"] = ctct.GLU_per_lig
-    AS_per_lig_df["GLU_%_activesite_composition"] = ctct.percentage_activesite_per_lig_GLU
-    AS_per_lig_df["GLU_%_in_full_protein"] = ctct.percentage_tot_per_lig_GLU
-    AS_per_lig_df["PHE"] = ctct.PHE_per_lig
-    AS_per_lig_df["PHE_%_activesite_composition"] = ctct.percentage_activesite_per_lig_PHE
-    AS_per_lig_df["PHE_%_in_full_protein"] = ctct.percentage_tot_per_lig_PHE
-    AS_per_lig_df["GLY"] = ctct.GLY_per_lig
-    AS_per_lig_df["GLY_%_activesite_composition"] = ctct.percentage_activesite_per_lig_GLY
-    AS_per_lig_df["GLY_%_in_full_protein"] = ctct.percentage_tot_per_lig_GLY
-    AS_per_lig_df["HIS"] = ctct.HIS_per_lig
-    AS_per_lig_df["HIS_%_activesite_composition"] = ctct.percentage_activesite_per_lig_HIS
-    AS_per_lig_df["HIS_%_in_full_protein"] = ctct.percentage_tot_per_lig_HIS
-    AS_per_lig_df["ILE"] = ctct.ILE_per_lig
-    AS_per_lig_df["ILE_%_activesite_composition"] = ctct.percentage_activesite_per_lig_ILE
-    AS_per_lig_df["ILE_%_in_full_protein"] = ctct.percentage_tot_per_lig_ILE
-    AS_per_lig_df["LYS"] = ctct.LYS_per_lig
-    AS_per_lig_df["LYS_%_activesite_composition"] = ctct.percentage_activesite_per_lig_LYS
-    AS_per_lig_df["LYS_%_in_full_protein"] = ctct.percentage_tot_per_lig_LYS
-    AS_per_lig_df["LEU"] = ctct.LEU_per_lig
-    AS_per_lig_df["LEU_%_activesite_composition"] = ctct.percentage_activesite_per_lig_LEU
-    AS_per_lig_df["LEU_%_in_full_protein"] = ctct.percentage_tot_per_lig_LEU
-    AS_per_lig_df["MET"] = ctct.MET_per_lig
-    AS_per_lig_df["MET_%_activesite_composition"] = ctct.percentage_activesite_per_lig_MET
-    AS_per_lig_df["MET_%_in_full_protein"] = ctct.percentage_tot_per_lig_MET
-    AS_per_lig_df["ASN"] = ctct.ASN_per_lig
-    AS_per_lig_df["ASN_%_activesite_composition"] = ctct.percentage_activesite_per_lig_ASN
-    AS_per_lig_df["ASN_%_in_full_protein"] = ctct.percentage_tot_per_lig_ASN
-    AS_per_lig_df["PRO"] = ctct.PRO_per_lig
-    AS_per_lig_df["PRO_%_activesite_composition"] = ctct.percentage_activesite_per_lig_PRO
-    AS_per_lig_df["PRO_%_in_full_protein"] = ctct.percentage_tot_per_lig_PRO
-    AS_per_lig_df["GLN"] = ctct.GLN_per_lig
-    AS_per_lig_df["GLN_%_activesite_composition"] = ctct.percentage_activesite_per_lig_GLN
-    AS_per_lig_df["GLN_%_in_full_protein"] = ctct.percentage_tot_per_lig_GLN
-    AS_per_lig_df["ARG"] = ctct.ARG_per_lig
-    AS_per_lig_df["ARG_%_activesite_composition"] = ctct.percentage_activesite_per_lig_ARG
-    AS_per_lig_df["ARG_%_in_full_protein"] = ctct.percentage_tot_per_lig_ARG
-    AS_per_lig_df["SER"] = ctct.SER_per_lig
-    AS_per_lig_df["SER_%_activesite_composition"] = ctct.percentage_activesite_per_lig_SER
-    AS_per_lig_df["SER_%_in_full_protein"] = ctct.percentage_tot_per_lig_SER
-    AS_per_lig_df["THR"] = ctct.THR_per_lig
-    AS_per_lig_df["THR_%_activesite_composition"] = ctct.percentage_activesite_per_lig_THR
-    AS_per_lig_df["THR_%_in_full_protein"] = ctct.percentage_tot_per_lig_THR
-    AS_per_lig_df["VAL"] = ctct.VAL_per_lig
-    AS_per_lig_df["VAL_%_activesite_composition"] = ctct.percentage_activesite_per_lig_VAL
-    AS_per_lig_df["VAL_%_in_full_protein"] = ctct.percentage_tot_per_lig_VAL
-    AS_per_lig_df["TRP"] = ctct.TRP_per_lig
-    AS_per_lig_df["TRP_%_activesite_composition"] = ctct.percentage_activesite_per_lig_TRP
-    AS_per_lig_df["TRP_%_in_full_protein"] = ctct.percentage_tot_per_lig_TRP
-    AS_per_lig_df["TYR"] = ctct.TYR_per_lig
-    AS_per_lig_df["TYR_%_activesite_composition"] = ctct.percentage_activesite_per_lig_TYR
-    AS_per_lig_df["TYR_%_in_full_protein"] = ctct.percentage_tot_per_lig_TYR
-
-    print AS_per_lig_df
-    print "\n\n\n\n"
-    AS_per_lig_df.to_csv( str( working_dir ) + '/' + filename + "activesite_AA_composition_per_ligand_at_" + str( cutoff ) + "_Ang_cutoff_and_" + str( heavy_atoms ) + "_heavy_atom_ligand.csv", index = 0, index_col = 0 )
-            
-    
     # contact counting data
     CC_df = pd.DataFrame()
     CC_df["pdb_names"] = ctct.CC_pdb_names
     CC_df["num_lig_atoms"] = ctct.CC_lig_atms
     CC_df["num_activesite_atms"] = ctct.CC_activesite_atms
-    CC_df["num_pp_contacts_within_1/3_cutoff"] = ctct.CC_pp_one_third_cutoff_contacts
-    CC_df["num_pp_contacts_within_2/3_cutoff"] = ctct.CC_pp_two_thirds_cutoff_contacts
     CC_df["num_pp_contacts_within_cutoff"] = ctct.CC_pp_contacts
-
-    CC_df["num_pn_contacts_within_1/3_cutoff"] = ctct.CC_pn_one_third_cutoff_contacts
-    CC_df["num_pn_contacts_within_2/3_cutoff"] = ctct.CC_pn_two_thirds_cutoff_contacts
     CC_df["num_pn_contacts_within_cutoff"] = ctct.CC_pn_contacts
-
-    CC_df["num_np_contacts_within_1/3_cutoff"] = ctct.CC_np_one_third_cutoff_contacts
-    CC_df["num_np_contacts_within_2/3_cutoff"] = ctct.CC_np_two_thirds_cutoff_contacts
     CC_df["num_np_contacts_within_cutoff"] = ctct.CC_np_contacts
-
-    CC_df["num_nn_contacts_within_1/3_cutoff"] = ctct.CC_nn_one_third_cutoff_contacts
-    CC_df["num_nn_contacts_within_2/3_cutoff"] = ctct.CC_nn_two_thirds_cutoff_contacts
     CC_df["num_nn_contacts_within_cutoff"] = ctct.CC_nn_contacts
     CC_df["num_unk_contacts"] = ctct.CC_unk_contacts
     
@@ -391,20 +213,9 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
     CC_per_lig_df["lig_names"] = ctct.CC_per_lig_lig_names
     CC_per_lig_df["num_lig_atms"] = ctct.CC_per_lig_lig_atms
     CC_per_lig_df["num_activesite_atms"] = ctct.CC_per_lig_activesite_atms
-    CC_per_lig_df["pp_contacts_within_1/3_cutoff"] = ctct.CC_per_lig_pp_one_third_cutoff_contacts
-    CC_per_lig_df["pp_contacts_within_2/3_cutoff"] = ctct.CC_per_lig_pp_two_thirds_cutoff_contacts
     CC_per_lig_df["pp_contacts_within_cutoff"] = ctct.CC_per_lig_pp_contacts
-
-    CC_per_lig_df["pn_contacts_within_1/3_cutoff"] = ctct.CC_per_lig_pn_one_third_cutoff_contacts
-    CC_per_lig_df["pn_contacts_within_2/3_cutoff"] = ctct.CC_per_lig_pn_two_thirds_cutoff_contacts
     CC_per_lig_df["pn_contacts_within_cutoff"] = ctct.CC_per_lig_pn_contacts
-
-    CC_per_lig_df["np_contacts_within_1/3_cutoff"] = ctct.CC_per_lig_np_one_third_cutoff_contacts
-    CC_per_lig_df["np_contacts_within_2/3_cutoff"] = ctct.CC_per_lig_np_two_thirds_cutoff_contacts
     CC_per_lig_df["np_contacts_within_cutoff"] = ctct.CC_per_lig_np_contacts
-    
-    CC_per_lig_df["nn_contacts_within_1/3_cutoff"] = ctct.CC_per_lig_nn_one_third_cutoff_contacts
-    CC_per_lig_df["nn_contacts_within_2/3_cutoff"] = ctct.CC_per_lig_nn_two_thirds_cutoff_contacts
     CC_per_lig_df["nn_contacts_within_cutoff"] = ctct.CC_per_lig_nn_contacts
     CC_per_lig_df["num_unk_contacts"] = ctct.CC_per_lig_unk_contacts
     
