@@ -19,6 +19,7 @@ print "Loading '%s' dependencies...\n" %__name__
 import sys
 import os
 import shutil
+sys.path.append( "utility" )
 from line_definitions import *
 try:
     from colorama import Fore, Style

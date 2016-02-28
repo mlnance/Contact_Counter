@@ -19,6 +19,8 @@ print "Loading '%s' dependencies...\n" %__name__
 import sys
 import os
 import shutil
+sys.path.append( "utility" )
+from download_files import download_pdb_file, download_cif_file
 try:
     from colorama import Fore, Style
 except:
@@ -469,8 +471,6 @@ class Clean:
         :param pdb_name: str( four-letter PDB code )
         :return: str( full path name to the PDB file )
         """
-        from util import download_pdb
-        
         # relevant paths
         cur_dir = os.getcwd() + '/'
         pdb_dir = cur_dir + 'pdbs/'
@@ -487,7 +487,7 @@ class Clean:
         else:
             # download PDB and get its filename
             try:
-                pdb = download_pdb( pdb_name[:4], pdb_dir )
+                pdb = download_pdb_file( pdb_name[:4], pdb_dir )
             except:
                 pass
             
@@ -504,8 +504,6 @@ class Clean:
         :param pdb_name: str( four-letter PDB code )
         :return: str( full path name to the .cif file )
         """
-        from util import download_cif_file
-        
         # relevant paths
         cur_dir = os.getcwd() + '/'
         pdb_dir = cur_dir + 'pdbs/'

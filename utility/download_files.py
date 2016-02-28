@@ -13,7 +13,7 @@ except:
 
 
 
-def download_pdb(pdb_id, dest_dir):
+def download_pdb_file(pdb_id, dest_dir):
     '''
     downloads pdbs, from yifans rosettacm py script
     :param pdb_id: 4letter accession code
