@@ -38,6 +38,9 @@ import clean_out_pdbs
 ######################
 
 def go( pdb_name_list, ignore_glycosylated_proteins, heavy_atoms, download_pdbs, keep_cifs, keep_pdbs, keep_clean_pdbs ):
+    # get any filenames in the 'pdbs' directory as to not delete them later
+    keep_these_files = os.listdir( "pdbs" )
+    
     # relevant variable instatiations
     all_clean_pdb_names = []
     
@@ -125,12 +128,14 @@ def go( pdb_name_list, ignore_glycosylated_proteins, heavy_atoms, download_pdbs,
         # delete unwanted .cif, .pdb, and .pdb files
         if not keep_cifs:
             for f in pdb_files:
-                if f.endswith( ".cif" ):
-                    os.remove( f )
+                if f not in keep_these_files:
+                    if f.endswith( ".cif" ):
+                        os.remove( f )
         if not keep_pdbs:
             for f in pdb_files:
-                if f.endswith( ".pdb" ) and len( f ) == 8:
-                    os.remove( f )
+                if f not in keep_these_files:
+                    if f.endswith( ".pdb" ) and len( f ) == 8:
+                        os.remove( f )
         
         # return to working directory
         os.chdir( working_dir )
@@ -138,8 +143,7 @@ def go( pdb_name_list, ignore_glycosylated_proteins, heavy_atoms, download_pdbs,
     # write out all_clean_pdb_names to a file as those were the PDBs actually analyzed
     with open( "clean_PSMDB_90_non_red_pro_70_non_red_lig_13_ha_cutoff_list", 'wb' ) as fh:
         for line in all_clean_pdb_names:
-            fh.write( line )
-            fh.write( "\n" )
+            fh.write( line + '\n' )
             
 
  
@@ -153,53 +157,45 @@ def go( pdb_name_list, ignore_glycosylated_proteins, heavy_atoms, download_pdbs,
     with open( filename, 'wb' ) as fh:
         fh.write( "## PDBs unable to be downloaded\n" )
         for line in unable_to_download_pdb_names:
-            fh.write( line )
-            fh.write( '\n' )
-        fh.write( "\n\n" )
+            fh.write( line + '\n' )
+        fh.write( "\n" )
 
         fh.write( "## PDBs with covalently attached HETATMs\n" )
         for line in clean.glycosylated_proteins:
-            fh.write( line )
-            fh.write( '\n'  )
-        fh.write( "\n\n" )
+            fh.write( line + '\n' )
+        fh.write( "\n" )
         
         fh.write( "## PDBs with an unknown residues\n" )
         for line in clean.unknown_res_pdb_names:
-            fh.write( line )
-            fh.write( '\n'  )
-        fh.write( "\n\n" )
+            fh.write( line + '\n' )
+        fh.write( "\n" )
 
         fh.write( "## PDBs with deuterium\n" )
         for line in clean.deuterium_pdb_names:
-            fh.write( line )
-            fh.write( '\n'  )
-        fh.write( "\n\n" )
+            fh.write( line + '\n' )
+        fh.write( "\n" )
 
         fh.write( "## PDBs with multiple MODELs\n" )
         for line in clean.multiple_models_pdb_names:
-            fh.write( line )
-            fh.write( '\n'  )
+            fh.write( line + '\n' )
         
     # write out the unique three letter codes for ligands that were kept
     filename = "ligand_residues_that_were_kept.txt"
     with open( filename, 'wb' ) as fh:
         for line in clean.uniq_lig_three_letter_codes_kept:
-            fh.write( line )
-            fh.write( '\n'  )
+            fh.write( line + '\n' )
         
     # write out the unique three letter codes for ligands that were skipped due to size or linkage
     filename = "ligand_residues_that_were_skipped.txt"
     with open( filename, 'wb' ) as fh:
         fh.write( "## ligand residues that were smaller than %s heavy atoms\n" %heavy_atoms )
         for line in clean.uniq_lig_three_letter_codes_skipped_size:
-            fh.write( line )
-            fh.write( '\n'  )
-        fh.write( '\n\n' )
+            fh.write( line + '\n' )
+        fh.write( '\n' )
         
         fh.write( "## ligand residues that were skipped because they were linked to the protein\n" )
         for line in clean.uniq_lig_three_letter_codes_skipped_link:
-            fh.write( line )
-            fh.write( '\n'  )
+            fh.write( line + '\n' )
     
     print "\nDone! :D\n"
 
