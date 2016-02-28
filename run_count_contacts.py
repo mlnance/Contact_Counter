@@ -44,6 +44,9 @@ import non_rosetta_count_contacts as contact
 ######################
 
 def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, download_pdbs, keep_cifs, keep_pdbs, keep_clean_pdbs ):
+    # get file names that are already in the 'pdbs' directory (as to not delete them later)
+    keep_these_files = os.listdir( "pdbs" )
+    
     # relevant variable instatiations
     all_pdb_names = []
     ctct = contact.CTCT( pdb_name_list, download_pdbs )
@@ -129,16 +132,19 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
         # delete unwanted .cif, .pdb, and .clean.pdb files
         if not keep_cifs:
             for f in pdb_files:
-                if f.endswith( ".cif" ):
-                    os.remove( f )
+                if f not in keep_these_files:
+                    if f.endswith( ".cif" ):
+                        os.remove( f )
         if not keep_pdbs:
             for f in pdb_files:
-                if f.endswith( ".pdb" ) and len( f ) == 8:
-                    os.remove( f )
+                if f not in keep_these_files:
+                    if f.endswith( ".pdb" ) and len( f ) == 8:
+                        os.remove( f )
         if not keep_clean_pdbs:
             for f in pdb_files:
-                if f.endswith( ".clean.pdb" ):
-                    os.remove( f )
+                if f not in keep_these_files:
+                    if f.endswith( ".clean.pdb" ):
+                        os.remove( f )
         
         # return to working directory
         os.chdir( working_dir )
