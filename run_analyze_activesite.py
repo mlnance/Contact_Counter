@@ -61,7 +61,7 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
     # instantiate the data holders that will hold the data for all of the PDBs
     AS.instantiate_data_holders()
     
-    # for each PDB in the list, run the contact counter
+    # for each PDB in the list, run the analyze interface code
     for pdb in AS.pdb_names:
         if pdb != '':
             # try to print in color if user has colorama library
@@ -74,7 +74,7 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
             # instantiate holders for the HETATM and ATOM lines
             AS.instantiate_holders()
             
-            # store pdb name in the contact counting class
+            # store pdb name in the analyze activesite class
             pdb_name = pdb[ 0:4 ]
             AS.name = pdb_name
             
@@ -116,9 +116,6 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
                                     # get activesite composition per ligandresidue
                                     AS.get_activesite_AA_composition_per_lig_res()
                                     
-                                    # count contacts
-                                    AS.count_contacts( cutoff )
-                                    all_pdb_names.append( pdb.split( '/' )[-1][0:4] )
                                     
         # get file names in the 'pdbs' directory
         os.chdir( working_dir + 'pdbs' )
@@ -356,39 +353,6 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
     print AS_per_lig_df
     print "\n\n\n\n"
     AS_per_lig_df.to_csv( str( working_dir ) + '/' + filename + "activesite_AA_composition_per_ligand_at_" + str( cutoff ) + "_Ang_cutoff_and_" + str( heavy_atoms ) + "_heavy_atom_ligand.csv", index = 0, index_col = 0 )
-            
-    
-    # contact counting data
-    CC_df = pd.DataFrame()
-    CC_df["pdb_names"] = AS.CC_pdb_names
-    CC_df["num_lig_atoms"] = AS.CC_lig_atms
-    CC_df["num_activesite_atms"] = AS.CC_activesite_atms
-    CC_df["num_pp_contacts_within_cutoff"] = AS.CC_pp_contacts
-    CC_df["num_pn_contacts_within_cutoff"] = AS.CC_pn_contacts
-    CC_df["num_np_contacts_within_cutoff"] = AS.CC_np_contacts
-    CC_df["num_nn_contacts_within_cutoff"] = AS.CC_nn_contacts
-    CC_df["num_unk_contacts"] = AS.CC_unk_contacts
-    
-    print CC_df
-    print "\n\n\n\n"
-    CC_df.to_csv( str( working_dir ) + '/' + filename + "contact_counts_" + str( cutoff ) + "_Ang_cutoff_and_" + str( heavy_atoms ) + "_heavy_atom_ligand.csv", index = 0, index_col = 0 )
-    
-    
-    # make data lists to add over course of program for contact counts per lig - will be added to pandas df at end
-    CC_per_lig_df = pd.DataFrame()
-    CC_per_lig_df["pdb_names"] = AS.CC_per_lig_pdb_names
-    CC_per_lig_df["lig_names"] = AS.CC_per_lig_lig_names
-    CC_per_lig_df["num_lig_atms"] = AS.CC_per_lig_lig_atms
-    CC_per_lig_df["num_activesite_atms"] = AS.CC_per_lig_activesite_atms
-    CC_per_lig_df["pp_contacts_within_cutoff"] = AS.CC_per_lig_pp_contacts
-    CC_per_lig_df["pn_contacts_within_cutoff"] = AS.CC_per_lig_pn_contacts
-    CC_per_lig_df["np_contacts_within_cutoff"] = AS.CC_per_lig_np_contacts
-    CC_per_lig_df["nn_contacts_within_cutoff"] = AS.CC_per_lig_nn_contacts
-    CC_per_lig_df["num_unk_contacts"] = AS.CC_per_lig_unk_contacts
-    
-    print CC_per_lig_df
-    CC_per_lig_df.to_csv( str( working_dir ) + '/' + filename + "contact_counts_per_lig_res_" + str( cutoff ) + "_Ang_cutoff_and_" + str( heavy_atoms ) + "_heavy_atom_ligand.csv", index = 0, index_col = 0 )
-
 
 
 

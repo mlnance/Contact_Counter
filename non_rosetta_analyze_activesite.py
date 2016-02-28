@@ -76,6 +76,15 @@ class ACTIVESITE:
 
 
     def instantiate_data_holders( self ):
+        ## initialize all the data holders
+        # make on/off switches for skipping
+        self.glycosylated_proteins = []
+
+        # hold the name of PDBs that contain undesirables like multiple models or an unknown HETATM
+        self.unknown_res_pdb_names = []
+        self.multiple_models_pdb_names = []
+        self.deuterium_pdb_names = []
+        
         # make data lists to add over course of program for AS composition
         self.AS_pdb_names = []
         self.AS_lig_res = []
@@ -321,7 +330,121 @@ class ACTIVESITE:
             
             
             
-    def split_pdb_file( self, pdb_filename ):
+    def get_uniq_connection_names_from_LINK_records( self, LINK_records ):
+        unique_connection_names = []
+        
+        for link_line in LINK_records:
+            res1_unique_name = link_line.res1_name() + '_' + link_line.res1_chain() + '_' + str( link_line.res1_seq() )
+            res2_unique_name = link_line.res2_name() + '_' + link_line.res2_chain() + '_' + str( link_line.res2_seq() )
+            uniq_connection_name = res1_unique_name + '+' + res2_unique_name
+            
+            if uniq_connection_name not in unique_connection_names:
+                unique_connection_names.append( uniq_connection_name )
+
+        return unique_connection_names
+
+
+    
+    def graph_out_residue_connections( self, unique_partner_names, unique_protein_names, unique_hetatm_names ):
+        # make a tree using networkx
+        graph = nx.Graph()
+        
+        # add nodes 2 at a time from unique_connect_partner_names
+        for partners in unique_partner_names:
+            # get the unique names for partner1 and partner2
+            ptnr1 = partners.split( '+' )[0]
+            ptnr2 = partners.split( '+' )[1]
+            
+            # get the residue name, chain, and sequence id from the unique names
+            ptnr1_resname = ptnr1.split( '_' )[0]
+            ptnr1_reschain = ptnr1.split( '_' )[1]
+            ptnr1_resseq = ptnr1.split( '_' )[2]
+            ptnr2_resname = ptnr2.split( '_' )[0]
+            ptnr2_reschain = ptnr2.split( '_' )[1]
+            ptnr2_resseq = ptnr2.split( '_' )[2]
+            
+            ## add each node according to whether its a HETATM or not
+            # if residue not already a node
+            if not ptnr1 in graph.nodes():
+                # add residue as node based on whether it is a protein or hetatm 
+                if ptnr1 in unique_protein_names:
+                    graph.add_node( ptnr1, { "Chain" : ptnr1_reschain, "Seq" : ptnr1_resseq, "HETATM" : False } )
+                else:
+                    graph.add_node( ptnr1, { "Chain" : ptnr1_reschain, "Seq" : ptnr1_resseq, "HETATM" : True } )
+
+            # if residue not already a node
+            if not ptnr2 in graph.nodes():
+                # add residue as node based on whether it is a protein or hetatm
+                if ptnr2 in unique_protein_names:
+                    graph.add_node( ptnr2, { "Chain" : ptnr2_reschain, "Seq" : ptnr2_resseq, "HETATM" : False } )
+                else:
+                    graph.add_node( ptnr2, { "Chain" : ptnr2_reschain, "Seq" : ptnr2_resseq, "HETATM" : True } )
+                    
+            # add a bond (an edge) between the two residues
+            graph.add_edge( ptnr1, ptnr2 )
+            
+        # iter through each subgraph (the group of nodes that have edges connecting them together)
+        C = nx.connected_component_subgraphs( graph )
+        
+        # for holding unique residue names
+        remove_these_ligs = []
+        
+        # for each subgraph
+        for g in C:
+            # remove = False. Default is we would keep these ligand residues
+            remove = False
+            for n1, n2 in g.edges_iter():
+                # if one node is a HETATM and one is not
+                if ( g.node[n1]["HETATM"] == True and g.node[n2]["HETATM"] == False ) or ( g.node[n1]["HETATM"] == False and g.node[n2]["HETATM"] == True ):
+                    # remove this subgraph as there is a covalent connection bewteen protein and ligand
+                    remove = True
+            
+                # if you need to remove the ligs from this subgraph
+                if remove:
+                    for mynode in g.nodes_iter():
+                        # if this node is a ligand
+                        if g.node[ mynode ][ "HETATM" ]:
+                            # if you haven't already added it
+                            if mynode not in remove_these_ligs:
+                                remove_these_ligs.append( mynode )
+
+        # return the unique names of the residues that are covalently linked to the protein
+        return remove_these_ligs
+
+
+
+    def determine_covalently_bound_ligands( self, pdb_filename, unique_protein_names, unique_hetatm_names, link_records ):
+        # download the mmcif file
+        cif_filename = self.download_cif( pdb_filename[:4] )
+        
+        # get _struct_conn lines to determine HETATM connections
+        _struct_conn = cif_struct_conn_lines( cif_filename )
+        
+        # check to see if check_if_has_mmcif_dict() by using return value
+        response = _struct_conn.check_if_has_mmcif_dict()
+        
+        # if this PDB has an mmcif file
+        if response is True:
+            # unique name = res1name_res1chain_res1num+res2name_res2chain_res2num
+            unique_partner_names = _struct_conn.get_uniq_connection_names()
+            
+            # get list of ligand residues to remove
+            remove_these_ligs = self.graph_out_residue_connections( unique_partner_names, unique_protein_names, unique_hetatm_names )
+        
+        # otherwise this PDB didn't have an mmcif file, use LINK records instead
+        else:
+            # unique name = res1name_res1chain_res1num+res2name_res2chain_res2num
+            unique_partner_names = self.get_uniq_connection_names_from_LINK_records( link_records )
+            
+            # get list of ligand residues to remove
+            remove_these_ligs = self.graph_out_residue_connections( unique_partner_names, unique_protein_names, unique_hetatm_names )
+
+            
+        return remove_these_ligs
+
+
+
+    def split_pdb_file( self, pdb_filename, ignore_glycosylated_proteins ):
         """
         Splits up the PDB file into ATOM and HETATM lines.
         Doesn't keep HETATM lines that are 1) lone metal atoms, 2) amino acids, or 3) unknown
@@ -337,6 +460,14 @@ class ACTIVESITE:
         split_pdb_name = pdb_filename.split( '/' )[-1]
         pdb_name = split_pdb_name[:-4].lower()
         
+        # instantiate lists that will hold relevant PDB data that is NOT wanted
+        AA_lig = []
+        nuc_acid_lig = []
+        water = []
+        models = []
+        deuterium = []
+        unknown = []
+
         # list of MODRES names to treat as ATOM lines
         modres_protein_res_names = []
 
@@ -519,7 +650,22 @@ class ACTIVESITE:
                                 # store the HETATM lines
                                 self.hetatm_lines.append( pdb_line )
 
-
+                            
+        # if there were unknown residues, skip
+        if len( unknown ) != 0:
+            print "## Skipping", self.name, "because it has unknown residues ##"
+            return False
+         
+        # if there were PDBs with more than one model, skip
+        if len( models ) != 0:
+            print "## Skipping", self.name, "because it has more than one model ##"
+            return False
+ 
+        # if there were PDBs with more than deuterium, skip
+        if len( deuterium ) != 0:
+            print "## Skipping", self.name, "because it contains deuterium ##"
+            return False
+        
         # if there is no ligand, skip
         if len( self.hetatm_lines ) == 0:
             print "## Skipping", self.name, "because it does not have a ligand of interest ##"
@@ -546,7 +692,29 @@ class ACTIVESITE:
             # otherwise just a normal residue
             self.ligand[ uniq_lig_name ].append( lig_pdb_line )
             
-
+        # if user wants to ignore glycosylated proteins (proteins with a HETATM attached to them)
+        if ignore_glycosylated_proteins: 
+            self.covalently_bound_lig_residues = []
+            
+            # see if there are residues covalently bound to the protein
+            self.covalently_bound_lig_residues = self.determine_covalently_bound_ligands( pdb_name, self.protein, self.ligand, self.link_records )
+            
+            # add PDB to list if it had a glycan
+            if len( self.covalently_bound_lig_residues ) != 0:
+                # add name of PDB to glycosylated_proteins list (to be dumped later)
+                self.glycosylated_proteins.append( self.name )
+            
+                # remove covalently bound ligands from the list of unique ligand residue names
+                for remove_this_lig in self.covalently_bound_lig_residues:
+                    # using an if statement because a covalently bound ligand residue could be an amino acid
+                    if remove_this_lig in self.ligand.keys():
+                        self.ligand.pop( remove_this_lig )
+        
+                    # if there is no ligand after removing glycans, skip
+                    if len( self.ligand.keys() ) == 0:
+                        print "## Skipping", self.name, "because it did not have a ligand of interest after removing glycans ##"
+                        return False
+        
         return True
 
     
