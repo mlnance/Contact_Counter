@@ -162,24 +162,28 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
     filename = "PDB_files_that_were_skipped.txt"
     with open( filename, 'wb' ) as fh:
         fh.write( "## PDBs unable to be downloaded\n" )
-        fh.writelines( unable_to_download_pdb_names )
-        fh.write( "\n\n" )
+        for line in unable_to_download_pdb_names:
+            fh.write( line + '\n' )
+        fh.write( "\n" )
 
         fh.write( "## PDBs with covalently attached HETATMs\n" )
-        fh.writelines( ctct.glycosylated_proteins )
-        fh.write( "\n\n" )
+        for line in ctct.glycosylated_proteins:
+            fh.write( line + '\n' )
+        fh.write( "\n" )
     
         fh.write( "## PDBs with an unknown residues\n" )
-        fh.writelines( ctct.unknown_res_pdb_names )
-        fh.write( "\n\n" )
+        for line in ctct.unknown_res_pdb_names:
+            fh.write( line + '\n' )
+        fh.write( "\n" )
 
         fh.write( "## PDBs with deuterium\n" )
-        fh.writelines( ctct.deuterium_pdb_names )
-        fh.write( "\n\n" )
+        for line in ctct.deuterium_pdb_names:
+            fh.write( line + '\n' )
+        fh.write( "\n" )
 
         fh.write( "## PDBs with multiple MODELs\n" )
-        fh.writelines( ctct.multiple_models_pdb_names )
-        fh.write( "\n\n" )
+        for line in ctct.multiple_models_pdb_names:
+            fh.write( line + '\n' )
     
     # filename will be taken from the name of the PDB list passed through
     if pdb_name_list.endswith( "list" ):
