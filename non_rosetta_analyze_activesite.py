@@ -36,6 +36,7 @@ except ImportError:
 
 # utility functions
 sys.path.append( "utility" )
+from download_files import *
 from line_definitions import *
 from chemical_data import *
 
@@ -255,15 +256,71 @@ class ACTIVESITE:
         self.percentage_tot_per_lig_VAL = []
         self.percentage_tot_per_lig_TRP = []
         self.percentage_tot_per_lig_TYR = []
-        
-        # make data lists to add over course of program for contact counts per lig - will be added to pandas df at end
-        self.CC_per_lig_pdb_names = []
-        self.CC_per_lig_lig_names = []
-        self.CC_per_lig_lig_atms = []
-        self.CC_per_lig_activesite_atms = []
 
 
 
+    def download_pdb( self, pdb_name ):
+        """
+        Uses a utility function to download a PDB from the internet based on the four letter accession code
+        :param pdb_name: str( four-letter PDB code )
+        :return: str( full path name to the PDB file )
+        """
+        # relevant paths
+        cur_dir = os.getcwd() + '/'
+        pdb_dir = cur_dir + 'pdbs/'
+
+        # check to make sure the 'pdbs' directory exists one down from the current directory
+        if not os.path.isdir( pdb_dir ):
+            os.mkdir( pdb_dir )
+
+        # if the PDB exists in the 'pdbs' directory, return the path to it
+        if os.path.isfile( pdb_dir + pdb_name ):
+            return pdb_dir + pdb_name
+
+        # otherwise download the PDB
+        else:
+            # download PDB and get its filename
+            try:
+                pdb = download_pdb_file( pdb_name[:4], pdb_dir )
+            except:
+                pass
+
+            # return the full path name to the PDB file
+            return pdb_dir + pdb
+
+
+
+    def download_cif( self, pdb_name ):
+        """
+        Uses a utility function to download the cif file of a PDB from the internet based on the four letter accession code
+        :param pdb_name: str( four-letter PDB code )
+        :return: str( full path name to the .cif file )
+        """
+        # relevant paths
+        cur_dir = os.getcwd() + '/'
+        pdb_dir = cur_dir + 'pdbs/'
+
+        # check to make sure the 'pdbs' directory exists one down from the current directory
+        if not os.path.isdir( pdb_dir ):
+            os.mkdir( pdb_dir )
+
+        # if the PDB exists in the 'pdbs' directory, return the path to it
+        if os.path.isfile( pdb_dir + pdb_name ):
+            return pdb_dir + pdb_name
+
+        # otherwise download the PDB
+        else:
+            # download PDB and get its filename
+            try:
+                pdb = download_cif_file( pdb_name[:4], pdb_dir )
+            except:
+                pass
+
+            # return the full path name to the PDB file
+            return pdb_dir + pdb
+            
+            
+            
     def split_pdb_file( self, pdb_filename ):
         """
         Splits up the PDB file into ATOM and HETATM lines.
