@@ -36,8 +36,8 @@ except ImportError:
 
 # utility functions
 sys.path.append( "utility" )
-from line_definitions import *
 from download_files import download_pdb_file, download_cif_file
+from line_definitions import *
 from chemical_data import *
 
 
