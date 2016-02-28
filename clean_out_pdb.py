@@ -43,14 +43,41 @@ from chemical_data import *
 
 
 ###########################
-#### PDB CLEANING CODE ####
+#### PDB FILE CLEAN UP ####
 ###########################
 
-class Clean:
-    def __init__( self ):
+class CLEAN:
+    def __init__( self, pdb_name_list, download_pdbs ):
+        """
+        Initializes variables that hold the data, and reads the PDB name list read in on startup
+        """
+        # get current working directory
         self.working_dir = os.getcwd()
         
-        # make on/off switch for skipping covalently bound ligand residues
+        # load up PDB name list from input argument
+        self.pdb_names = []
+        pdb_file_CR = open( pdb_name_list, 'r' ).readlines()  # CR = carriage return (new line character)
+        for name in pdb_file_CR:
+            name = name.rstrip( '\n' )
+            # add .pdb extension if not already there  -  don't need to do this if downloading the PDB
+            if not download_pdbs:
+                if not name.endswith( ".pdb" ):
+                    name = name + ".pdb"
+            self.pdb_names.append( name )
+
+    
+    def instantiate_holders( self ):
+        # instantiate lists that will hold relevant PDB data
+        self.protein_lines = []
+        self.hetatm_lines = []
+        self.link_records = []
+        self.protein = {}
+        self.ligand = {}
+
+
+    def instantiate_data_holders( self ):
+        ## initialize all the data holders
+        # make on/off switches for skipping 
         self.glycosylated_proteins = []
         
         # hold the name of PDBs that contain undesirables like multiple models or an unknown HETATM
@@ -58,32 +85,6 @@ class Clean:
         self.multiple_models_pdb_names = []
         self.deuterium_pdb_names = []
         
-        # hold unique ligand residue names for post-analysis
-        self.uniq_lig_three_letter_codes_kept = []
-        self.uniq_lig_three_letter_codes_skipped_size = []
-        self.uniq_lig_three_letter_codes_skipped_link = []
-        
-        
-
-    def instantiate_pdb_info_holders( self ):
-        # instantiate lists that will hold relevant PDB data
-        self.protein_lines = []
-        self.hetatm_lines = []
-        self.ter_lines = []
-        self.link_records = []
-        self.protein = {}
-        self.ligand = {}        
-        self.covalently_bound_lig_residues = []
-        
-        # dictionary -- key: unique ligand name, value: hetatm lines
-        self.ligands_with_heavy_atom_cutoff = {}
-        
-        # ligand data holders for print PDB information to screen
-        self.num_ligand_residues = 0
-        self.num_ligand_atoms = 0
-        
-        return True
-
 
 
     def download_pdb( self, pdb_name ):
@@ -111,14 +112,12 @@ class Clean:
                 pdb = download_pdb_file( pdb_name[:4], pdb_dir )
             except:
                 pass
-            
+
             # return the full path name to the PDB file
             return pdb_dir + pdb
-    
-        return True
-    
-    
-    
+
+
+
     def download_cif( self, pdb_name ):
         """
         Uses a utility function to download the cif file of a PDB from the internet based on the four letter accession code
@@ -147,8 +146,6 @@ class Clean:
             
             # return the full path name to the PDB file
             return pdb_dir + pdb
-        
-        return True
 
 
 
@@ -157,6 +154,7 @@ class Clean:
         Uses PyMOL to "clean" a PDB by removing waters and hydrogens.
         Opens up PyMOL via a command-line argument. Closes PyMOL upon completion
         :param pdb_filename:
+        Doesn't return anything. Just saves the cleaned PDB file
         """
         # get the right names of the PDB files
         split_pdb_name = pdb_filename.split( '/' )[-1]
@@ -168,10 +166,8 @@ class Clean:
         # run the PyMol command through the terminal
         os.popen( pymol_command )
         
-        return True
-    
-    
-    
+        
+        
     def get_uniq_connection_names_from_LINK_records( self, LINK_records ):
         unique_connection_names = []
         
@@ -182,10 +178,10 @@ class Clean:
             
             if uniq_connection_name not in unique_connection_names:
                 unique_connection_names.append( uniq_connection_name )
-                
+
         return unique_connection_names
-    
-    
+
+
     
     def graph_out_residue_connections( self, unique_partner_names, unique_protein_names, unique_hetatm_names ):
         # make a tree using networkx
@@ -205,7 +201,7 @@ class Clean:
             ptnr2_reschain = ptnr2.split( '_' )[1]
             ptnr2_resseq = ptnr2.split( '_' )[2]
             
-            # add each node according to whether its a HETATM or not
+            ## add each node according to whether its a HETATM or not
             # if residue not already a node
             if not ptnr1 in graph.nodes():
                 # add residue as node based on whether it is a protein or hetatm 
@@ -213,7 +209,7 @@ class Clean:
                     graph.add_node( ptnr1, { "Chain" : ptnr1_reschain, "Seq" : ptnr1_resseq, "HETATM" : False } )
                 else:
                     graph.add_node( ptnr1, { "Chain" : ptnr1_reschain, "Seq" : ptnr1_resseq, "HETATM" : True } )
-                    
+
             # if residue not already a node
             if not ptnr2 in graph.nodes():
                 # add residue as node based on whether it is a protein or hetatm
@@ -240,7 +236,7 @@ class Clean:
                 if ( g.node[n1]["HETATM"] == True and g.node[n2]["HETATM"] == False ) or ( g.node[n1]["HETATM"] == False and g.node[n2]["HETATM"] == True ):
                     # remove this subgraph as there is a covalent connection bewteen protein and ligand
                     remove = True
-                    
+            
                 # if you need to remove the ligs from this subgraph
                 if remove:
                     for mynode in g.nodes_iter():
@@ -249,12 +245,12 @@ class Clean:
                             # if you haven't already added it
                             if mynode not in remove_these_ligs:
                                 remove_these_ligs.append( mynode )
-                                
+
         # return the unique names of the residues that are covalently linked to the protein
         return remove_these_ligs
-    
-    
-    
+
+
+
     def determine_covalently_bound_ligands( self, pdb_filename, unique_protein_names, unique_hetatm_names, link_records ):
         # download the mmcif file
         cif_filename = self.download_cif( pdb_filename[:4] )
@@ -269,11 +265,10 @@ class Clean:
         if response is True:
             # unique name = res1name_res1chain_res1num+res2name_res2chain_res2num
             unique_partner_names = _struct_conn.get_uniq_connection_names()
-            print unique_partner_names
             
             # get list of ligand residues to remove
             remove_these_ligs = self.graph_out_residue_connections( unique_partner_names, unique_protein_names, unique_hetatm_names )
-            
+        
         # otherwise this PDB didn't have an mmcif file, use LINK records instead
         else:
             # unique name = res1name_res1chain_res1num+res2name_res2chain_res2num
@@ -281,12 +276,12 @@ class Clean:
             
             # get list of ligand residues to remove
             remove_these_ligs = self.graph_out_residue_connections( unique_partner_names, unique_protein_names, unique_hetatm_names )
-            
+
             
         return remove_these_ligs
+        
     
-    
-    
+
     def split_pdb_file( self, pdb_filename, ignore_glycosylated_proteins ):
         """
         Splits up the PDB file into ATOM and HETATM lines.
@@ -310,10 +305,10 @@ class Clean:
         models = []
         deuterium = []
         unknown = []
-        
+
         # list of MODRES names to treat as ATOM lines
         modres_protein_res_names = []
-        
+
         # open up the PDB file
         try:
             with open( pdb_filename, 'r' ) as pdb_fh:
@@ -341,7 +336,7 @@ class Clean:
                 # if the standard residue name is a standard amino acid, add its modified res name to a list to be added later
                 if std_res_name in AA_list:
                     modres_protein_res_names.append( uniq_modres_name )
-                    
+                                
             # if there are multiple models in this PDB file, add the line so this PDB will be skipped
             if line[0:5] == "MODEL":
                 models.append( line )
@@ -352,11 +347,6 @@ class Clean:
                 # store LINK records used for determining any covalently bound ligands
                 link_line = LINK_line( line )
                 self.link_records.append( link_line )
-                
-            if line[0:3] == "TER":
-                # store TER lines to write to a clean PDB file
-                ter_line = TER_line( line )
-                self.ter_lines.append( ter_line )
             
             if line[0:4] == "ATOM":
                 # store the protein lines
@@ -373,7 +363,7 @@ class Clean:
                     deuterium.append( line )
                     self.deuterium_pdb_names.append( pdb_name )
                     break
-                
+                    
                 # skip hydrogen atoms
                 if pdb_line.element() != 'H':
                     # collect the residue's unique name
@@ -403,15 +393,17 @@ class Clean:
                             
                         # store the protein lines
                         self.protein_lines.append( pdb_line )
-                        
-                    
+
+                
             if line[0:6] == "HETATM":
                 # get each ligand residue name to see what it is and store it in the appropriate list
                 pdb_line = PDB_line( line )
                 lig_res_name = pdb_line.res_name()
                 
                 # check what each residue is by its name ( water, unknown, or a ligand etc )
-                if lig_res_name == "HOH" or lig_res_name == "DOD":
+                if lig_res_name == "HOH":
+                    water.append( line )
+                elif lig_res_name == "DOD":
                     water.append( line )
                 elif lig_res_name in AA_list:
                     AA_lig.append( line )
@@ -450,7 +442,7 @@ class Clean:
                             
                             # now this is a unique protein name, not ligand
                             uniq_pro_name = uniq_lig_name
-                            
+                                
                             # check occupancy level
                             if pdb_line.occupancy() != 1.00:
                                 # keep those without an identifier or with the code 'A'
@@ -462,7 +454,7 @@ class Clean:
                                         
                                     # append the altered PDB line to the protein lines
                                     self.hetatm_lines.append( pdb_line )
-                                    
+                                
                             # otherwise this modified residue is at full occupancy
                             else:
                                 # instantiate a dictionary key for this specific modified protein residue 
@@ -472,8 +464,8 @@ class Clean:
                                     
                                 # append the altered PDB line to the protein lines
                                 self.hetatm_lines.append( pdb_line )
-                            
-                            
+                                
+                        
                         # otherwise, this is a ligand residue
                         else:
                             # check occupancy level
@@ -484,10 +476,8 @@ class Clean:
                                     # will be filled with the non-hydrogen ATOM lines later
                                     if uniq_lig_name not in self.ligand.keys():
                                         self.ligand[ uniq_lig_name ] = []
-                                        
-                                    # store the HETATM lines
                                     self.hetatm_lines.append( pdb_line )
-                                    
+                                
                             # otherwise residue is at full occupancy so store the line
                             else:
                                 # instantiate a dictionary key for this specific ligand residue
@@ -497,27 +487,28 @@ class Clean:
                                     
                                 # store the HETATM lines
                                 self.hetatm_lines.append( pdb_line )
-                                
+
+                            
         # if there were unknown residues, skip
         if len( unknown ) != 0:
-            print "## Skipping", pdb_name, "because it has unknown residues ##"
+            print "## Skipping", self.name, "because it has unknown residues ##"
             return False
-        
+         
         # if there were PDBs with more than one model, skip
         if len( models ) != 0:
-            print "## Skipping", pdb_name, "because it has more than one model ##"
+            print "## Skipping", self.name, "because it has more than one model ##"
             return False
-        
+ 
         # if there were PDBs with more than deuterium, skip
         if len( deuterium ) != 0:
-            print "## Skipping", pdb_name, "because it contains deuterium ##"
+            print "## Skipping", self.name, "because it contains deuterium ##"
             return False
         
         # if there is no ligand, skip
         if len( self.hetatm_lines ) == 0:
-            print "## Skipping", pdb_name, "because it does not have a ligand of interest ##"
+            print "## Skipping", self.name, "because it does not have a ligand of interest ##"
             return False
-    
+
         # move all ATOM and HETATM lines to their appropriate place in the dictionaries based on their unique names
         for pro_pdb_line in self.protein_lines:
             # get the residue's unique name again
@@ -528,7 +519,8 @@ class Clean:
             
             # otherwise just a normal residue
             self.protein[ uniq_pro_name ].append( pro_pdb_line )
-            
+        
+
         for lig_pdb_line in self.hetatm_lines:
             lig_res_name = lig_pdb_line.res_name()
             lig_res_chain = lig_pdb_line.res_chain()
@@ -540,130 +532,433 @@ class Clean:
             
         # if user wants to ignore glycosylated proteins (proteins with a HETATM attached to them)
         if ignore_glycosylated_proteins: 
+            self.covalently_bound_lig_residues = []
+            
             # see if there are residues covalently bound to the protein
             self.covalently_bound_lig_residues = self.determine_covalently_bound_ligands( pdb_name, self.protein, self.ligand, self.link_records )
             
             # add PDB to list if it had a glycan
             if len( self.covalently_bound_lig_residues ) != 0:
                 # add name of PDB to glycosylated_proteins list (to be dumped later)
-                self.glycosylated_proteins.append( pdb_name )
-                
+                self.glycosylated_proteins.append( self.name )
+            
                 # remove covalently bound ligands from the list of unique ligand residue names
                 for remove_this_lig in self.covalently_bound_lig_residues:
                     # using an if statement because a covalently bound ligand residue could be an amino acid
                     if remove_this_lig in self.ligand.keys():
                         self.ligand.pop( remove_this_lig )
-                        
-                        # store the unique three letter code of the ligand residues that were skipped
-                        three_letter_code = remove_this_lig.split( '_' )[0]
-                        if three_letter_code not in self.uniq_lig_three_letter_codes_skipped_link:
-                            self.uniq_lig_three_letter_codes_skipped_link.append( three_letter_code )
-                        
-                # if there is no ligand after removing glycans, skip
-                if len( self.ligand.keys() ) == 0:
-                    print "## Skipping", pdb_name, "because it did not have a ligand of interest after removing glycans ##"
-                    return False
-                
+        
+                    # if there is no ligand after removing glycans, skip
+                    if len( self.ligand.keys() ) == 0:
+                        print "## Skipping", self.name, "because it did not have a ligand of interest after removing glycans ##"
+                        return False
+        
         return True
+
     
-    
-    
-    def get_ligand_residues( self, heavy_atoms, pdb_filename ):
-        # get the PDB name from the end of the full path given in pdb_filename
-        split_pdb_name = pdb_filename.split( '/' )[-1]
-        pdb_name = split_pdb_name[:-4].lower()
+
+    def get_ligand_residues( self, heavy_atoms, cutoff, pdb_name, keep_clean_pdbs ):
+        # dictionary -- key: lig residue number, value: hetatm lines
+        self.ligand_dict = {}
+        
+        # list of the 3-letter ligand names, not allowing repeats
+        # used later to count the number of each ligand residue
+        self.uniq_lig_res_names = []
+        
+        # list of only the 3-letter ligand names, allowing repeats - used for data analysis
+        self.lig_res_names = []
+        
+        # ligand data holders
+        self.num_ligand_residues = 0
+        self.num_ligand_atoms = 0
+        self.num_ligand_nonpolar_atoms = 0
+        self.num_ligand_polar_atoms = 0
+        self.num_ligand_metal_atoms = 0
+        self.num_ligand_unk_atom_type = 0
+        self.lig_num_nonpolar_atoms = {}
+        self.lig_num_polar_atoms = {}
+        self.lig_num_metal_atoms = {}
+        self.lig_num_unk_atoms = {}
         
         # this makes a new dictionary of ligands only if there are more than the specified number of heavy atoms in the lig residue
         for uniq_lig in self.ligand.keys():
-            # keep PDB based on its unique name and corresponding HETATM lines
             if len( self.ligand[ uniq_lig ] ) >= heavy_atoms:
-                self.ligands_with_heavy_atom_cutoff[ uniq_lig ] = self.ligand[ uniq_lig ]
-                
-                # keep unique three letter codes for ligand residues kept
-                three_letter_code = uniq_lig.split( '_' )[0]
-                if three_letter_code not in self.uniq_lig_three_letter_codes_kept:
-                    self.uniq_lig_three_letter_codes_kept.append( three_letter_code )
-            else:                
-                # otherwise it didn't pass the size cutoff
-                # so keep unique three letter codes for ligand residues skipped 
-                three_letter_code = uniq_lig.split( '_' )[0]
-                if three_letter_code not in self.uniq_lig_three_letter_codes_skipped_size:
-                    self.uniq_lig_three_letter_codes_skipped_size.append( three_letter_code )
-               
+                self.ligand_dict[ uniq_lig ] = self.ligand[ uniq_lig ]
+        
+        # get the 3-letter names of each remaining ligand residue
+        for uniq_lig in self.ligand_dict.keys():
+            lig_res_name = uniq_lig[ 0:3 ]
+            self.lig_res_names.append( lig_res_name )
+            
+            # add unique ligand residue names to the set
+            if lig_res_name not in self.uniq_lig_res_names:
+                self.uniq_lig_res_names.append( lig_res_name )
+        
         # get number of ligand residues
-        self.num_ligand_residues = len( self.ligands_with_heavy_atom_cutoff.keys() )
+        self.num_ligand_residues = len( self.ligand_dict.keys() )
         
         # count the number of heavy ligand atoms by looping through the dictionary
         # hydrogens were skipped so just count the number of values for each key
-        for uniq_lig in self.ligands_with_heavy_atom_cutoff:
-            self.num_ligand_atoms += len( self.ligands_with_heavy_atom_cutoff[ uniq_lig ] )
+        for uniq_lig in self.ligand_dict:
+            self.num_ligand_atoms += len( self.ligand_dict[ uniq_lig ] )
             
+            # prepare the counter for nonpolar, polar, metal, and unknown atom types for each unique ligand residue
+            self.lig_num_nonpolar_atoms[ uniq_lig ] = 0
+            self.lig_num_polar_atoms[ uniq_lig ] = 0
+            self.lig_num_metal_atoms[ uniq_lig ] = 0
+            self.lig_num_unk_atoms[ uniq_lig ] = 0
+            
+            # count the number of nonpolar and polar atoms
+            for pdb_line in self.ligand_dict[ uniq_lig ]:                
+                # if the element is nonpolar
+                if pdb_line.element() in nonpolar_atoms:
+                    # total nonpolar lig atoms
+                    self.num_ligand_nonpolar_atoms += 1
+                    
+                    # number of nonpolar atoms for this ligand residue
+                    self.lig_num_nonpolar_atoms[ uniq_lig ] += 1
+                    
+                # if the element is polar
+                elif pdb_line.element() in polar_atoms:
+                    # total polar lig atoms
+                    self.num_ligand_polar_atoms += 1
+                    
+                    # number of polar atoms for this ligand residue
+                    self.lig_num_polar_atoms[ uniq_lig ] += 1
+                    
+                # if the element is metal
+                elif pdb_line.element() in metal_list:
+                    # total metal lig atoms
+                    self.num_ligand_metal_atoms += 1
+                    
+                    # number of metal atoms for this ligand residue
+                    self.lig_num_metal_atoms[ uniq_lig ] += 1
+                    
+                    
+                else:
+                    # this atom type is unknown - inform user
+                    print "      * I didn't know what type of atom", "'%s'" %pdb_line.element(), "is. Please add it to the list"
+                    # total unknown lig atoms
+                    self.num_ligand_unk_atom_type += 1
+                    
+                    # number of unknown atoms for this ligand residue
+                    self.lig_num_unk_atoms[ uniq_lig ] += 1
+                    
         # stop if there were no ligand residues with the given heavy atom cutoff
         if self.num_ligand_residues == 0:
-            print "## Skipping", pdb_name, "because it had no ligand residues left given the", heavy_atoms, "heavy atom cutoff ##"
+            print "## Skipping", self.name, "because it had no ligand residues left given the", heavy_atoms, "heavy atom cutoff ##"
             return False
         
         # otherwise this ligand passed user requirements
         else:
-            print "  ", pdb_name,
+            print "  ", self.name,
             print "has", self.num_ligand_residues, 
-            print "ligand residues that each have equal to or more than", heavy_atoms, "heavy atoms",
-            print "resulting in", self.num_ligand_atoms, "total heavy ligand atoms"
+            print "ligand residues with more than", heavy_atoms, "heavy atoms",
+            print "and", self.num_ligand_atoms, "non-hydrogen atoms"
             
-            # replace hetatm_lines with only the hetatm lines of the remaining ligand residues with the appropriate number of heavy atoms
-            # hetatm_lines will be used elsewhere - so it's easier to keep this accurate with only the hetatm lines that will be used
+            # replace self.hetatm_lines with only the hetatm lines of the remaining ligand residues with the appropriate number of heavy atoms
+            # self.hetatm_lines will be used elsewhere - so it's easier to keep this accurate with only the hetatm lines that will be used
             self.hetatm_lines = []
-            for uniq_lig in self.ligands_with_heavy_atom_cutoff.keys():
-                for pdb_line in self.ligands_with_heavy_atom_cutoff[ uniq_lig ]:
+            for uniq_lig in self.ligand_dict.keys():
+                for pdb_line in self.ligand_dict[ uniq_lig ]:
                     self.hetatm_lines.append( pdb_line.line )
+            
+        
+            # make a clean PDB file that can be kept at the user's request to see if the program is doing what they think it is
+            # only need to make the clean file if the user wants to keep it
+            if keep_clean_pdbs:
+                # create and open a XXXX.clean.pdb file name in the pdb directory
+                cur_dir = os.getcwd() + '/'
+                pdb_dir = cur_dir + 'pdbs/'
+                
+                # get the four letter code in case a file path was given
+                pdb_name = pdb_name.split( '/' )[-1][:4]
+                clean_pdb_filename = pdb_dir + pdb_name + ".clean.pdb"
+                
+                # put the ATOM and HETATM lines into a list to be sorted on atom number
+                atom_num_pdb_lines = {}
+                for atom_res_key in self.protein.keys():
+                    for atom_line in self.protein[ atom_res_key ]:
+                        atom_num_pdb_lines[ atom_line.atom_num() ] = atom_line.line
+                for hetatm_res_key in self.ligand.keys():
+                    for hetatm_line in self.ligand[ hetatm_res_key ]:
+                        atom_num_pdb_lines[ hetatm_line.atom_num() ] = hetatm_line.line
+                        
+                # get the atom numbers in order from the dictionary
+                ordered_atom_numbers = atom_num_pdb_lines.keys()
+                ordered_atom_numbers.sort()
+                
+                # order the PDB lines based on their atom number
+                ordered_pdb_lines = []
+                for atom_num_key in ordered_atom_numbers:
+                    ordered_pdb_lines.append( atom_num_pdb_lines[ atom_num_key ] )
+
+                # write the protein and ligand lines that are kept after this round of splitting
+                with open( clean_pdb_filename, 'wb' ) as pdb_fh:
+                    pdb_fh.writelines( ordered_pdb_lines )
+                            
+        return True
+        
+        
+        
+    def calc_distance(self, vec1, vec2):
+        # takes two lists of xyz coordinates of two atoms
+        from math import sqrt, pow
+        
+        x1 = vec1[0]
+        y1 = vec1[1]
+        z1 = vec1[2]
+        
+        x2 = vec2[0]
+        y2 = vec2[1]
+        z2 = vec2[2]
+        
+        dist = sqrt( pow( x2 - x1, 2 ) + pow( y2 - y1, 2 ) + pow( z2 - z1, 2 ) )
+        
+        return dist
+    
+    
+    
+    def get_activesite( self, cutoff ):
+        # overall activesite dictionary
+        # key: unique protein name (resname_reschain_resnum), value: list of ATOM lines per residue
+        self.activesite_dict = {}
+        
+        # unique ligand name (resname_reschain_resnum)
+        #value: list of 3-letter amino acid names
+        self.activesite_lig_pro_res_dict = {}
+        
+        # unique ligand name (resname_reschain_resnum)
+        #value: list of atom_line for each AA ( to get atom count later )
+        self.activesite_lig_pro_atms_dict = {}
+        
+        # activesite data holders
+        self.num_activesite_res = 0
+        self.activesite_residues = []
+        self.num_activesite_atms = 0
+        self.num_activesite_nonpolar_atoms = 0
+        self.num_activesite_polar_atoms = 0
+        self.num_activesite_unk_atom_types = 0
+        self.activesite_num_nonpolar_atoms = {}
+        self.activesite_num_polar_atoms = {}
+        self.activesite_num_unk_atoms = {}
+        
+        for uniq_lig_name in self.ligand_dict.keys():
+            # list to store the 3 letter names of all of the protein residues within the cutoff distance of each ligand residue (by unique name)
+            AS_names_in_activesite = []
+            AS_atms_in_activesite = []
+            
+            for hetatm_line in self.ligand_dict[ uniq_lig_name ]:
+                # extract coordinates
+                x_lig = hetatm_line.res_x_coord()
+                y_lig = hetatm_line.res_y_coord()
+                z_lig = hetatm_line.res_z_coord()
+                lig_xyz = [ x_lig, y_lig, z_lig ]
+            
+                for atom_line in self.protein_lines: 
+                    pro_res_name = atom_line.res_name()
+                    pro_res_chain = atom_line.res_chain()
+                    pro_res_num = str( atom_line.res_num() )
+                    pro_uniq_res = str( pro_res_name + '_' + pro_res_chain + '_' + pro_res_num )
                     
+                    # extract coordinates
+                    x_pro = atom_line.res_x_coord()
+                    y_pro = atom_line.res_y_coord()
+                    z_pro = atom_line.res_z_coord()
+                    pro_xyz = [ x_pro, y_pro, z_pro ]
+                    
+                    # check the distance
+                    if self.calc_distance( lig_xyz, pro_xyz ) <= cutoff:
+                        # append the line if the unique protein residue has already been counted
+                        if pro_uniq_res in self.activesite_residues:
+                            if atom_line not in self.activesite_dict[ pro_uniq_res ]:
+                                self.activesite_dict[ pro_uniq_res ].append( atom_line )
+                            
+                        # store all of the unique names of the protein residues within the activesite
+                        # also, store all of the atom_lines for each unique protein residue in the activesite
+                        else:
+                            self.activesite_residues.append( pro_uniq_res )
+                            self.activesite_dict[ pro_uniq_res ] = []
+                            self.activesite_dict[ pro_uniq_res ].append( atom_line )
+                            
+                            # store the 3 letter name of the amino acid within the activesite
+                            three_letter_name = pro_uniq_res[0:3]
+                            AS_names_in_activesite.append( three_letter_name )
+                            
+                        # store atom_line for each unique amino acid within the activesite to get an atom count later
+                        if atom_line not in AS_atms_in_activesite:
+                            AS_atms_in_activesite.append( atom_line )
+                        
+            # store the list of the 3 letter names for the amino acid within the self.activesite_lig_pro_dict according to which ligand its near
+            self.activesite_lig_pro_res_dict[ uniq_lig_name ] = AS_names_in_activesite
+            self.activesite_lig_pro_atms_dict[ uniq_lig_name ] = AS_atms_in_activesite
+                
+        # get number of activesite residues
+        self.num_activesite_res = len( self.activesite_dict.keys() )
+        
+        # count the number of activesite atoms
+        for uniq_lig_name in self.activesite_lig_pro_atms_dict.keys():
+            self.num_activesite_atms += len( self.activesite_lig_pro_atms_dict[ uniq_lig_name ] )
+            
+            # prepare the counter for nonpolar, polar, and unknown atom types for each unique activesite residue
+            self.activesite_num_nonpolar_atoms[ uniq_lig_name ] = 0
+            self.activesite_num_polar_atoms[ uniq_lig_name ] = 0
+            self.activesite_num_unk_atoms[ uniq_lig_name ] = 0
+            
+            # count the number of nonpolar and polar atoms
+            for pdb_line in self.activesite_lig_pro_atms_dict[ uniq_lig_name ]:
+                # if element is nonpolar
+                if pdb_line.element() in nonpolar_atoms:
+                    # total nonpolar activesite atoms
+                    self.num_activesite_nonpolar_atoms += 1
+                    
+                    # number of nonpolar atoms for this activesite residue
+                    self.activesite_num_nonpolar_atoms[ uniq_lig_name ] += 1
+                    
+                # if element is polar
+                elif pdb_line.element() in polar_atoms:
+                    # total polar activesite atoms
+                    self.num_activesite_polar_atoms += 1
+                    
+                    # number of polar atoms for this activesite residue
+                    self.activesite_num_polar_atoms[ uniq_lig_name ] += 1
+                    
+                # else I don't know what this is
+                else:
+                    print "      * I didn't know what type of atom", "'%s'" %pdb_line.element(), "is. Please add it to the list"
+                    # total unkown activesite atoms
+                    self.num_activesite_unk_atom_types += 1
+                    
+                    # number of unknown atoms for this activesite residue
+                    self.activesite_num_unk_atoms[ uniq_lig_name ] += 1
+            
+        # return information
+        # if this ligand has no activesite for some reason
+        if len( self.activesite_dict.keys() ) == 0:
+            print "## Skipping", self.name, "because it had no activesite residues within", cutoff, "Angstroms of the ligand residue(s) ##"
+            return False
+        
+        # otherwise print relevant information
+        else:
+            print "  ", self.name, "has", self.num_activesite_res, "activesite residues",
+            print "and", self.num_activesite_atms, "non-hydrogen activesite atoms"
             return True
         
-        return True
-    
-    
-    
-    def write_clean_pdb_file( self, pdb_filename ):
-        # make a clean PDB file that can be kept at the user's request to see if the program is doing what they think it is
-        # only need to make the clean file if the user wants to keep it
-        # create and open a XXXX.clean.pdb file name in the pdb directory
-        cur_dir = os.getcwd() + '/'
-        pdb_dir = cur_dir + 'pdbs/'
+
         
-        # get the four letter code in case a file path was given
-        pdb_name = pdb_filename.split( '/' )[-1][:4]
-        clean_pdb_filename = pdb_dir + pdb_name + ".clean.pdb"
+    def count_contacts( self, cutoff ):
+        # must have already found all residues within the activesite
+        # counted as ligand to protein!!
+        self.polar_polar = 0
+        self.polar_nonpolar = 0
+        self.nonpolar_polar = 0
+        self.nonpolar_nonpolar = 0
+        self.unk_contact = 0
         
-        # put the ATOM, HETATM, and TER lines into a list to be sorted on atom number
-        atom_num_pdb_lines = {}
-        for atom_res_key in self.protein.keys():
-            for atom_line in self.protein[ atom_res_key ]:
-                atom_num_pdb_lines[ atom_line.atom_num() ] = atom_line.line
-        for hetatm_res_key in self.ligand.keys():
-            for hetatm_line in self.ligand[ hetatm_res_key ]:
-                atom_num_pdb_lines[ hetatm_line.atom_num() ] = hetatm_line.line
-        for ter_line in self.ter_lines:
-            # serial_number == atom_number
-            atom_num_pdb_lines[ ter_line.serial_number() ] = ter_line.line
-                        
-        # get the atom numbers in order from the dictionary
-        ordered_atom_numbers = atom_num_pdb_lines.keys()
-        ordered_atom_numbers.sort()
+        # ligxyz_proxyz xyz coordinates unique for every atom, best way to collect unique contacts made
+        self.uniq_contact_list = []
+        
+        for uniq_lig_name in self.ligand_dict.keys():
+            # add pdb name and ligand name to list
+            self.CC_per_lig_pdb_names.append( self.name )
+            self.CC_per_lig_lig_names.append( uniq_lig_name )
+            self.CC_per_lig_lig_atms.append( len( self.ligand_dict[ uniq_lig_name ] ) )
+            self.CC_per_lig_activesite_atms.append( len( self.activesite_lig_pro_atms_dict[ uniq_lig_name ] ) )
+            
+            # make empty counters - used for counting contacts per ligand
+            lig_polar_polar = 0
+            lig_polar_nonpolar = 0
+            lig_nonpolar_polar = 0
+            lig_nonpolar_nonpolar = 0
+            lig_unk_contact = 0
+            
+            # for every ligand residue
+            for lig_pdb_line in self.ligand_dict[ uniq_lig_name ]:
+                # get ligand atom xyz
+                x_lig = lig_pdb_line.res_x_coord()
+                y_lig = lig_pdb_line.res_y_coord()
+                z_lig = lig_pdb_line.res_z_coord()
+                lig_xyz = [ x_lig, y_lig, z_lig ]
+                lig_xyz_str = str( x_lig ) + '_' + str( y_lig ) + '_' + str( z_lig )
                 
-        # order the PDB lines based on their atom number
-        ordered_pdb_lines = []
-        for atom_num_key in ordered_atom_numbers:
-            ordered_pdb_lines.append( atom_num_pdb_lines[ atom_num_key ] )
+                for pro_pdb_line in self.activesite_lig_pro_atms_dict[ uniq_lig_name ]:
+                    # get protein atom xyz
+                    x_pro = pro_pdb_line.res_x_coord()
+                    y_pro = pro_pdb_line.res_y_coord()
+                    z_pro = pro_pdb_line.res_z_coord()
+                    pro_xyz = [ x_pro, y_pro, z_pro ]
+                    pro_xyz_str = str( x_pro ) + '_' + str( y_pro ) + '_' + str( z_pro )
                     
-        # write the protein and ligand lines that are kept after this round of splitting
-        with open( clean_pdb_filename, 'wb' ) as pdb_fh:
-            pdb_fh.writelines( ordered_pdb_lines )
-                    
+                    # check atomic distance
+                    contact_distance = self.calc_distance( lig_xyz, pro_xyz )
+                    if contact_distance < cutoff:
+                        # check to see that this contact has not yet been counted
+                        uniq_contact = lig_xyz_str + '.' + pro_xyz_str
+                        if uniq_contact not in self.uniq_contact_list:
+                            # append unique contact to list
+                            self.uniq_contact_list.append( uniq_contact )
+                            
+                            # check contact type
+                            if lig_pdb_line.element() in polar_atoms or lig_pdb_line.element() in metal_list:
+                                # polar polar
+                                if pro_pdb_line.element() in polar_atoms or pro_pdb_line.element() in metal_list:
+                                    lig_polar_polar += 1
+                                    
+                                # polar nonpolar
+                                elif pro_pdb_line.element() in nonpolar_atoms:
+                                    lig_polar_nonpolar += 1
+                                   
+                                # unknown
+                                else:
+                                    lig_unk_contact += 1
+                                   
+                            elif lig_pdb_line.element() in nonpolar_atoms:
+                                # nonpolar polar
+                                if pro_pdb_line.element() in polar_atoms or pro_pdb_line.element() in metal_list:
+                                    lig_nonpolar_polar += 1
+                                   
+                                # nonpolar nonpolar
+                                elif pro_pdb_line.element() in nonpolar_atoms:
+                                    lig_nonpolar_nonpolar += 1
+                                    
+                                # unknown
+                                else:
+                                    lig_unk_contact += 1
+                                   
+                            # both unknown
+                            else:
+                                lig_unk_contact += 1
+                                
+            # append this info to the per ligand data frame lists
+            self.CC_per_lig_pp_contacts.append( lig_polar_polar )
+            self.CC_per_lig_pn_contacts.append( lig_polar_nonpolar )
+            self.CC_per_lig_np_contacts.append( lig_nonpolar_polar )
+            self.CC_per_lig_nn_contacts.append( lig_nonpolar_nonpolar )
+            self.CC_per_lig_unk_contacts.append( lig_unk_contact )
+            
+            # add the counts for this particular ligand to the total count
+            self.polar_polar += lig_polar_polar
+            self.polar_nonpolar += lig_polar_nonpolar
+            self.nonpolar_polar += lig_nonpolar_polar
+            self.nonpolar_nonpolar += lig_nonpolar_nonpolar
+            self.unk_contact += lig_unk_contact
+            
+            
+        # store all data in global list
+        # because if it got here, all of the data existed
+        self.CC_pdb_names.append( self.name[0:4] )
+        self.CC_lig_atms.append( self.num_ligand_atoms )
+        self.CC_activesite_atms.append( self.num_activesite_atms )
+        self.CC_pp_contacts.append( self.polar_polar )
+        self.CC_pn_contacts.append( self.polar_nonpolar )
+        self.CC_np_contacts.append( self.nonpolar_polar )
+        self.CC_nn_contacts.append( self.nonpolar_nonpolar )
+        self.CC_unk_contacts.append( self.unk_contact )
+        
         return True
-    
-    
-    
-    
+        
+        
+        
 ######################
 #### RUNS PROGRAM ####
 ######################
@@ -674,6 +969,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Use Python to count contacts.")
     parser.add_argument("pdb_name_list", help="a file of the pdbs to be analyzed")
     parser.add_argument("--ignore_glycosylated_proteins", "-i", action="store_true", help="do you want to skip PDBs that have a covalently attached HETATM group? This is most likely a glycan")
+    parser.add_argument("--cutoff", "-c", type=int, default=5, help="how big do you want the activesite cutoff to be, in angstroms? default = 5")
     parser.add_argument("--heavy_atoms", "-ha", type=int, default=10, help="how many heavy atoms does a HETATM residue need to be considered a ligand? default = 10")
     parser.add_argument("--download_pdbs", "-d", action="store_true", help="do you need to download the pdbs from the database?")
     parser.add_argument("--keep_cifs", action="store_true", help="do you want to keep the cif files you download?")
