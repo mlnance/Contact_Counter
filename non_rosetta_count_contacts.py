@@ -47,27 +47,10 @@ from chemical_data import *
 ###############################
 
 class CTCT:
-    def __init__( self, pdb_name ):
-        # get the four letter code from the passed pdb_name
-        pdb_name = pdb_name.split( '/' )[-1][:4].lower()
-        
-        # get current working directory and the pickle directory
+    def __init__( self ):
+        # get current working directory
         self.working_dir = os.getcwd() + '/'
-        self.pickle_dir = self.working_dir + "pdbs/pro_lig_pickles/"
         
-        # collect the corresponding protein and ligand pickle files
-        self.protein_pickle = self.pickle_dir + pdb_name + "_pro.p"
-        self.ligand_pickle = self.pickle_dir + pdb_name + "_lig.p"
-        
-        # collect the corresponding protein and ligand dictionary data
-        self.protein = pickle.load( open( self.protein_pickle, "rb" ) )
-        self.ligand = pickle.load( open( self.ligand_pickle, "rb" ) )
-        
-        print self.protein
-
-
-    
-    def instantiate_data_holders( self ):
         # make data lists to add over course of program for contact counts
         # will be added to pandas df at end
         self.CC_pdb_names = []
@@ -90,6 +73,22 @@ class CTCT:
         self.CC_per_lig_np_contacts = []
         self.CC_per_lig_nn_contacts = []
         self.CC_per_lig_unk_contacts = []
+        
+        
+
+    def read_pro_lig_pickles( self, pro_pickle, lig_pickle ):
+        # get the four letter code from the passed protein pickle name
+        self.name = pro_pickle.split( '/' )[-1][:4].lower()
+        
+        # collect the corresponding protein and ligand dictionary data
+        self.protein = pickle.load( open( pro_pickle, "rb" ) )
+        self.ligand = pickle.load( open( lig_pickle, "rb" ) )
+        
+        # collect number of ligand residues and atoms
+        self.num_lig_res = len( self.ligand.keys() )
+        self.num_lig_atoms = 0
+        for lig_res in self.ligand.keys():
+            self.num_lig_atoms += len( self.ligand[ lig_res ] )
         
         return True
     
@@ -137,56 +136,54 @@ class CTCT:
         self.activesite_num_polar_atoms = {}
         self.activesite_num_unk_atoms = {}
         
-        for uniq_lig_name in self.ligand_dict.keys():
+        for uniq_lig_name in self.ligand.keys():
             # list to store the 3 letter names of all of the protein residues within the cutoff distance of each ligand residue (by unique name)
             AS_names_in_activesite = []
             AS_atms_in_activesite = []
             
-            for hetatm_line in self.ligand_dict[ uniq_lig_name ]:
+            for hetatm_line in self.ligand[ uniq_lig_name ]:
                 # extract coordinates
-                x_lig = hetatm_line.res_x_coord()
-                y_lig = hetatm_line.res_y_coord()
-                z_lig = hetatm_line.res_z_coord()
+                x_lig = hetatm_line.x_coord
+                y_lig = hetatm_line.y_coord
+                z_lig = hetatm_line.z_coord
                 lig_xyz = [ x_lig, y_lig, z_lig ]
-            
-                for atom_line in self.protein_lines: 
-                    pro_res_name = atom_line.res_name()
-                    pro_res_chain = atom_line.res_chain()
-                    pro_res_num = str( atom_line.res_num() )
-                    pro_uniq_res = str( pro_res_name + '_' + pro_res_chain + '_' + pro_res_num )
-                    
-                    # extract coordinates
-                    x_pro = atom_line.res_x_coord()
-                    y_pro = atom_line.res_y_coord()
-                    z_pro = atom_line.res_z_coord()
-                    pro_xyz = [ x_pro, y_pro, z_pro ]
-                    
-                    # check the distance
-                    if self.calc_distance( lig_xyz, pro_xyz ) <= cutoff:
-                        # append the line if the unique protein residue has already been counted
-                        if pro_uniq_res in self.activesite_residues:
-                            if atom_line not in self.activesite_dict[ pro_uniq_res ]:
-                                self.activesite_dict[ pro_uniq_res ].append( atom_line )
-                            
-                        # store all of the unique names of the protein residues within the activesite
-                        # also, store all of the atom_lines for each unique protein residue in the activesite
-                        else:
-                            self.activesite_residues.append( pro_uniq_res )
-                            self.activesite_dict[ pro_uniq_res ] = []
-                            self.activesite_dict[ pro_uniq_res ].append( atom_line )
-                            
-                            # store the 3 letter name of the amino acid within the activesite
-                            three_letter_name = pro_uniq_res[0:3]
-                            AS_names_in_activesite.append( three_letter_name )
-                            
-                        # store atom_line for each unique amino acid within the activesite to get an atom count later
-                        if atom_line not in AS_atms_in_activesite:
-                            AS_atms_in_activesite.append( atom_line )
+                
+                # for each unique protein residue
+                for uniq_pro_name in self.protein.keys():
+                    # for each atom in the residue
+                    for atom_line in self.protein[ uniq_pro_name ]:
+                        # extract coordinates
+                        x_pro = atom_line.x_coord
+                        y_pro = atom_line.y_coord
+                        z_pro = atom_line.z_coord
+                        pro_xyz = [ x_pro, y_pro, z_pro ]
                         
-            # store the list of the 3 letter names for the amino acid within the self.activesite_lig_pro_dict according to which ligand its near
+                        # check the distance
+                        if self.calc_distance( lig_xyz, pro_xyz ) <= cutoff:
+                            # append the line if the unique protein residue has already been counted
+                            if uniq_pro_name in self.activesite_residues:
+                                if atom_line not in self.activesite_dict[ uniq_pro_name ]:
+                                    self.activesite_dict[ uniq_pro_name ].append( atom_line )
+                            
+                            # store all of the unique names of the protein residues within the activesite
+                            # also, store all of the atom_lines for each unique protein residue in the activesite
+                            else:
+                                self.activesite_residues.append( uniq_pro_name )
+                                self.activesite_dict[ uniq_pro_name ] = []
+                                self.activesite_dict[ uniq_pro_name ].append( atom_line )
+                                
+                                # store the 3 letter name of the amino acid within the activesite
+                                three_letter_name = uniq_pro_name[0:3]
+                                AS_names_in_activesite.append( three_letter_name )
+                                
+                            # store atom_line for each unique amino acid within the activesite to get an atom count later
+                            if atom_line not in AS_atms_in_activesite:
+                                AS_atms_in_activesite.append( atom_line )
+                        
+            # store the list of the 3 letter names for the amino acid within the self.activesite_lig_pro_dict according to which ligand it is near
             self.activesite_lig_pro_res_dict[ uniq_lig_name ] = AS_names_in_activesite
             self.activesite_lig_pro_atms_dict[ uniq_lig_name ] = AS_atms_in_activesite
-                
+            
         # get number of activesite residues
         self.num_activesite_res = len( self.activesite_dict.keys() )
         
@@ -202,7 +199,7 @@ class CTCT:
             # count the number of nonpolar and polar atoms
             for pdb_line in self.activesite_lig_pro_atms_dict[ uniq_lig_name ]:
                 # if element is nonpolar
-                if pdb_line.element() in nonpolar_atoms:
+                if pdb_line.element in nonpolar_atoms:
                     # total nonpolar activesite atoms
                     self.num_activesite_nonpolar_atoms += 1
                     
@@ -210,7 +207,7 @@ class CTCT:
                     self.activesite_num_nonpolar_atoms[ uniq_lig_name ] += 1
                     
                 # if element is polar
-                elif pdb_line.element() in polar_atoms:
+                elif pdb_line.element in polar_atoms:
                     # total polar activesite atoms
                     self.num_activesite_polar_atoms += 1
                     
@@ -252,11 +249,11 @@ class CTCT:
         # ligxyz_proxyz xyz coordinates unique for every atom, best way to collect unique contacts made
         self.uniq_contact_list = []
         
-        for uniq_lig_name in self.ligand_dict.keys():
+        for uniq_lig_name in self.ligand.keys():
             # add pdb name and ligand name to list
             self.CC_per_lig_pdb_names.append( self.name )
             self.CC_per_lig_lig_names.append( uniq_lig_name )
-            self.CC_per_lig_lig_atms.append( len( self.ligand_dict[ uniq_lig_name ] ) )
+            self.CC_per_lig_lig_atms.append( len( self.ligand[ uniq_lig_name ] ) )
             self.CC_per_lig_activesite_atms.append( len( self.activesite_lig_pro_atms_dict[ uniq_lig_name ] ) )
             
             # make empty counters - used for counting contacts per ligand
@@ -267,19 +264,19 @@ class CTCT:
             lig_unk_contact = 0
             
             # for every ligand residue
-            for lig_pdb_line in self.ligand_dict[ uniq_lig_name ]:
+            for lig_pdb_line in self.ligand[ uniq_lig_name ]:
                 # get ligand atom xyz
-                x_lig = lig_pdb_line.res_x_coord()
-                y_lig = lig_pdb_line.res_y_coord()
-                z_lig = lig_pdb_line.res_z_coord()
+                x_lig = lig_pdb_line.x_coord
+                y_lig = lig_pdb_line.y_coord
+                z_lig = lig_pdb_line.z_coord
                 lig_xyz = [ x_lig, y_lig, z_lig ]
                 lig_xyz_str = str( x_lig ) + '_' + str( y_lig ) + '_' + str( z_lig )
                 
                 for pro_pdb_line in self.activesite_lig_pro_atms_dict[ uniq_lig_name ]:
                     # get protein atom xyz
-                    x_pro = pro_pdb_line.res_x_coord()
-                    y_pro = pro_pdb_line.res_y_coord()
-                    z_pro = pro_pdb_line.res_z_coord()
+                    x_pro = pro_pdb_line.x_coord
+                    y_pro = pro_pdb_line.y_coord
+                    z_pro = pro_pdb_line.z_coord
                     pro_xyz = [ x_pro, y_pro, z_pro ]
                     pro_xyz_str = str( x_pro ) + '_' + str( y_pro ) + '_' + str( z_pro )
                     
@@ -293,26 +290,26 @@ class CTCT:
                             self.uniq_contact_list.append( uniq_contact )
                             
                             # check contact type
-                            if lig_pdb_line.element() in polar_atoms or lig_pdb_line.element() in metal_list:
+                            if lig_pdb_line.element in polar_atoms or lig_pdb_line.element in metal_list:
                                 # polar polar
-                                if pro_pdb_line.element() in polar_atoms or pro_pdb_line.element() in metal_list:
+                                if pro_pdb_line.element in polar_atoms or pro_pdb_line.element in metal_list:
                                     lig_polar_polar += 1
                                     
                                 # polar nonpolar
-                                elif pro_pdb_line.element() in nonpolar_atoms:
+                                elif pro_pdb_line.element in nonpolar_atoms:
                                     lig_polar_nonpolar += 1
                                    
                                 # unknown
                                 else:
                                     lig_unk_contact += 1
                                    
-                            elif lig_pdb_line.element() in nonpolar_atoms:
+                            elif lig_pdb_line.element in nonpolar_atoms:
                                 # nonpolar polar
-                                if pro_pdb_line.element() in polar_atoms or pro_pdb_line.element() in metal_list:
+                                if pro_pdb_line.element in polar_atoms or pro_pdb_line.element in metal_list:
                                     lig_nonpolar_polar += 1
                                    
                                 # nonpolar nonpolar
-                                elif pro_pdb_line.element() in nonpolar_atoms:
+                                elif pro_pdb_line.element in nonpolar_atoms:
                                     lig_nonpolar_nonpolar += 1
                                     
                                 # unknown
@@ -340,8 +337,8 @@ class CTCT:
             
         # store all data in global list
         # because if it got here, all of the data existed
-        self.CC_pdb_names.append( self.name[0:4] )
-        self.CC_lig_atms.append( self.num_ligand_atoms )
+        self.CC_pdb_names.append( self.name )
+        self.CC_lig_atms.append( self.num_lig_atoms )
         self.CC_activesite_atms.append( self.num_activesite_atms )
         self.CC_pp_contacts.append( self.polar_polar )
         self.CC_pn_contacts.append( self.polar_nonpolar )
@@ -350,17 +347,3 @@ class CTCT:
         self.CC_unk_contacts.append( self.unk_contact )
         
         return True
-        
-        
-        
-######################
-#### RUNS PROGRAM ####
-######################
-
-if __name__ == "__main__":
-    import argparse
-    
-    parser = argparse.ArgumentParser(description="Use Python to count contacts.")
-    parser.add_argument("cutoff", type=int, default=5, help="how big do you want the activesite cutoff to be, in angstroms? default = 5")
-    parser.add_argument("heavy_atoms", type=int, default=10, help="how many heavy atoms does a HETATM residue need to be considered a ligand? default = 10")
-    input_args = parser.parse_args()

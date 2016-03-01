@@ -7,7 +7,7 @@ __author__ = "morganlnance"
 ###########################
 
 import argparse
-parser = argparse.ArgumentParser(description="Use Python to count contacts.")
+parser = argparse.ArgumentParser(description="Use Python to clean out a list of PDB files.")
 parser.add_argument("pdb_name_list", help="a file of the pdbs to be analyzed")
 parser.add_argument("--ignore_glycosylated_proteins", "-i", action="store_true", help="do you want to skip PDBs that have a covalently attached HETATM group? This is most likely a glycan")
 parser.add_argument("--heavy_atoms", "-ha", type=int, default=10, help="how many heavy atoms does a HETATM residue need to be considered a ligand? default = 10")
@@ -154,34 +154,6 @@ def go( pdb_name_list, ignore_glycosylated_proteins, heavy_atoms, download_pdbs,
 ##### DATA COLLECTION #####
 ###########################
     
-    # write all the PDB names that were either skipped or unable to be downloaded because of the flags given to the program
-    # example) skip glycosylated proteins, skip nucleic acids as ligands, skip PDBs with multiple models
-    filename = "PDB_files_that_were_skipped.txt"
-    with open( filename, 'wb' ) as fh:
-        fh.write( "## PDBs unable to be downloaded\n" )
-        for line in unable_to_download_pdb_names:
-            fh.write( line + '\n' )
-        fh.write( "\n" )
-
-        fh.write( "## PDBs with covalently attached HETATMs\n" )
-        for line in clean.glycosylated_proteins:
-            fh.write( line + '\n' )
-        fh.write( "\n" )
-        
-        fh.write( "## PDBs with an unknown residues\n" )
-        for line in clean.unknown_res_pdb_names:
-            fh.write( line + '\n' )
-        fh.write( "\n" )
-
-        fh.write( "## PDBs with deuterium\n" )
-        for line in clean.deuterium_pdb_names:
-            fh.write( line + '\n' )
-        fh.write( "\n" )
-
-        fh.write( "## PDBs with multiple MODELs\n" )
-        for line in clean.multiple_models_pdb_names:
-            fh.write( line + '\n' )
-        
     # write out the unique three letter codes for ligands that were kept
     filename = "ligand_residues_that_were_kept.txt"
     with open( filename, 'wb' ) as fh:
