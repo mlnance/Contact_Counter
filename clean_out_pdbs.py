@@ -651,7 +651,7 @@ class Clean:
         pdb_dir = cur_dir + 'pdbs/'
         
         # get the four letter code in case a file path was given
-        pdb_name = pdb_filename.split( '/' )[-1][:4]
+        pdb_name = pdb_filename.split( '/' )[-1][:4].lower()
         clean_pdb_filename = pdb_dir + pdb_name + ".clean.pdb"
         
         # put the ATOM, HETATM, and TER lines into a list to be sorted on atom number
@@ -683,23 +683,20 @@ class Clean:
     
     
     def write_pro_lig_pickle( self, pdb_filename ):
-        # get the protein and ligand pickle directory paths
+        # get the protein and ligand pickle directory path
         cur_dir = os.getcwd() + '/'
-        pro_pickle_dir = cur_dir + 'pdbs/protein_pickles/'
-        lig_pickle_dir = cur_dir + 'pdbs/ligand_pickles/'
+        pro_lig_pickle_dir = cur_dir + 'pdbs/pro_lig_pickles/'
         
-        # create these directories if they do not already exist
-        if not os.path.isdir( pro_pickle_dir ):
-            os.mkdir( pro_pickle_dir )
-        if not os.path.isdir( lig_pickle_dir ):
-            os.mkdir( lig_pickle_dir )
+        # create the directory if they do not already exist
+        if not os.path.isdir( pro_lig_pickle_dir ):
+            os.mkdir( pro_lig_pickle_dir )
         
         # get the four letter code in case a file path was given
-        pdb_name = pdb_filename.split( '/' )[-1][:4]
+        pdb_name = pdb_filename.split( '/' )[-1][:4].lower()
         
         # create the pickle filename from the four letter PDB code
-        protein_pickle = pro_pickle_dir + pdb_name + "_pro.p"
-        ligand_pickle = lig_pickle_dir + pdb_name + "_lig.p"
+        protein_pickle = pro_lig_pickle_dir + pdb_name + "_pro.p"
+        ligand_pickle = pro_lig_pickle_dir + pdb_name + "_lig.p"
         
         # write the protein and ligand dictionaries to the pickle file
         # doing this so that in contact and activesite code there is no need to split PDB file again
