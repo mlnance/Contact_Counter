@@ -196,8 +196,8 @@ class Clean:
         unique_connection_names = []
         
         for link_line in LINK_records:
-            res1_unique_name = link_line.res1_name() + '_' + link_line.res1_chain() + '_' + str( link_line.res1_seq() )
-            res2_unique_name = link_line.res2_name() + '_' + link_line.res2_chain() + '_' + str( link_line.res2_seq() )
+            res1_unique_name = link_line.res1_name + '_' + link_line.res1_chain + '_' + str( link_line.res1_seq )
+            res2_unique_name = link_line.res2_name + '_' + link_line.res2_chain + '_' + str( link_line.res2_seq )
             uniq_connection_name = res1_unique_name + '+' + res2_unique_name
             
             if uniq_connection_name not in unique_connection_names:
@@ -350,13 +350,13 @@ class Clean:
                 modres_line = MODRES_line( line )
                 
                 # unique residue name
-                modres_name = modres_line.res_name()
-                modres_chain = modres_line.res_chain()
-                modres_num = str( modres_line.res_num() )
+                modres_name = modres_line.res_name
+                modres_chain = modres_line.res_chain
+                modres_num = str( modres_line.res_num )
                 uniq_modres_name = modres_name + '_' + modres_chain + '_' + modres_num
                 
                 # the standard res name if this residue wasn't modified
-                std_res_name = modres_line.std_res_name()
+                std_res_name = modres_line.std_res_name
                 
                 # if the standard residue name is a standard amino acid, add its modified res name to a list to be added later
                 if std_res_name in AA_list:
@@ -375,7 +375,7 @@ class Clean:
                 
             if line[0:3] == "TER":
                 # store TER lines to write to a clean PDB file
-                ter_line = TER_line( line )
+                ter_line = PDB_line( line )
                 self.ter_lines.append( ter_line )
             
             if line[0:4] == "ATOM":
@@ -383,29 +383,29 @@ class Clean:
                 pdb_line = PDB_line( line )
                 
                 # unknown amino acid - skip the PDB
-                if pdb_line.res_name() == "UNK" or pdb_line.res_name() == "UNL":
+                if pdb_line.res_name == "UNK" or pdb_line.res_name == "UNL":
                     unknown.append( line )
                     self.unknown_res_pdb_names.append( pdb_name )
                     break
                 
                 # skip PDBs that have deuterium as an element
-                if pdb_line.element() == 'D':
+                if pdb_line.element == 'D':
                     deuterium.append( line )
                     self.deuterium_pdb_names.append( pdb_name )
                     break
                 
                 # skip hydrogen atoms
-                if pdb_line.element() != 'H':
+                if pdb_line.element != 'H':
                     # collect the residue's unique name
-                    pro_res_name = pdb_line.res_name()
-                    pro_res_chain = pdb_line.res_chain()
-                    pro_res_num = str( pdb_line.res_num() )
+                    pro_res_name = pdb_line.res_name
+                    pro_res_chain = pdb_line.res_chain
+                    pro_res_num = str( pdb_line.res_num )
                     uniq_pro_name = pro_res_name + '_' + pro_res_chain + '_' + pro_res_num
                     
                     # check occupancy level
-                    if pdb_line.occupancy() != 1.00:
+                    if pdb_line.occupancy != 1.00:
                         # keep those without an identifier or with the code 'A'
-                        if pdb_line.alt_loc() == '' or pdb_line.alt_loc() == 'A':
+                        if pdb_line.alt_loc == '' or pdb_line.alt_loc == 'A':
                             # instantiate a dictionary key for this specific protein residue using its unique name 
                             # will be filled with the non-hydrogen ATOM lines later
                             if uniq_pro_name not in self.protein.keys():
@@ -428,7 +428,7 @@ class Clean:
             if line[0:6] == "HETATM":
                 # get each ligand residue name to see what it is and store it in the appropriate list
                 pdb_line = PDB_line( line )
-                lig_res_name = pdb_line.res_name()
+                lig_res_name = pdb_line.res_name
                 
                 # check what each residue is by its name ( water, unknown, or a ligand etc )
                 if lig_res_name == "HOH" or lig_res_name == "DOD":
@@ -449,16 +449,16 @@ class Clean:
                     break
                 else:
                     # skip PDBs that have deuterium as an element
-                    if pdb_line.element() == 'D':
+                    if pdb_line.element == 'D':
                         deuterium.append( line )
                         self.deuterium_pdb_names.append( pdb_name )
                         break
                     
                     # otherwise, keep going
-                    if pdb_line.element() != 'H':
+                    if pdb_line.element != 'H':
                         # get the ligand residue's unique name
-                        lig_res_chain = pdb_line.res_chain()
-                        lig_res_num = str( pdb_line.res_num() )
+                        lig_res_chain = pdb_line.res_chain
+                        lig_res_num = str( pdb_line.res_num )
                         uniq_lig_name = lig_res_name + '_' + lig_res_chain + '_' + lig_res_num
                         
                         # if this is a modified amino acid residue
@@ -472,9 +472,9 @@ class Clean:
                             uniq_pro_name = uniq_lig_name
                             
                             # check occupancy level
-                            if pdb_line.occupancy() != 1.00:
+                            if pdb_line.occupancy != 1.00:
                                 # keep those without an identifier or with the code 'A'
-                                if pdb_line.alt_loc() == '' or pdb_line.alt_loc() == 'A':
+                                if pdb_line.alt_loc == '' or pdb_line.alt_loc == 'A':
                                     # instantiate a dictionary key for this specific protein residue using its unique name 
                                     # will be filled with the non-hydrogen ATOM lines later
                                     if uniq_lig_name not in self.ligand.keys():
@@ -497,9 +497,9 @@ class Clean:
                         # otherwise, this is a ligand residue
                         else:
                             # check occupancy level
-                            if pdb_line.occupancy() != 1.00:
+                            if pdb_line.occupancy != 1.00:
                                 # keep those without an identifier or with the code 'A'
-                                if pdb_line.alt_loc() == '' or pdb_line.alt_loc() == 'A':
+                                if pdb_line.alt_loc == '' or pdb_line.alt_loc == 'A':
                                     # instantiate a dictionary key for this specific protein residue using its unique name 
                                     # will be filled with the non-hydrogen ATOM lines later
                                     if uniq_lig_name not in self.ligand.keys():
@@ -541,18 +541,18 @@ class Clean:
         # move all ATOM and HETATM lines to their appropriate place in the dictionaries based on their unique names
         for pro_pdb_line in self.protein_lines:
             # get the residue's unique name again
-            pro_res_name = pro_pdb_line.res_name()
-            pro_res_chain = pro_pdb_line.res_chain()
-            pro_res_num = str( pro_pdb_line.res_num() )
+            pro_res_name = pro_pdb_line.res_name
+            pro_res_chain = pro_pdb_line.res_chain
+            pro_res_num = str( pro_pdb_line.res_num )
             uniq_pro_name = pro_res_name + '_' + pro_res_chain + '_' + pro_res_num
             
             # otherwise just a normal residue
             self.protein[ uniq_pro_name ].append( pro_pdb_line )
             
         for lig_pdb_line in self.hetatm_lines:
-            lig_res_name = lig_pdb_line.res_name()
-            lig_res_chain = lig_pdb_line.res_chain()
-            lig_res_num = str( lig_pdb_line.res_num() )
+            lig_res_name = lig_pdb_line.res_name
+            lig_res_chain = lig_pdb_line.res_chain
+            lig_res_num = str( lig_pdb_line.res_num )
             uniq_lig_name = lig_res_name + '_' + lig_res_chain + '_' + lig_res_num
             
             # otherwise just a normal residue
@@ -663,8 +663,7 @@ class Clean:
             for hetatm_line in self.ligand[ hetatm_res_key ]:
                 atom_num_pdb_lines[ hetatm_line.atom_num() ] = hetatm_line.line
         for ter_line in self.ter_lines:
-            # serial_number == atom_number
-            atom_num_pdb_lines[ ter_line.serial_number() ] = ter_line.line
+            atom_num_pdb_lines[ ter_line.atom_num ] = ter_line.line
                         
         # get the atom numbers in order from the dictionary
         ordered_atom_numbers = atom_num_pdb_lines.keys()
@@ -684,16 +683,23 @@ class Clean:
     
     
     def write_pro_lig_pickle( self, pdb_filename ):
-        # get the 'pdbs' directory path
+        # get the protein and ligand pickle directory paths
         cur_dir = os.getcwd() + '/'
-        pdb_dir = cur_dir + 'pdbs/'
+        pro_pickle_dir = cur_dir + 'pdbs/protein_pickles/'
+        lig_pickle_dir = cur_dir + 'pdbs/ligand_pickles/'
+        
+        # create these directories if they do not already exist
+        if not os.path.isdir( pro_pickle_dir ):
+            os.mkdir( pro_pickle_dir )
+        if not os.path.isdir( lig_pickle_dir ):
+            os.mkdir( lig_pickle_dir )
         
         # get the four letter code in case a file path was given
         pdb_name = pdb_filename.split( '/' )[-1][:4]
         
         # create the pickle filename from the four letter PDB code
-        protein_pickle = pdb_dir + pdb_name + "_pro.p"
-        ligand_pickle = pdb_dir + pdb_name + "_lig.p"
+        protein_pickle = pro_pickle_dir + pdb_name + "_pro.p"
+        ligand_pickle = lig_pickle_dir + pdb_name + "_lig.p"
         
         # write the protein and ligand dictionaries to the pickle file
         # doing this so that in contact and activesite code there is no need to split PDB file again

@@ -60,45 +60,19 @@ class LINK_line:
         # ftp://ftp.wwpdb.org/pub/pdb/doc/format_descriptions/Format_v33_Letter.pdf
         # page 173
         self.line = line.rstrip( '/n' )
-        
-    def atom_name1(self):
-        return str( self.line[ 12:16 ] )
-    
-    def alt_loc1(self):
-        return str( self.line[ 16:17] )
-    
-    def res1_name(self):
-        return str( self.line[17:20] )
-    
-    def res1_chain(self):
-        return str( self.line[21:22] )
-    
-    def res1_seq(self):
-        return int( self.line[22:26] )
-    
-    def i_code1(self):
-        return str( self.line[26:27] )
-    
-    def atom_name2(self):
-        return str( self.line[42:46] )
-    
-    def alt_loc2(self):
-        return str( self.line[46:47] )
-    
-    def res2_name(self):
-        return str( self.line[47:50] )
-    
-    def res2_chain(self):
-        return str( self.line[51:52] )
-    
-    def res2_seq(self):
-        return int( self.line[52:56] )
-    
-    def i_code2(self):
-        return str( self.line[56:57] )
-    
-    def link_dist(self):
-        return int( self.line[73:78] )
+        self.atom_name1 = line = str( self.line[ 12:16 ] )
+        self.alt_loc1 = str( self.line[ 16:17] )
+        self.res1_name = str( self.line[17:20] )
+        self.res1_chain = str( self.line[21:22] )
+        self.res1_seq = int( self.line[22:26] )
+        self.i_code1 = str( self.line[26:27] )
+        self.atom_name2 = str( self.line[42:46] )
+        self.alt_loc2 = str( self.line[46:47] )
+        self.res2_name = str( self.line[47:50] )
+        self.res2_chain = str( self.line[51:52] )
+        self.res2_seq = int( self.line[52:56] )
+        self.i_code2 = str( self.line[56:57] )
+        self.link_dist = float( self.line[73:78] )
 
 
 
@@ -109,30 +83,19 @@ class MODRES_line:
         # ftp://ftp.wwpdb.org/pub/pdb/doc/format_descriptions/Format_v33_Letter.pdf
         # page 157
         self.line = line.rstrip( '/n' )
-
-    def id_code(self):
-        return int( self.line[7:11].replace( ' ', '' ) )
-
-    def res_name(self):
+        self.id_code = str( self.line[7:11].replace( ' ', '' ) )
+        
         # the residue name used in the PDB file (post-modification)
-        return str( self.line[12:15].replace( ' ', '' ) )
-    
-    def res_chain(self):
-        return str( self.line[16:17] )
-    
-    def res_num(self):
-        return int( self.line[18:22].replace( ' ', '' ) )
-    
-    def i_code(self):
-        # insertion code
-        return str( self.line[22:23] )
-    
-    def std_res_name(self):
+        self.res_name = str( self.line[12:15].replace( ' ', '' ) )
+        
+        self.res_chain = str( self.line[16:17] )
+        self.res_num = int( self.line[18:22].replace( ' ', '' ) )
+        self.i_code = str( self.line[22:23] )
+
         # what the standard residue name is (pre-modification)
-        return str( self.line[24:27].replace( ' ', '' ) )
-    
-    def comment(self):
-        return str( self.line[29:70] )
+        self.std_res_name = str( self.line[24:27].replace( ' ', '' ) )
+        
+        self.comment = str( self.line[29:70] )
 
 
 
@@ -141,14 +104,14 @@ class MODRES_line:
 ##############################
 
 class cif_struct_conn_lines:
-    def __init__(self, cif_filename):
+    def __init__( self, cif_filename ):
         """
         Give this class an object (list) of the lines in the cif file
         """
         # only works for the struct_conn line in an mmcif file (ie a xxxx.cif file)
         self.cif_filename = cif_filename
     
-    def check_if_has_mmcif_dict(self):
+    def check_if_has_mmcif_dict( self ):
         try:
             self.mmcif_dict = MMCIF2Dict.MMCIF2Dict( self.cif_filename )
             self.mmcif_dict[ "_struct_conn.conn_type_id" ]
