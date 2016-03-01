@@ -91,12 +91,9 @@ class Clean:
         self.hetatm_lines = []
         self.ter_lines = []
         self.link_records = []
+        self.covalently_bound_lig_residues = []
         self.protein = {}
         self.ligand = {}        
-        self.covalently_bound_lig_residues = []
-        
-        # dictionary -- key: unique ligand name, value: hetatm lines
-        self.ligands_with_heavy_atom_cutoff = {}
         
         # ligand data holders for print PDB information to screen
         self.num_ligand_residues = 0
@@ -594,29 +591,31 @@ class Clean:
         pdb_name = split_pdb_name[:-4].lower()
         
         # this makes a new dictionary of ligands only if there are more than the specified number of heavy atoms in the lig residue
-        for uniq_lig in self.ligand.keys():
-            # keep PDB based on its unique name and corresponding HETATM lines
-            if len( self.ligand[ uniq_lig ] ) >= heavy_atoms:
-                self.ligands_with_heavy_atom_cutoff[ uniq_lig ] = self.ligand[ uniq_lig ]
+        for uniq_lig_name in self.ligand.keys():
+            # remove ligands that don't pass the passed heavy atom cutoff
+            if len( self.ligand[ uniq_lig_name ] ) < heavy_atoms:
+                # remove the ligand from the self.ligand dictionary
+                self.ligand.pop( uniq_lig_name )
                 
-                # keep unique three letter codes for ligand residues kept
-                three_letter_code = uniq_lig.split( '_' )[0]
-                if three_letter_code not in self.uniq_lig_three_letter_codes_kept:
-                    self.uniq_lig_three_letter_codes_kept.append( three_letter_code )
-            else:                
-                # otherwise it didn't pass the size cutoff
                 # so keep unique three letter codes for ligand residues skipped 
-                three_letter_code = uniq_lig.split( '_' )[0]
+                three_letter_code = uniq_lig_name.split( '_' )[0]
                 if three_letter_code not in self.uniq_lig_three_letter_codes_skipped_size:
                     self.uniq_lig_three_letter_codes_skipped_size.append( three_letter_code )
+                    
+            else:
+                # otherwise the ligand passed the heavy atom cutoff
+                # keep unique three letter codes for ligand residues kept                    
+                three_letter_code = uniq_lig_name.split( '_' )[0]
+                if three_letter_code not in self.uniq_lig_three_letter_codes_kept:
+                    self.uniq_lig_three_letter_codes_kept.append( three_letter_code )
                
         # get number of ligand residues
-        self.num_ligand_residues = len( self.ligands_with_heavy_atom_cutoff.keys() )
+        self.num_ligand_residues = len( self.ligand.keys() )
         
         # count the number of heavy ligand atoms by looping through the dictionary
         # hydrogens were skipped so just count the number of values for each key
-        for uniq_lig in self.ligands_with_heavy_atom_cutoff:
-            self.num_ligand_atoms += len( self.ligands_with_heavy_atom_cutoff[ uniq_lig ] )
+        for uniq_lig_name in self.ligand.keys():
+            self.num_ligand_atoms += len( self.ligand[ uniq_lig_name ] )
             
         # stop if there were no ligand residues with the given heavy atom cutoff
         if self.num_ligand_residues == 0:
@@ -633,8 +632,8 @@ class Clean:
             # replace hetatm_lines with only the hetatm lines of the remaining ligand residues with the appropriate number of heavy atoms
             # hetatm_lines will be used elsewhere - so it's easier to keep this accurate with only the hetatm lines that will be used
             self.hetatm_lines = []
-            for uniq_lig in self.ligands_with_heavy_atom_cutoff.keys():
-                for pdb_line in self.ligands_with_heavy_atom_cutoff[ uniq_lig ]:
+            for uniq_lig_name in self.ligand.keys():
+                for pdb_line in self.ligand[ uniq_lig_name ]:
                     self.hetatm_lines.append( pdb_line.line )
                     
             return True
@@ -658,10 +657,10 @@ class Clean:
         atom_num_pdb_lines = {}
         for atom_res_key in self.protein.keys():
             for atom_line in self.protein[ atom_res_key ]:
-                atom_num_pdb_lines[ atom_line.atom_num() ] = atom_line.line
+                atom_num_pdb_lines[ atom_line.atom_num ] = atom_line.line
         for hetatm_res_key in self.ligand.keys():
             for hetatm_line in self.ligand[ hetatm_res_key ]:
-                atom_num_pdb_lines[ hetatm_line.atom_num() ] = hetatm_line.line
+                atom_num_pdb_lines[ hetatm_line.atom_num ] = hetatm_line.line
         for ter_line in self.ter_lines:
             atom_num_pdb_lines[ ter_line.atom_num ] = ter_line.line
                         
