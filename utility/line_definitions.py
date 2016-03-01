@@ -7,122 +7,49 @@ __author__ = "morganlnance"
 ##############################
 
 class PDB_line:
-    def __init__(self, line):
-        # only works for ATOM and HETATM lines ( TER lines don't have coordinates for instance, thus would crash )
-        # line locations taken from the PDB databases's pdb format description page
-        # ftp://ftp.wwpdb.org/pub/pdb/doc/format_descriptions/Format_v33_Letter.pdf
-        # line 187 for ATOM
-        # line 194 for HETATM
-        self.line = line.rstrip( '/n' )
-        
-    def atom_num(self):
-        """
-        Returns the atom number from a PDB ATOM line.
-        Removes any leftover white space.
-        Example: '1', "1234"
-        :return: int( atom number )
-        """
-        return int( self.line[6:11].replace( ' ', '' ) )
-    
-    def atom_name(self):
-        """
-        Returns the atom name from a PDB ATOM line.
-        Removes any leftover white space.
-        Example: 'C', "Br"
-        :return: str( atom name )
-        """
-        return str( self.line[12:16].replace( ' ', '' ) )
-    
-    def alt_loc(self):
-        """
-        Returns the alternate location identifier from a PDB ATOM line.
-        Example: 'A' or 'B'
-        :return: str( alternate location identifier )
-        """
-        return str( self.line[16:17].replace( ' ', '' ) )
-    
-    def res_name(self):
-        """
-        Returns the residue name from a PDB ATOM line.
-        Removes any leftover white space.
-        Example: "GLY", "NAG"
-        :return: str( residue name )
-        """
-        return str( self.line[17:20].replace( ' ', '' ) )
-    
-    def res_chain(self):
-        """
-        Returns the residue chain identifier from a PDB ATOM line.
-        Removes any leftover white space.
-        Example: 'A', 'B', 'C'
-        :return: str( residue name )
-        """
-        return str( self.line[21:22] )
-    
-    def res_num(self):
-        """
-        Returns the residue number from a PDB ATOM line.
-        Removes any leftover white space.
-        Example: '4', "1000"
-        :return: int( residue number )
-        """
-        return int( self.line[22:26].replace( ' ', '' ) )
-    
-    def i_code(self):
-        """
-        Returns the insertion code from a PDB ATOM line.
-        :return: str( insertion code )
-        """
-        return str( self.line[26:27] )
-    
-    def res_x_coord(self):
-        """
-        Returns the x-coordinate from a PDB ATOM line.
-        :return: float( x-cooridnate)
-        """
-        return float( self.line[30:38].replace( ' ', '' ) )
-    
-    def res_y_coord(self):
-        """
-        Returns the y-coordinate from a PDB ATOM line.
-        :return: float( y-cooridnate)
-        """
-        return float( self.line[38:46].replace( ' ', '' ) )
-    
-    def res_z_coord(self):
-        """
-        Returns the z-coordinate from a PDB ATOM line.
-        :return: float( z-cooridnate)
-        """
-        return float( self.line[46:54].replace( ' ', '' ) )
-    
-    def occupancy(self):
-        """
-        Returns the occupancy value from a PDB ATOM line.
-        :return: float( occupancy )
-        """
-        return float( self.line[54:60].replace( ' ', '' ) )
+    def __init__( self, line ):
+        '''
+        # only works for ATOM, HETATM, TER, and ANISOU lines
+        line locations taken from the PDB databases's pdb format description page
+        ftp://ftp.wwpdb.org/pub/pdb/doc/format_descriptions/Format_v33_Letter.pdf
+        page 187 for ATOM
+        page 190 for ANISOU
+        page 192 for TER
+        page 194 for HETATM
+        '''
+        # found in ATOM, HETATM, TER, and ANISOU records
+        self.line = line
+        self.atom_num = int( self.line[6:11].replace( ' ', '' ) )
+        self.atom_name = str( self.line[12:16].replace( ' ', '' ) )
+        self.alt_loc = str( self.line[16:17].replace( ' ', '' ) )
+        self.res_name = str( self.line[17:20].replace( ' ', '' ) )
+        self.res_chain = str( self.line[21:22] )
+        self.res_num = int( self.line[22:26].replace( ' ', '' ) )
+        self.i_code = str( self.line[26:27] )
 
-    def temp_factor(self):
-        """
-        Returns the temperature factor from a PDB ATOM line.
-        :return: float( temperature factor )
-        """
-        return float( self.line[60:66].replace( ' ', '' ) )
-    
-    def element(self):
-        """
-        Returns the one- or two-letter atomic element name from a PDB ATOM line.
-        :return: str( element )
-        """
-        return str( self.line[76:78].replace( ' ', '' ) )
-    
-    def charge(self):
-        """
-        Returns the atomic charge from a PDB ATOM line.
-        :return: str( atomic charge )
-        """
-        return str( self.line[78:80].replace( ' ', '' ) )
+        # found in ATOM, HETATM, and ANISOU records
+        if not line.startswith( "TER" ):
+            self.element = str( self.line[76:78].replace( ' ', '' ) )
+            self.charge = str( self.line[78:80].replace( ' ', '' ) )
+            
+        # found in ATOM and HETATM records
+        if line.startswith( "ATOM" ) or line.startswith( "HETATM" ):
+            self.x_coord = float( self.line[30:38].replace( ' ', '' ) )
+            self.y_coord = float( self.line[38:46].replace( ' ', '' ) )
+            self.z_coord = float( self.line[46:54].replace( ' ', '' ) )
+            self.occupancy = float( self.line[54:60].replace( ' ', '' ) )
+            self.temp_factor = float( self.line[60:66].replace( ' ', '' ) )
+            self.element = str( self.line[76:78].replace( ' ', '' ) )
+            self.charge = str( self.line[78:80].replace( ' ', '' ) )
+
+        # found in ANISOU records
+        if line.startswith( "ANISOU" ):
+            self.u00 = int( self.line[28:35].replace( ' ', '' ) )
+            self.u11 = int( self.line[35:42].replace( ' ', '' ) )
+            self.u22 = int( self.line[42:49].replace( ' ', '' ) )
+            self.u01 = int( self.line[49:56].replace( ' ', '' ) )
+            self.u02 = int( self.line[56:63].replace( ' ', '' ) )
+            self.u12 = int( self.line[63:70].replace( ' ', '' ) )
 
 
 
