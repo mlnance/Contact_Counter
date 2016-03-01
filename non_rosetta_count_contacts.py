@@ -39,7 +39,7 @@ except ImportError:
 sys.path.append( "utility" )
 from line_definitions import *
 from chemical_data import *
-
+from util import calc_distance
 
 
 ###############################
@@ -94,24 +94,6 @@ class CTCT:
     
     
     
-    def calc_distance(self, vec1, vec2):
-        # takes two lists of xyz coordinates of two atoms
-        from math import sqrt, pow
-        
-        x1 = vec1[0]
-        y1 = vec1[1]
-        z1 = vec1[2]
-        
-        x2 = vec2[0]
-        y2 = vec2[1]
-        z2 = vec2[2]
-        
-        dist = sqrt( pow( x2 - x1, 2 ) + pow( y2 - y1, 2 ) + pow( z2 - z1, 2 ) )
-        
-        return dist
-    
-    
-    
     def get_activesite( self, cutoff ):
         # overall activesite dictionary
         # key: unique protein name (resname_reschain_resnum), value: list of ATOM lines per residue
@@ -159,7 +141,7 @@ class CTCT:
                         pro_xyz = [ x_pro, y_pro, z_pro ]
                         
                         # check the distance
-                        if self.calc_distance( lig_xyz, pro_xyz ) <= cutoff:
+                        if calc_distance( lig_xyz, pro_xyz ) <= cutoff:
                             # append the line if the unique protein residue has already been counted
                             if uniq_pro_name in self.activesite_residues:
                                 if atom_line not in self.activesite_dict[ uniq_pro_name ]:
@@ -281,7 +263,7 @@ class CTCT:
                     pro_xyz_str = str( x_pro ) + '_' + str( y_pro ) + '_' + str( z_pro )
                     
                     # check atomic distance
-                    contact_distance = self.calc_distance( lig_xyz, pro_xyz )
+                    contact_distance = calc_distance( lig_xyz, pro_xyz )
                     if contact_distance < cutoff:
                         # check to see that this contact has not yet been counted
                         uniq_contact = lig_xyz_str + '.' + pro_xyz_str
