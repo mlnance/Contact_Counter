@@ -96,11 +96,8 @@ def go( pickle_dir, cutoff, heavy_atoms ):
 ##### DATA COLLECTION #####
 ###########################
     
-    # filename will be taken from the name of the PDB list passed through
-    if pdb_name_list.endswith( "list" ):
-        filename = pdb_name_list.split( "list" )[0]
-    else:
-        filename = "program_input_"
+    # generic filename prefix
+    filename_prefix = "program_input_"
 
     # contact counting data
     CC_df = pd.DataFrame()
@@ -115,7 +112,7 @@ def go( pickle_dir, cutoff, heavy_atoms ):
     
     print CC_df
     print "\n\n\n\n"
-    CC_df.to_csv( str( working_dir ) + '/' + filename + "contact_counts_" + str( cutoff ) + "_Ang_cutoff_and_" + str( heavy_atoms ) + "_heavy_atom_ligand.csv", index = 0, index_col = 0 )
+    CC_df.to_csv( str( working_dir ) + '/' + filename_prefix + "contact_counts_" + str( cutoff ) + "_Ang_cutoff_and_" + str( heavy_atoms ) + "_heavy_atom_ligand.csv", index = 0, index_col = 0 )
     
     
     # make data lists to add over course of program for contact counts per lig - will be added to pandas df at end
@@ -131,7 +128,7 @@ def go( pickle_dir, cutoff, heavy_atoms ):
     CC_per_lig_df["num_unk_contacts"] = ctct.CC_per_lig_unk_contacts
     
     print CC_per_lig_df
-    CC_per_lig_df.to_csv( str( working_dir ) + '/' + filename + "contact_counts_per_lig_res_" + str( cutoff ) + "_Ang_cutoff_and_" + str( heavy_atoms ) + "_heavy_atom_ligand.csv", index = 0, index_col = 0 )
+    CC_per_lig_df.to_csv( str( working_dir ) + '/' + filename_prefix + "contact_counts_per_lig_res_" + str( cutoff ) + "_Ang_cutoff_and_" + str( heavy_atoms ) + "_heavy_atom_ligand.csv", index = 0, index_col = 0 )
 
 
 
