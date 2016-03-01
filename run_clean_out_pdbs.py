@@ -112,6 +112,9 @@ def go( pdb_name_list, ignore_glycosylated_proteins, heavy_atoms, download_pdbs,
                                 # write out a clean PDB file
                                 if keep_clean_pdbs:
                                     clean.write_clean_pdb_file( pdb )
+                                    
+                                # write out the protein and ligand dictionary pickle files
+                                clean.write_pro_lig_pickle( pdb )
                                 
                                 # add the PDB name to the list of clean PDBs
                                 all_clean_pdb_names.append( pdb.split( '/' )[-1][0:4] )

@@ -10,6 +10,25 @@ __author__ = "morganlnance"
 
 
 
+###########################
+#### PROGRAM ARGUMENTS ####
+###########################
+
+if __name__ == "__main__":
+    import argparse
+    
+    parser = argparse.ArgumentParser(description="Use Python to count contacts.")
+    parser.add_argument("pdb_name_list", help="a file of the pdbs to be analyzed")
+    parser.add_argument("--ignore_glycosylated_proteins", "-i", action="store_true", help="do you want to skip PDBs that have a covalently attached HETATM group? This is most likely a glycan")
+    parser.add_argument("--heavy_atoms", "-ha", type=int, default=10, help="how many heavy atoms does a HETATM residue need to be considered a ligand? default = 10")
+    parser.add_argument("--download_pdbs", "-d", action="store_true", help="do you need to download the pdbs from the database?")
+    parser.add_argument("--keep_cifs", action="store_true", help="do you want to keep the cif files you download?")
+    parser.add_argument("--keep_pdbs", action="store_true", help="do you want to keep the pdbs you download?")
+    parser.add_argument("--keep_clean_pdbs", action="store_true", help="do you want to keep the cleaned-up version of the pdbs you are working with?")
+    input_args = parser.parse_args()
+
+
+
 #################
 #### IMPORTS ####
 #################
@@ -19,6 +38,7 @@ print "Loading '%s' dependencies...\n" %__name__
 import sys
 import os
 import shutil
+import pickle
 try:
     from colorama import Fore, Style
 except:
@@ -663,20 +683,21 @@ class Clean:
     
     
     
-    
-######################
-#### RUNS PROGRAM ####
-######################
-
-if __name__ == "__main__":
-    import argparse
-    
-    parser = argparse.ArgumentParser(description="Use Python to count contacts.")
-    parser.add_argument("pdb_name_list", help="a file of the pdbs to be analyzed")
-    parser.add_argument("--ignore_glycosylated_proteins", "-i", action="store_true", help="do you want to skip PDBs that have a covalently attached HETATM group? This is most likely a glycan")
-    parser.add_argument("--heavy_atoms", "-ha", type=int, default=10, help="how many heavy atoms does a HETATM residue need to be considered a ligand? default = 10")
-    parser.add_argument("--download_pdbs", "-d", action="store_true", help="do you need to download the pdbs from the database?")
-    parser.add_argument("--keep_cifs", action="store_true", help="do you want to keep the cif files you download?")
-    parser.add_argument("--keep_pdbs", action="store_true", help="do you want to keep the pdbs you download?")
-    parser.add_argument("--keep_clean_pdbs", action="store_true", help="do you want to keep the cleaned-up version of the pdbs you are working with?")
-    input_args = parser.parse_args()
+    def write_pro_lig_pickle( self, pdb_filename ):
+        # get the 'pdbs' directory path
+        cur_dir = os.getcwd() + '/'
+        pdb_dir = cur_dir + 'pdbs/'
+        
+        # get the four letter code in case a file path was given
+        pdb_name = pdb_filename.split( '/' )[-1][:4]
+        
+        # create the pickle filename from the four letter PDB code
+        protein_pickle = pdb_dir + pdb_name + "_pro.p"
+        ligand_pickle = pdb_dir + pdb_name + "_lig.p"
+        
+        # write the protein and ligand dictionaries to the pickle file
+        # doing this so that in contact and activesite code there is no need to split PDB file again
+        pickle.dump( self.protein, open( protein_pickle, "wb" ) )
+        pickle.dump( self.ligand, open( ligand_pickle, "wb" ) )
+        
+        return True
