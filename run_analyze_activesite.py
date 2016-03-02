@@ -8,14 +8,9 @@ __author__ = "morganlnance"
 
 import argparse
 parser = argparse.ArgumentParser(description="Use Python to analyze a protein's activesite.")
-parser.add_argument("pdb_name_list", help="a file of the pdbs to be analyzed")
-parser.add_argument("--ignore_glycosylated_proteins", "-i", action="store_true", help="do you want to skip PDBs that have a covalently attached HETATM group? This is most likely a glycan")
-parser.add_argument("--cutoff", "-c", type=int, default=5, help="how big do you want the activesite cutoff to be, in angstroms? default = 5")
-parser.add_argument("--heavy_atoms", "-ha", type=int, default=10, help="how many heavy atoms does a HETATM residue need to be considered a ligand? default = 10")
-parser.add_argument("--download_pdbs", "-d", action="store_true", help="do you need to download the pdbs from the database?")
-parser.add_argument("--keep_cifs", "-kc", action="store_true", help="do you want to keep the cif files you download?")
-parser.add_argument("--keep_pdbs", "-kp", action="store_true", help="do you want to keep the pdbs you download?")
-parser.add_argument("--keep_clean_pdbs", "-kcp", action="store_true", help="do you want to keep the cleaned-up version of the pdbs you are working with?")
+parser.add_argument("pickle_directory", type=str, help="give me the path to the protein and ligand pickle directory.")
+parser.add_argument("cutoff", type=int, default=5, help="how big do you want the activesite cutoff to be, in angstroms? default = 5")
+parser.add_argument("heavy_atoms", type=int, default=10, help="how many heavy atoms does a HETATM residue need to be considered a ligand? default = 10")
 input_args = parser.parse_args()
 
 
@@ -43,114 +38,57 @@ import non_rosetta_analyze_activesite as AS_code
 #### MAIN PROGRAM ####
 ######################
 
-def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, download_pdbs, keep_cifs, keep_pdbs, keep_clean_pdbs ):
-    # get file names that are already in the 'pdbs' directory (as to not delete them later)
-    keep_these_files = os.listdir( "pdbs" )
+def go( pickle_dir, cutoff, heavy_atoms ):
+    # get the current working directory
+    working_dir = os.getcwd()
     
-    # relevant variable instatiations
+    # check the integrity of the passed pickle_dir
+    if not os.path.isdir( pickle_dir ):
+        print "You passed me a nonexistent pickle directory. Please check your path:", pickle_dir
+        print "Exiting."
+        sys.exit()
+        
+    # add a tailing '/' to the pickle_dir path if needed
+    if not pickle_dir.endswith( '/' ):
+        pickle_dir += '/'
+    
+    # collect the PDB names from the protein and ligand pickle files
+    os.chdir( pickle_dir )
     all_pdb_names = []
-    AS = AS_code.ACTIVESITE( pdb_name_list, download_pdbs )
-    
-    # get current files as to not delete them later
-    working_dir = os.getcwd() + '/'
-    cur_files_working = os.listdir( working_dir )
-    
-    # holds the name of PDBs that couldn't be downloaded
-    unable_to_download_pdb_names = []
-    
-    # instantiate the data holders that will hold the data for all of the PDBs
-    AS.instantiate_data_holders()
-    
-    # for each PDB in the list, run the analyze interface code
-    for pdb in AS.pdb_names:
-        if pdb != '':
+    for pickle_file in os.listdir( os.getcwd() ):
+        pdb_name = pickle_file[:4]
+        if pdb_name not in all_pdb_names:
+            all_pdb_names.append( pdb_name )
+    os.chdir( working_dir )
+            
+    # instantiate an instance of the contact counting code to instantiate class-specific data holders
+    activesite = AS_code.ACTIVESITE()
+            
+    # for each PDB name collected, run the contact counting code using the pro and lig pickles
+    for pdb in all_pdb_names:
+        # inform the user of the current PDB being worked on
+        try:
             # try to print in color if user has colorama library
-            try:
-                text = "Working on %s" %pdb
-                print(Fore.RED + text + Style.RESET_ALL)
-            except:
-                print "Working on", pdb
+            text = "Working on %s" %pdb
+            print(Fore.RED + text + Style.RESET_ALL)
+        except:
+            print "Working on", pdb
             
-            # instantiate holders for the HETATM and ATOM lines
-            AS.instantiate_holders()
-            
-            # store pdb name in the analyze activesite class
-            pdb_name = pdb[ 0:4 ]
-            AS.name = pdb_name
-            
-            # check to see if this PDB has already been looked at in this round
-            if not pdb_name in all_pdb_names:
-                # also check lower case
-                if not pdb_name.lower() in all_pdb_names:
-
-                    # download the pdb if needed
-                    if download_pdbs:
-                        pdb = AS.download_pdb( pdb )
-                            
-                    # check to see if the PDB path exists, otherwise it needed to be downlaoded
-                    if not os.path.isfile( pdb ):
-                        print "## Skipping", pdb.split( '/' )[-1][0:4], "because it doesn't seem to exist"
-                        unable_to_download_pdb_names.append( pdb_name )
-                        pass
-                        
-                    # otherwise the PDB exists and the program continues
-                    else:
-                        # split ATOM, HETATM, and LINK lines
-                        response = AS.split_pdb_file( pdb, ignore_glycosylated_proteins )
-                        
-                        # if splitting the pdb was successful ( there is a ligand, no AA as ligand, no metal as ligand, no UNK residues, etc. )
-                        if response:
-                            # get ligand residue numbers from pose
-                            response = AS.get_ligand_residues( heavy_atoms, cutoff, pdb, keep_clean_pdbs )
-                            
-                            # if a ligand remains after the heavy atom cutoff
-                            if response:
-                                # get protein atoms in the activesite around the ligand
-                                response = AS.get_activesite( cutoff )
-                                
-                                # if there is indeed an activesite
-                                if response:
-                                    # get activesite composition
-                                    AS.get_activesite_AA_composition()
-                                    
-                                    # get activesite composition per ligandresidue
-                                    AS.get_activesite_AA_composition_per_lig_res()
-                                    
-                                    
-        # get file names in the 'pdbs' directory
-        os.chdir( working_dir + 'pdbs' )
-        pdb_files = os.listdir( os.getcwd() )
+        # store the pickle file paths given the passed information
+        pro_pickle_path = pickle_dir + pdb + "_pro.p"
+        lig_pickle_path = pickle_dir + pdb + "_lig.p"
         
-        # delete undownloaded .tar.gz files
-        for f in pdb_files:
-            if f.endswith( ".gz" ):
-                os.remove( f )
+        # read in the protein and ligand files for this PDB
+        activesite.read_pro_lig_pickles( pro_pickle_path, lig_pickle_path )
 
-        # delete unwanted .cif, .pdb, and .clean.pdb files
-        if not keep_cifs:
-            for f in pdb_files:
-                if f not in keep_these_files:
-                    if f.endswith( ".cif" ):
-                        os.remove( f )
-        if not keep_pdbs:
-            for f in pdb_files:
-                if f not in keep_these_files:
-                    if f.endswith( ".pdb" ) and len( f ) == 8:
-                        os.remove( f )
-        if not keep_clean_pdbs:
-            for f in pdb_files:
-                if f not in keep_these_files:
-                    if f.endswith( ".clean.pdb" ):
-                        os.remove( f )
-        
-        # return to working directory
-        os.chdir( working_dir )
+        # get protein atoms in the activesite around the ligand
+        activesite.get_activesite( cutoff )
 
-    # write out all_pdb_names to a file as those were the PDBs actually analyzed
-    with open( "clean_PSMDB_90_non_red_pro_70_non_red_lig_13_ha_cutoff_list", 'wb' ) as fh:
-        for line in all_pdb_names:
-            fh.write( line + '\n' )
-            
+        # analyze the activesite
+        activesite.get_activesite_AA_composition()
+        activesite.get_activesite_AA_composition_per_lig_res()
+
+
     print "\n\n\n"
 
 
@@ -159,39 +97,8 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
 ##### DATA COLLECTION #####
 ###########################
     
-    # write all the PDB names that were either skipped or unable to be downloaded because of the flags given to the program
-    # example) skip glycosylated proteins, skip nucleic acids as ligands, skip PDBs with multiple models
-    filename = "PDB_files_that_were_skipped.txt"
-    with open( filename, 'wb' ) as fh:
-        fh.write( "## PDBs unable to be downloaded\n" )
-        for line in unable_to_download_pdb_names:
-            fh.write( line + '\n' )
-        fh.write( "\n" )
-
-        fh.write( "## PDBs with covalently attached HETATMs\n" )
-        for line in AS.glycosylated_proteins:
-            fh.write( line + '\n' )
-        fh.write( "\n" )
-    
-        fh.write( "## PDBs with an unknown residues\n" )
-        for line in AS.unknown_res_pdb_names:
-            fh.write( line + '\n' )
-        fh.write( "\n" )
-
-        fh.write( "## PDBs with deuterium\n" )
-        for line in AS.deuterium_pdb_names:
-            fh.write( line + '\n' )
-        fh.write( "\n" )
-
-        fh.write( "## PDBs with multiple MODELs\n" )
-        for line in AS.multiple_models_pdb_names:
-            fh.write( line + '\n' )
-    
-    # filename will be taken from the name of the PDB list passed through
-    if pdb_name_list.endswith( "list" ):
-        filename = pdb_name_list.split( "list" )[0]
-    else:
-        filename = "program_input_"
+    # prefix filename for activesite data
+    filename = "program_input_"
 
     # collect AS composition data in a pandas dataframe
     AS_df = pd.DataFrame()
@@ -359,4 +266,4 @@ def go( pdb_name_list, ignore_glycosylated_proteins, cutoff, heavy_atoms, downlo
 #### RUNS PROGRAM ####
 ######################
 
-go( input_args.pdb_name_list, input_args.ignore_glycosylated_proteins, input_args.cutoff, input_args.heavy_atoms, input_args.download_pdbs, input_args.keep_cifs, input_args.keep_pdbs, input_args.keep_clean_pdbs )
+go( input_args.pickle_directory, input_args.cutoff, input_args.heavy_atoms )

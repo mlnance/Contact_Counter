@@ -24,16 +24,6 @@ try:
     from colorama import Fore, Style
 except:
     pass
-try:
-    from Bio.PDB import *
-except ImportError:
-    print "Trouble with imports - do you have Bio.PDB? Exiting"
-    sys.exit()
-try:
-    import networkx as nx
-except ImportError:
-    print "Trouble with imports - do you have networkx? Exiting"
-    sys.exit()
 
 # utility functions
 sys.path.append( "utility" )
@@ -105,7 +95,7 @@ class CTCT:
         
         # unique ligand name (resname_reschain_resnum)
         #value: list of atom_line for each AA ( to get atom count later )
-        self.activesite_lig_pro_atms_dict = {}
+        self.activesite_lig_pro_atoms_dict = {}
         
         # activesite data holders
         self.num_activesite_res = 0
@@ -164,14 +154,14 @@ class CTCT:
                         
             # store the list of the 3 letter names for the amino acid within the self.activesite_lig_pro_dict according to which ligand it is near
             self.activesite_lig_pro_res_dict[ uniq_lig_name ] = AS_names_in_activesite
-            self.activesite_lig_pro_atms_dict[ uniq_lig_name ] = AS_atms_in_activesite
+            self.activesite_lig_pro_atoms_dict[ uniq_lig_name ] = AS_atms_in_activesite
             
         # get number of activesite residues
         self.num_activesite_res = len( self.activesite_dict.keys() )
         
         # count the number of activesite atoms
-        for uniq_lig_name in self.activesite_lig_pro_atms_dict.keys():
-            self.num_activesite_atms += len( self.activesite_lig_pro_atms_dict[ uniq_lig_name ] )
+        for uniq_lig_name in self.activesite_lig_pro_atoms_dict.keys():
+            self.num_activesite_atms += len( self.activesite_lig_pro_atoms_dict[ uniq_lig_name ] )
             
             # prepare the counter for nonpolar, polar, and unknown atom types for each unique activesite residue
             self.activesite_num_nonpolar_atoms[ uniq_lig_name ] = 0
@@ -179,7 +169,7 @@ class CTCT:
             self.activesite_num_unk_atoms[ uniq_lig_name ] = 0
             
             # count the number of nonpolar and polar atoms
-            for pdb_line in self.activesite_lig_pro_atms_dict[ uniq_lig_name ]:
+            for pdb_line in self.activesite_lig_pro_atoms_dict[ uniq_lig_name ]:
                 # if element is nonpolar
                 if pdb_line.element in nonpolar_atoms:
                     # total nonpolar activesite atoms
@@ -236,7 +226,7 @@ class CTCT:
             self.CC_per_lig_pdb_names.append( self.name )
             self.CC_per_lig_lig_names.append( uniq_lig_name )
             self.CC_per_lig_lig_atms.append( len( self.ligand[ uniq_lig_name ] ) )
-            self.CC_per_lig_activesite_atms.append( len( self.activesite_lig_pro_atms_dict[ uniq_lig_name ] ) )
+            self.CC_per_lig_activesite_atms.append( len( self.activesite_lig_pro_atoms_dict[ uniq_lig_name ] ) )
             
             # make empty counters - used for counting contacts per ligand
             lig_polar_polar = 0
@@ -254,7 +244,7 @@ class CTCT:
                 lig_xyz = [ x_lig, y_lig, z_lig ]
                 lig_xyz_str = str( x_lig ) + '_' + str( y_lig ) + '_' + str( z_lig )
                 
-                for pro_pdb_line in self.activesite_lig_pro_atms_dict[ uniq_lig_name ]:
+                for pro_pdb_line in self.activesite_lig_pro_atoms_dict[ uniq_lig_name ]:
                     # get protein atom xyz
                     x_pro = pro_pdb_line.x_coord
                     y_pro = pro_pdb_line.y_coord
@@ -272,9 +262,9 @@ class CTCT:
                             self.uniq_contact_list.append( uniq_contact )
                             
                             # check contact type
-                            if lig_pdb_line.element in polar_atoms or lig_pdb_line.element in metal_list:
+                            if lig_pdb_line.element in polar_atoms or lig_pdb_line.element in metal_atoms:
                                 # polar polar
-                                if pro_pdb_line.element in polar_atoms or pro_pdb_line.element in metal_list:
+                                if pro_pdb_line.element in polar_atoms or pro_pdb_line.element in metal_atoms:
                                     lig_polar_polar += 1
                                     
                                 # polar nonpolar
@@ -287,7 +277,7 @@ class CTCT:
                                    
                             elif lig_pdb_line.element in nonpolar_atoms:
                                 # nonpolar polar
-                                if pro_pdb_line.element in polar_atoms or pro_pdb_line.element in metal_list:
+                                if pro_pdb_line.element in polar_atoms or pro_pdb_line.element in metal_atoms:
                                     lig_nonpolar_polar += 1
                                    
                                 # nonpolar nonpolar
