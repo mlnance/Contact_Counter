@@ -9,6 +9,11 @@ __author__ = "morganlnance"
 #####
 
 
+'''
+TODO: rewrite the get_activesite_atom_composition functions so that it collects composition for the overall activesite of each unique atom of the residues. NOT just the overall residue in the activesite
+Then the same thing but for each ligand. Use the uniq_ dictionary for this
+'''
+
 
 #################
 #### IMPORTS ####
@@ -310,34 +315,27 @@ class ACTIVESITE:
 
 
     def get_activesite( self, cutoff ):
-        # overall activesite dictionary
-        # key: unique protein name (resname_reschain_resnum), value: list of ATOM lines per residue
-        self.activesite_dict = {}
+        # key: unique ligand name (resname_reschain_resnum)
+        # value: unique protein names or protein atom lines
+        self.activesite_residues = {}
+        self.activesite_atoms = {}
         
-        # unique ligand name (resname_reschain_resnum)
-        # value: list of 3-letter amino acid names
-        self.activesite_lig_pro_res_name_dict = {}
-        
-        # unique ligand name (resname_reschain_resnum)
-        # value: list of atom_line for each AA ( to get atom count later )
-        self.activesite_lig_pro_atoms_dict = {}
+        # list of unique activesite residues and atoms
+        self.uniq_activesite_residues = []
+        self.uniq_activesite_atoms = []
         
         # activesite data holders
-        self.num_activesite_res = 0
-        self.activesite_residues = []
+        self.num_activesite_residues = 0
         self.num_activesite_atoms = 0
-        self.num_activesite_nonpolar_atoms = 0
-        self.num_activesite_polar_atoms = 0
-        self.num_activesite_unk_atom_types = 0
-        self.activesite_num_nonpolar_atoms = {}
-        self.activesite_num_polar_atoms = {}
-        self.activesite_num_unk_atoms = {}
         
+        
+        # for each unique ligand residue
         for uniq_lig_name in self.ligand.keys():
-            # list to store the 3 letter names of all of the protein residues within the cutoff distance of each ligand residue (by unique name)
-            AS_names_in_activesite = []
-            AS_atoms_in_activesite = []
-            
+            # add the unique ligand residue name to self.activesite_dict
+            self.activesite_residues[ uniq_lig_name ] = []
+            self.activesite_atoms[ uniq_lig_name ] = []
+                
+            # for each atom in the ligand residue
             for hetatm_line in self.ligand[ uniq_lig_name ]:
                 # extract coordinates
                 x_lig = hetatm_line.x_coord
@@ -347,7 +345,7 @@ class ACTIVESITE:
                 
                 # for each unique protein residue
                 for uniq_pro_name in self.protein.keys():
-                    # for each atom in the residue
+                    # for each atom in the protein residue
                     for atom_line in self.protein[ uniq_pro_name ]:
                         # extract coordinates
                         x_pro = atom_line.x_coord
@@ -357,44 +355,64 @@ class ACTIVESITE:
                         
                         # check the distance
                         if calc_distance( lig_xyz, pro_xyz ) <= cutoff:
-                            # append the line if the unique protein residue has already been counted
-                            if uniq_pro_name in self.activesite_residues:
-                                if atom_line not in self.activesite_dict[ uniq_pro_name ]:
-                                    self.activesite_dict[ uniq_pro_name ].append( atom_line )
-                            
-                            # store all of the unique names of the protein residues within the activesite
-                            # also, store all of the atom_lines for each unique protein residue in the activesite
-                            else:
-                                self.activesite_residues.append( uniq_pro_name )
-                                self.activesite_dict[ uniq_pro_name ] = []
-                                self.activesite_dict[ uniq_pro_name ].append( atom_line )
+                            # add the unique protein name to the activesite_residues dictionary
+                            if uniq_pro_name not in self.activesite_residues[ uniq_lig_name ]:
+                                self.activesite_residues[ uniq_lig_name ].append( uniq_pro_name )
                                 
-                                # store the 3 letter name of the amino acid within the activesite
-                                three_letter_name = uniq_pro_name[ 0:3 ]
-                                AS_names_in_activesite.append( three_letter_name )
+                            # add the unique protein name to the overall activesite residue list
+                            if uniq_pro_name not in self.uniq_activesite_residues:
+                                self.uniq_activesite_residues.append( uniq_pro_name )
                                 
-                            # store atom_line for each unique amino acid within the activesite to get an atom count later
-                            if atom_line not in AS_atoms_in_activesite:
-                                AS_atoms_in_activesite.append( atom_line )
+                            # add the protein atom line to the activesite_atoms dictionary
+                            if atom_line not in self.activesite_atoms[ uniq_lig_name ]:
+                                self.activesite_atoms[ uniq_lig_name ].append( atom_line )
+
+                            # add the unique protein name to the overall activesite residue list
+                            if atom_line not in self.uniq_activesite_atoms:
+                                self.uniq_activesite_atoms.append( atom_line )
                         
-            # store the list of the 3 letter names for the amino acid within the self.activesite_lig_pro_dict according to which ligand it is near
-            self.activesite_lig_pro_res_name_dict[ uniq_lig_name ] = AS_names_in_activesite
-            self.activesite_lig_pro_atoms_dict[ uniq_lig_name ] = AS_atoms_in_activesite
-            
+
         # get number of activesite residues
-        self.num_activesite_res = len( self.activesite_dict.keys() )
+        self.num_activesite_residues = len( self.uniq_activesite_residues )
         
-        # count the number of activesite atoms
-        for uniq_lig_name in self.activesite_lig_pro_atoms_dict.keys():
-            self.num_activesite_atoms += len( self.activesite_lig_pro_atoms_dict[ uniq_lig_name ] )
+        # get number of activesite atoms
+        # this is the count of atoms actually in the activesite
+        # not just the atoms of the residues in the activesite
+        self.num_activesite_atoms = len( self.uniq_activesite_atoms )
+        
+        # return information
+        # if this ligand has no activesite for some reason
+        if self.num_activesite_residues == 0:
+            print "## Skipping", self.name, "because it had no activesite residues within", cutoff, "Angstroms of the ligand residue(s) ##"
             
+            return False
+        
+        # otherwise print relevant information
+        else:
+            print "  ", self.name, "has", self.num_activesite_residues, "activesite residues",
+            print "and", self.num_activesite_atoms, "non-hydrogen activesite atoms"
+            
+            return True
+
+
+
+    def get_activesite_atom_composition( self ):
+        self.num_activesite_nonpolar_atoms = 0
+        self.num_activesite_polar_atoms = 0
+        self.num_activesite_unk_atom_types = 0
+        self.activesite_num_nonpolar_atoms = {}
+        self.activesite_num_polar_atoms = {}
+        self.activesite_num_unk_atoms = {}
+
+        # collect the types of the unique atoms in the activesite
+        for uniq_lig_name in self.activesite_atoms.keys():
             # prepare the counter for nonpolar, polar, and unknown atom types for each unique activesite residue
             self.activesite_num_nonpolar_atoms[ uniq_lig_name ] = 0
             self.activesite_num_polar_atoms[ uniq_lig_name ] = 0
             self.activesite_num_unk_atoms[ uniq_lig_name ] = 0
             
             # count the number of nonpolar and polar atoms
-            for pdb_line in self.activesite_lig_pro_atoms_dict[ uniq_lig_name ]:
+            for atom_line in self.activesite_atoms[ uniq_lig_name ]:
                 # if element is nonpolar
                 if pdb_line.element in nonpolar_atoms:
                     # total nonpolar activesite atoms
@@ -420,17 +438,53 @@ class ACTIVESITE:
                     # number of unknown atoms for this activesite residue
                     self.activesite_num_unk_atoms[ uniq_lig_name ] += 1
             
-        # return information
-        # if this ligand has no activesite for some reason
-        if len( self.activesite_dict.keys() ) == 0:
-            print "## Skipping", self.name, "because it had no activesite residues within", cutoff, "Angstroms of the ligand residue(s) ##"
-            return False
-        
-        # otherwise print relevant information
-        else:
-            print "  ", self.name, "has", self.num_activesite_res, "activesite residues",
-            print "and", self.num_activesite_atoms, "non-hydrogen activesite atoms"
-            return True
+        return True
+    
+    
+    
+    def get_activesite_atom_composition_per_lig( self ):
+        self.num_activesite_nonpolar_atoms = 0
+        self.num_activesite_polar_atoms = 0
+        self.num_activesite_unk_atom_types = 0
+        self.activesite_num_nonpolar_atoms = {}
+        self.activesite_num_polar_atoms = {}
+        self.activesite_num_unk_atoms = {}
+
+        # collect the types of the unique atoms in the activesite
+        for uniq_lig_name in self.activesite_atoms.keys():
+            # prepare the counter for nonpolar, polar, and unknown atom types for each unique activesite residue
+            self.activesite_num_nonpolar_atoms[ uniq_lig_name ] = 0
+            self.activesite_num_polar_atoms[ uniq_lig_name ] = 0
+            self.activesite_num_unk_atoms[ uniq_lig_name ] = 0
+            
+            # count the number of nonpolar and polar atoms
+            for atom_line in self.activesite_atoms[ uniq_lig_name ]:
+                # if element is nonpolar
+                if pdb_line.element in nonpolar_atoms:
+                    # total nonpolar activesite atoms
+                    self.num_activesite_nonpolar_atoms += 1
+                    
+                    # number of nonpolar atoms for this activesite residue
+                    self.activesite_num_nonpolar_atoms[ uniq_lig_name ] += 1
+                    
+                # if element is polar
+                elif pdb_line.element in polar_atoms:
+                    # total polar activesite atoms
+                    self.num_activesite_polar_atoms += 1
+                    
+                    # number of polar atoms for this activesite residue
+                    self.activesite_num_polar_atoms[ uniq_lig_name ] += 1
+                    
+                # else I don't know what this is
+                else:
+                    print "      * I didn't know what type of atom", "'%s'" %pdb_line.element(), "is. Please add it to the list"
+                    # total unkown activesite atoms
+                    self.num_activesite_unk_atom_types += 1
+                    
+                    # number of unknown atoms for this activesite residue
+                    self.activesite_num_unk_atoms[ uniq_lig_name ] += 1
+            
+        return True
 
 
 
