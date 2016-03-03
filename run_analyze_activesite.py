@@ -80,11 +80,18 @@ def go( pickle_dir, cutoff, heavy_atoms ):
         
         # read in the protein and ligand files for this PDB
         activesite.read_pro_lig_pickles( pro_pickle_path, lig_pickle_path )
+        
+        # look at the ligand and the protein as a whole
+        activesite.analyze_protein()
+        activesite.analyze_ligand()
 
         # get protein atoms in the activesite around the ligand
         activesite.get_activesite( cutoff )
 
         # analyze the activesite
+        activesite.get_activesite_atom_composition()
+        activesite.get_activesite_atom_composition_per_lig()
+        
         activesite.get_activesite_AA_composition()
         activesite.get_activesite_AA_composition_per_lig_res()
 
