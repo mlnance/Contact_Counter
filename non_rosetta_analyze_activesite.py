@@ -48,17 +48,17 @@ class ACTIVESITE:
         
         # make data lists to add over course of program for activesite (AS) composition
         self.AS_pdb_names_list = [] 
-        self.AS_lig_res_list = []
-        self.AS_lig_atoms_list = []
-        self.AS_activesite_res_list = []
-        self.AS_activesite_atoms_list = []
-        self.AS_num_activesite_nonpolar_atoms_types_list = []
-        self.AS_num_activesite_polar_atom_types_list = []
-        self.AS_num_activesite_unk_atom_types_list = []
+        self.AS_num_lig_res_list = []
+        self.AS_num_lig_atoms_list = []
         self.AS_num_ligand_nonpolar_atom_types_list = []
         self.AS_num_ligand_polar_atom_types_list = []
         self.AS_num_ligand_metal_atom_types_list = []
         self.AS_num_ligand_unk_atom_types_list = []
+        self.AS_num_activesite_res_list = []
+        self.AS_num_activesite_atoms_list = []
+        self.AS_num_activesite_nonpolar_atom_types_list = []
+        self.AS_num_activesite_polar_atom_types_list = []
+        self.AS_num_activesite_unk_atom_types_list = []
         
         # for the specific AA composition in the activesite
         self.AS_ALA_list = []
@@ -105,31 +105,9 @@ class ACTIVESITE:
         self.tot_TYR_list = []
         
         # percentage data holders
-        self.percentage_activesite_nonpolar_list = []
-        self.percentage_activesite_polar_list = []
         self.percentage_ligand_nonpolar_list = []
         self.percentage_ligand_polar_list = []
         self.percentage_ligand_metal_list = []
-        self.percentage_activesite_ALA_list = []
-        self.percentage_activesite_CYS_list = []
-        self.percentage_activesite_ASP_list = []
-        self.percentage_activesite_GLU_list = []
-        self.percentage_activesite_PHE_list = []
-        self.percentage_activesite_GLY_list = []
-        self.percentage_activesite_HIS_list = []
-        self.percentage_activesite_ILE_list = []
-        self.percentage_activesite_LYS_list = []
-        self.percentage_activesite_LEU_list = []
-        self.percentage_activesite_MET_list = []
-        self.percentage_activesite_ASN_list = []
-        self.percentage_activesite_PRO_list = []
-        self.percentage_activesite_GLN_list = []
-        self.percentage_activesite_ARG_list = []
-        self.percentage_activesite_SER_list = []
-        self.percentage_activesite_THR_list = []
-        self.percentage_activesite_VAL_list = []
-        self.percentage_activesite_TRP_list = []
-        self.percentage_activesite_TYR_list = []
         self.percentage_tot_ALA_list = []
         self.percentage_tot_CYS_list = []
         self.percentage_tot_ASP_list = []
@@ -150,23 +128,45 @@ class ACTIVESITE:
         self.percentage_tot_VAL_list = []
         self.percentage_tot_TRP_list = []
         self.percentage_tot_TYR_list = []
+        self.percentage_activesite_nonpolar_list = []
+        self.percentage_activesite_polar_list = []
+        self.percentage_activesite_ALA_list = []
+        self.percentage_activesite_CYS_list = []
+        self.percentage_activesite_ASP_list = []
+        self.percentage_activesite_GLU_list = []
+        self.percentage_activesite_PHE_list = []
+        self.percentage_activesite_GLY_list = []
+        self.percentage_activesite_HIS_list = []
+        self.percentage_activesite_ILE_list = []
+        self.percentage_activesite_LYS_list = []
+        self.percentage_activesite_LEU_list = []
+        self.percentage_activesite_MET_list = []
+        self.percentage_activesite_ASN_list = []
+        self.percentage_activesite_PRO_list = []
+        self.percentage_activesite_GLN_list = []
+        self.percentage_activesite_ARG_list = []
+        self.percentage_activesite_SER_list = []
+        self.percentage_activesite_THR_list = []
+        self.percentage_activesite_VAL_list = []
+        self.percentage_activesite_TRP_list = []
+        self.percentage_activesite_TYR_list = []
         
         
         # make data lists to add over course of program for AA composition per ligand residue in each PDB
         # each PDB name should show up as many times as it has ligand residues that fit the user's criteria
         self.AS_pdb_names_per_lig_list = []
-        self.AS_lig_uniq_res_names_per_lig_list = []
-        self.AS_lig_res_names_per_lig_list = []
+        self.AS_uniq_res_names_per_lig_list = []
+        self.AS_res_names_per_lig_list = []
         self.AS_num_lig_atoms_per_lig_list = []
-        self.AS_activesite_res_per_lig_list = []
-        self.AS_activesite_atoms_per_lig_list = []
-        self.AS_lig_num_ligand_nonpolar_atoms_per_lig_list = []
-        self.AS_lig_num_ligand_polar_atoms_per_lig_list = []
-        self.AS_lig_num_ligand_metal_atoms_per_lig_list = []
-        self.AS_lig_num_ligand_unk_atoms_per_lig_list = []
-        self.AS_lig_num_activesite_nonpolar_atoms_per_lig_list = []
-        self.AS_lig_num_activesite_polar_atoms_per_lig_list = []
-        self.AS_lig_num_activesite_unk_atoms_per_lig_list = []
+        self.AS_num_lig_nonpolar_atoms_per_lig_list = []
+        self.AS_num_lig_polar_atoms_per_lig_list = []
+        self.AS_num_lig_metal_atoms_per_lig_list = []
+        self.AS_num_lig_unk_atoms_per_lig_list = []
+        self.AS_num_activesite_res_per_lig_list = []
+        self.AS_num_activesite_atoms_per_lig_list = []
+        self.AS_num_activesite_nonpolar_atoms_per_lig_list = []
+        self.AS_num_activesite_polar_atoms_per_lig_list = []
+        self.AS_num_activesite_unk_atoms_per_lig_list = []
         
         # for the specific AA composition in each activesite
         self.AS_ALA_per_lig_list = []
@@ -237,6 +237,8 @@ class ACTIVESITE:
     def read_pro_lig_pickles( self, pro_pickle, lig_pickle ):
         # get the four letter code from the passed protein pickle name
         self.name = pro_pickle.split( '/' )[-1][:4].lower()
+        
+        # add the PDB name to the list for the Pandas dataframe
         self.AS_pdb_names_list.append( self.name )
         
         # collect the corresponding protein and ligand dictionary data
@@ -338,6 +340,17 @@ class ACTIVESITE:
             float( self.num_lig_atoms )
             , 3 )
         
+        # add all of the collected data to the lists that will be added to the Pandas dataframe
+        self.AS_num_lig_res_list.append( self.num_lig_residues )
+        self.AS_num_lig_atoms_list.append( self.num_lig_atoms )
+        self.AS_num_ligand_nonpolar_atom_types_list.append( self.num_lig_nonpolar_atoms )
+        self.AS_num_ligand_polar_atom_types_list.append( self.num_lig_polar_atoms )
+        self.AS_num_ligand_metal_atom_types_list.append( self.num_lig_metal_atoms )
+        self.AS_num_ligand_unk_atom_types_list.append( self.num_lig_unk_atoms )
+        self.percentage_ligand_nonpolar_list.append( self.percentage_ligand_nonpolar )
+        self.percentage_ligand_polar_list.append( self.percentage_ligand_polar )
+        self.percentage_ligand_metal_list.append( self.percentage_ligand_metal )
+        
         return True
     
     
@@ -346,7 +359,7 @@ class ACTIVESITE:
         # for the size of the protein
         self.size_of_protein = len( self.protein.keys() )
         
-        # for the total protein's composition
+        # for the total protein's composition - used elsewhere, hence counted individually
         self.tot_ALA = 0
         self.tot_CYS = 0
         self.tot_ASP = 0
@@ -416,67 +429,90 @@ class ACTIVESITE:
             if res_name == "TYR":
                 self.tot_TYR += 1
                 
+        # add these counts to the lists for the Pandas dataframe
+        self.tot_ALA_list.append( self.tot_ALA )
+        self.tot_CYS_list.append( self.tot_CYS )
+        self.tot_ASP_list.append( self.tot_ASP )
+        self.tot_GLU_list.append( self.tot_GLU )
+        self.tot_PHE_list.append( self.tot_PHE )
+        self.tot_GLY_list.append( self.tot_GLY )
+        self.tot_HIS_list.append( self.tot_HIS )
+        self.tot_ILE_list.append( self.tot_ILE )
+        self.tot_LYS_list.append( self.tot_LYS )
+        self.tot_LEU_list.append( self.tot_LEU )
+        self.tot_MET_list.append( self.tot_MET )
+        self.tot_ASN_list.append( self.tot_ASN )
+        self.tot_PRO_list.append( self.tot_PRO )
+        self.tot_GLN_list.append( self.tot_GLN )
+        self.tot_ARG_list.append( self.tot_ARG )
+        self.tot_SER_list.append( self.tot_SER )
+        self.tot_THR_list.append( self.tot_THR )
+        self.tot_VAL_list.append( self.tot_VAL )
+        self.tot_TRP_list.append( self.tot_TRP )
+        self.tot_TYR_list.append( self.tot_TYR )
+        
+                
         # collect the percentage of each residue in the overall protein
-        self.percentage_tot_ALA = ( round( float( self.tot_ALA ) / 
-                                           float( self.size_of_protein )
-                                           , 3 ) )
-        self.percentage_tot_CYS = ( round( float( self.tot_CYS ) / 
-                                           float( self.size_of_protein )
-                                           , 3 ) )
-        self.percentage_tot_ASP = ( round( float( self.tot_ASP ) / 
-                                           float( self.size_of_protein )
-                                           , 3 ) )
-        self.percentage_tot_GLU = ( round( float( self.tot_GLU ) / 
-                                           float( self.size_of_protein )
-                                           , 3 ) )
-        self.percentage_tot_PHE = ( round( float( self.tot_PHE ) / 
-                                           float( self.size_of_protein )
-                                           , 3 ) )
-        self.percentage_tot_GLY = ( round( float( self.tot_GLY ) / 
-                                           float( self.size_of_protein )
-                                           , 3 ) )
-        self.percentage_tot_HIS = ( round( float( self.tot_HIS ) / 
-                                           float( self.size_of_protein )
-                                           , 3 ) )
-        self.percentage_tot_ILE = ( round( float( self.tot_ILE ) / 
-                                           float( self.size_of_protein )
-                                           , 3 ) )
-        self.percentage_tot_LYS = ( round( float( self.tot_LYS ) / 
-                                           float( self.size_of_protein )
-                                           , 3 ) )
-        self.percentage_tot_LEU = ( round( float( self.tot_LEU ) / 
-                                           float( self.size_of_protein )
-                                           , 3 ) )
-        self.percentage_tot_MET = ( round( float( self.tot_MET ) / 
-                                           float( self.size_of_protein )
-                                           , 3 ) )
-        self.percentage_tot_ASN = ( round( float( self.tot_ASN ) / 
-                                           float( self.size_of_protein )
-                                           , 3 ) )
-        self.percentage_tot_PRO = ( round( float( self.tot_PRO ) / 
-                                           float( self.size_of_protein )
-                                           , 3 ) )
-        self.percentage_tot_GLN = ( round( float( self.tot_GLN ) / 
-                                           float( self.size_of_protein )
-                                           , 3 ) )
-        self.percentage_tot_ARG = ( round( float( self.tot_ARG ) / 
-                                           float( self.size_of_protein )
-                                           , 3 ) )
-        self.percentage_tot_SER = ( round( float( self.tot_SER ) / 
-                                           float( self.size_of_protein )
-                                           , 3 ) )
-        self.percentage_tot_THR = ( round( float( self.tot_THR ) / 
-                                           float( self.size_of_protein )
-                                           , 3 ) )
-        self.percentage_tot_VAL = ( round( float( self.tot_VAL ) / 
-                                           float( self.size_of_protein )
-                                           , 3 ) )
-        self.percentage_tot_TRP = ( round( float( self.tot_TRP ) / 
-                                           float( self.size_of_protein )
-                                           , 3 ) )
-        self.percentage_tot_TYR = ( round( float( self.tot_TYR ) / 
-                                           float( self.size_of_protein )
-                                           , 3 ) )
+        self.percentage_tot_ALA_list.append( ( round( float( self.tot_ALA ) / 
+                                                      float( self.size_of_protein )
+                                                      , 3 ) ) )
+        self.percentage_tot_CYS_list.append( ( round( float( self.tot_CYS ) / 
+                                                      float( self.size_of_protein )
+                                                      , 3 ) ) )
+        self.percentage_tot_ASP_list.append( ( round( float( self.tot_ASP ) / 
+                                                      float( self.size_of_protein )
+                                                      , 3 ) ) )
+        self.percentage_tot_GLU_list.append( ( round( float( self.tot_GLU ) / 
+                                                      float( self.size_of_protein )
+                                                      , 3 ) ) )
+        self.percentage_tot_PHE_list.append( ( round( float( self.tot_PHE ) / 
+                                                      float( self.size_of_protein )
+                                                      , 3 ) ) )
+        self.percentage_tot_GLY_list.append( ( round( float( self.tot_GLY ) / 
+                                                      float( self.size_of_protein )
+                                                      , 3 ) ) )
+        self.percentage_tot_HIS_list.append( ( round( float( self.tot_HIS ) / 
+                                                      float( self.size_of_protein )
+                                                      , 3 ) ) )
+        self.percentage_tot_ILE_list.append( ( round( float( self.tot_ILE ) / 
+                                                      float( self.size_of_protein )
+                                                      , 3 ) ) )
+        self.percentage_tot_LYS_list.append( ( round( float( self.tot_LYS ) / 
+                                                      float( self.size_of_protein )
+                                                      , 3 ) ) )
+        self.percentage_tot_LEU_list.append( ( round( float( self.tot_LEU ) / 
+                                                      float( self.size_of_protein )
+                                                      , 3 ) ) )
+        self.percentage_tot_MET_list.append( ( round( float( self.tot_MET ) / 
+                                                      float( self.size_of_protein )
+                                                      , 3 ) ) )
+        self.percentage_tot_ASN_list.append( ( round( float( self.tot_ASN ) / 
+                                                      float( self.size_of_protein )
+                                                      , 3 ) ) )
+        self.percentage_tot_PRO_list.append( ( round( float( self.tot_PRO ) / 
+                                                      float( self.size_of_protein )
+                                                      , 3 ) ) )
+        self.percentage_tot_GLN_list.append( ( round( float( self.tot_GLN ) / 
+                                                      float( self.size_of_protein )
+                                                      , 3 ) ) )
+        self.percentage_tot_ARG_list.append( ( round( float( self.tot_ARG ) / 
+                                                      float( self.size_of_protein )
+                                                      , 3 ) ) )
+        self.percentage_tot_SER_list.append( ( round( float( self.tot_SER ) / 
+                                                      float( self.size_of_protein )
+                                                      , 3 ) ) )
+        self.percentage_tot_THR_list.append( ( round( float( self.tot_THR ) / 
+                                                      float( self.size_of_protein )
+                                                      , 3 ) ) )
+        self.percentage_tot_VAL_list.append( ( round( float( self.tot_VAL ) / 
+                                                      float( self.size_of_protein )
+                                                      , 3 ) ) )
+        self.percentage_tot_TRP_list.append( ( round( float( self.tot_TRP ) / 
+                                                      float( self.size_of_protein )
+                                                      , 3 ) ) )
+        self.percentage_tot_TYR_list.append( ( round( float( self.tot_TYR ) / 
+                                                      float( self.size_of_protein )
+                                                      , 3 ) ) )
         
         return True
     
@@ -494,8 +530,7 @@ class ACTIVESITE:
         
         # activesite data holders
         self.num_activesite_residues = 0
-        self.num_activesite_atoms = 0
-        
+        self.num_activesite_atoms = 0        
         
         # for each unique ligand residue
         for uniq_lig_name in self.ligand.keys():
@@ -540,15 +575,18 @@ class ACTIVESITE:
                                 self.uniq_activesite_atoms.append( atom_line )
                         
 
-        # get number of activesite residues
+        # get number of activesite residues and add to Pandas dataframe list
         self.num_activesite_residues = len( self.uniq_activesite_residues )
+        self.AS_num_activesite_res_list.append( self.num_activesite_residues )
         
-        # get number of activesite atoms
+        # get number of activesite atoms and add to Pandas dataframe list
         # this is the count of atoms actually in the activesite
         # not just the atoms of the residues in the activesite
         self.num_activesite_atoms = len( self.uniq_activesite_atoms )
+        self.AS_num_activesite_atoms_list.append( self.num_activesite_atoms )
+
         
-        # return information
+        # return information and exit, if needed
         # if this ligand has no activesite for some reason
         if self.num_activesite_residues == 0:
             print "## Skipping", self.name, "because it had no activesite residues within", cutoff, "Angstroms of the ligand residue(s) ##"
@@ -569,9 +607,6 @@ class ACTIVESITE:
         self.num_activesite_nonpolar_atom_types = 0
         self.num_activesite_polar_atom_types = 0
         self.num_activesite_unk_atom_types = 0
-        self.num_activesite_nonpolar_atoms = {}
-        self.num_activesite_polar_atoms = {}
-        self.num_activesite_unk_atoms = {}
         
         # collect the types of the unique atoms in the activesite
         for atom_line in self.uniq_activesite_atoms:
@@ -587,20 +622,20 @@ class ACTIVESITE:
                 self.num_activesite_unk_atom_types += 1
                 
         # add the data to the dictionaries given the PDB name
-        self.num_activesite_nonpolar_atoms[ self.name ] =self.num_activesite_nonpolar_atom_types
-        self.num_activesite_polar_atoms[ self.name ] =self.num_activesite_polar_atom_types
-        self.num_activesite_unk_atoms[ self.name ] =self.num_activesite_unk_atom_types
+        self.AS_num_activesite_nonpolar_atom_types_list.append( self.num_activesite_nonpolar_atom_types )
+        self.AS_num_activesite_polar_atom_types_list.append( self.num_activesite_polar_atom_types )
+        self.AS_num_activesite_unk_atom_types_list.append( self.num_activesite_unk_atom_types )
 
         # collect the percentage of polar and nonpolar atoms in the activesite
-        self.percentage_activesite_nonpolar = round( 
-            float( self.num_activesite_nonpolar_atom_types ) / 
-            float( self.num_activesite_atoms )
-            , 3 )
-        self.percentage_activesite_polar = round( 
-            float( self.num_activesite_polar_atom_types ) / 
-            float( self.num_activesite_atoms )
-            , 3 )
-                
+        self.percentage_activesite_nonpolar_list.append( round( 
+                float( self.num_activesite_nonpolar_atom_types ) / 
+                float( self.num_activesite_atoms )
+                , 3 ) )
+        self.percentage_activesite_polar_list.append( round( 
+                float( self.num_activesite_polar_atom_types ) / 
+                float( self.num_activesite_atoms )
+                , 3 ) )
+        
         return True
     
     
@@ -610,28 +645,24 @@ class ACTIVESITE:
         for uniq_lig_res in self.activesite_atoms_per_lig.keys():
             # add some PDB and ligand data to the data lists
             self.AS_pdb_names_per_lig_list.append( self.name )
-            self.AS_lig_uniq_res_names_per_lig_list.append( uniq_lig_res )
-            self.AS_lig_res_names_per_lig_list.append( uniq_lig_res.split( '_' )[0] )
-            self.AS_num_lig_atoms_per_lig_list.append( 
-                self.num_lig_atoms_per_lig[ uniq_lig_res ] )
-            self.AS_lig_num_ligand_nonpolar_atoms_per_lig_list.append( 
-                self.num_lig_nonpolar_atoms_per_lig[ uniq_lig_res ] )
-            self.AS_lig_num_ligand_polar_atoms_per_lig_list.append( 
-                self.num_lig_polar_atoms_per_lig[ uniq_lig_res ] )
-            self.AS_lig_num_ligand_metal_atoms_per_lig_list.append( 
-                self.num_lig_metal_atoms_per_lig[ uniq_lig_res ] )
-            self.AS_lig_num_ligand_unk_atoms_per_lig_list.append( 
-                self.num_lig_unk_atoms_per_lig[ uniq_lig_res ] )
+            self.AS_uniq_res_names_per_lig_list.append( uniq_lig_res )
+            self.AS_res_names_per_lig_list.append( uniq_lig_res.split( '_' )[0] )
+            self.AS_num_lig_atoms_per_lig_list.append( self.num_lig_atoms_per_lig[ uniq_lig_res ] )
+            self.AS_num_lig_nonpolar_atoms_per_lig_list.append( self.num_lig_nonpolar_atoms_per_lig[ uniq_lig_res ] )
+            self.AS_num_lig_polar_atoms_per_lig_list.append( self.num_lig_polar_atoms_per_lig[ uniq_lig_res ] )
+            self.AS_num_lig_metal_atoms_per_lig_list.append( self.num_lig_metal_atoms_per_lig[ uniq_lig_res ] )
+            self.AS_num_lig_unk_atoms_per_lig_list.append( self.num_lig_unk_atoms_per_lig[ uniq_lig_res ] )
 
+            # grab all the activesite atoms around this ligand
+            activesite_atom_lines = self.activesite_atoms_per_lig[ uniq_lig_res ]
+            num_activesite_atoms_per_lig = len( activesite_atom_lines )
+            
             # instantiate empty counters for each ligand
             num_activesite_nonpolar_atom_types_per_lig = 0
             num_activesite_polar_atom_types_per_lig = 0
             num_activesite_unk_atom_types_per_lig = 0
             
             # check the element of each atom in the activesite around this ligand
-            activesite_atom_lines = self.activesite_atoms_per_lig[ uniq_lig_res ]
-            num_activesite_atoms_per_lig = len( activesite_atom_lines )
-            
             for atom_line in activesite_atom_lines:
                 # if nonpolar
                 if atom_line.element in nonpolar_atoms:
@@ -644,18 +675,18 @@ class ACTIVESITE:
                     print "      * I didn't know what type of atom", "'%s'" %atom_line.element, "is. Please add it to the list"
                     num_activesite_unk_atom_types_per_lig += 1
                     
-            # add the data to the dictionaries for each ligand residue
-            self.AS_activesite_atoms_per_lig_list.append( num_activesite_atoms_per_lig )
-            self.AS_lig_num_activesite_nonpolar_atoms_per_lig_list.append( num_activesite_nonpolar_atom_types_per_lig )
-            self.AS_lig_num_activesite_polar_atoms_per_lig_list.append( num_activesite_polar_atom_types_per_lig )
-            self.AS_lig_num_activesite_unk_atoms_per_lig_list.append( num_activesite_unk_atom_types_per_lig )
+            # add the data to the lists for the Pandas dataframe
+            self.AS_num_activesite_atoms_per_lig_list.append( num_activesite_atoms_per_lig )
+            self.AS_num_activesite_nonpolar_atoms_per_lig_list.append( num_activesite_nonpolar_atom_types_per_lig )
+            self.AS_num_activesite_polar_atoms_per_lig_list.append( num_activesite_polar_atom_types_per_lig )
+            self.AS_num_activesite_unk_atoms_per_lig_list.append( num_activesite_unk_atom_types_per_lig )
             
         return True
     
     
     
     def get_activesite_AA_composition( self ):
-        # for the overall activesite composition
+        # for the overall activesite composition - used elsewhere, hence counted individually
         self.AS_ALA = 0
         self.AS_CYS = 0
         self.AS_ASP = 0
@@ -725,194 +756,7 @@ class ACTIVESITE:
             if res_name == "TYR":
                 self.AS_TYR += 1
         
-        # collect the percentage of each specific amino acid in the activesite compared to the total number of amino acids in the activesite
-        self.percentage_activesite_ALA = ( round( float( self.AS_ALA ) / 
-                                                  float( self.num_activesite_residues )
-                                                  , 3 ) )
-        self.percentage_activesite_CYS = ( round( float( self.AS_CYS ) / 
-                                                  float( self.num_activesite_residues )
-                                                  , 3 ) )
-        self.percentage_activesite_ASP = ( round( float( self.AS_ASP ) / 
-                                                  float( self.num_activesite_residues )
-                                                  , 3 ) )
-        self.percentage_activesite_GLU = ( round( float( self.AS_GLU ) / 
-                                                  float( self.num_activesite_residues )
-                                                  , 3 ) )
-        self.percentage_activesite_PHE = ( round( float( self.AS_PHE ) / 
-                                                  float( self.num_activesite_residues )
-                                                  , 3 ) )
-        self.percentage_activesite_GLY = ( round( float( self.AS_GLY ) / 
-                                                  float( self.num_activesite_residues )
-                                                  , 3 ) )
-        self.percentage_activesite_HIS = ( round( float( self.AS_HIS ) / 
-                                                  float( self.num_activesite_residues )
-                                                  , 3 ) )
-        self.percentage_activesite_ILE = ( round( float( self.AS_ILE ) / 
-                                                  float( self.num_activesite_residues )
-                                                  , 3 ) )
-        self.percentage_activesite_LYS = ( round( float( self.AS_LYS ) / 
-                                                  float( self.num_activesite_residues )
-                                                  , 3 ) )
-        self.percentage_activesite_LEU = ( round( float( self.AS_LEU ) / 
-                                                  float( self.num_activesite_residues )
-                                                  , 3 ) )
-        self.percentage_activesite_MET = ( round( float( self.AS_MET ) / 
-                                                  float( self.num_activesite_residues )
-                                                  , 3 ) )
-        self.percentage_activesite_ASN = ( round( float( self.AS_ASN ) / 
-                                                  float( self.num_activesite_residues )
-                                                  , 3 ) )
-        self.percentage_activesite_PRO = ( round( float( self.AS_PRO ) / 
-                                                  float( self.num_activesite_residues )
-                                                  , 3 ) )
-        self.percentage_activesite_GLN = ( round( float( self.AS_GLN ) / 
-                                                  float( self.num_activesite_residues )
-                                                  , 3 ) )
-        self.percentage_activesite_ARG = ( round( float( self.AS_ARG ) / 
-                                                  float( self.num_activesite_residues )
-                                                  , 3 ) )
-        self.percentage_activesite_SER = ( round( float( self.AS_SER ) / 
-                                                  float( self.num_activesite_residues )
-                                                  , 3 ) )
-        self.percentage_activesite_THR = ( round( float( self.AS_THR ) / 
-                                                  float( self.num_activesite_residues )
-                                                  , 3 ) )
-        self.percentage_activesite_VAL = ( round( float( self.AS_VAL ) / 
-                                                  float( self.num_activesite_residues )
-                                                  , 3 ) )
-        self.percentage_activesite_TRP = ( round( float( self.AS_TRP ) / 
-                                                  float( self.num_activesite_residues )
-                                                  , 3 ) )
-        self.percentage_activesite_TYR = ( round( float( self.AS_TYR ) / 
-                                                  float( self.num_activesite_residues )
-                                                  , 3 ) )
-
-
-        return True
-
-
-
-    def get_activesite_AA_composition_per_lig_res( self ):
-        self.AS_activesite_res_per_lig_list = []
-        
-        # for each ligand
-        for uniq_lig_name in self.activesite_residues_per_lig.keys():
-            # get the unique protein names of the residues around this ligand
-            activesite_uniq_pro_res_names = self.activesite_residues_per_lig[ uniq_lig_name ]
-            
-            # get the total number of amino acids in this activesite
-            tot_AA_in_activesite = len( activesite_uniq_pro_res_names )
-            
-            # now just collect the three-letter amino acid codes of the activesite residues
-            activesite_pro_residues = []
-            for uniq_pro_name in activesite_uniq_pro_res_names:
-                res_name = unqi_pro_name.split( '_' )[0]
-                activesite_pro_residues.append( res_name )
-            
-            # count the number of amino acid residues around the ligand and append to data lists
-            ALA_per_lig = ( activesite_pro_residues.count( "ALA" ) )
-            CYS_per_lig = ( activesite_pro_residues.count( "CYS" ) )
-            ASP_per_lig = ( activesite_pro_residues.count( "ASP" ) )
-            GLU_per_lig = ( activesite_pro_residues.count( "GLU" ) )
-            PHE_per_lig = ( activesite_pro_residues.count( "PHE" ) )
-            GLY_per_lig = ( activesite_pro_residues.count( "GLY" ) )
-            HIS_per_lig = ( activesite_pro_residues.count( "HIS" ) )
-            ILE_per_lig = ( activesite_pro_residues.count( "ILE" ) )
-            LYS_per_lig = ( activesite_pro_residues.count( "LYS" ) )
-            LEU_per_lig = ( activesite_pro_residues.count( "LEU" ) )
-            MET_per_lig = ( activesite_pro_residues.count( "MET" ) )
-            ASN_per_lig = ( activesite_pro_residues.count( "ASN" ) )
-            PRO_per_lig = ( activesite_pro_residues.count( "PRO" ) )
-            GLN_per_lig = ( activesite_pro_residues.count( "GLN" ) )
-            ARG_per_lig = ( activesite_pro_residues.count( "ARG" ) )
-            SER_per_lig = ( activesite_pro_residues.count( "SER" ) )
-            THR_per_lig = ( activesite_pro_residues.count( "THR" ) )
-            VAL_per_lig = ( activesite_pro_residues.count( "VAL" ) )
-            TRP_per_lig = ( activesite_pro_residues.count( "TRP" ) )
-            TYR_per_lig = ( activesite_pro_residues.count( "TYR" ) )
-            
-            # collect percentage data of number of a specific amino acid in the 
-            # ligand's activesite versus the number of total amino acids in that activesite
-            
-            
-            
-            # recollect the percentage of each residue in the protein
-            '''
-            percentage_tot_per_lig_ALA = ( round( float( ALA_per_lig ) / 
-                                           float( self.size_of_protein )
-                                           , 3 ) )
-            percentage_tot_per_lig_CYS = ( round( float( CYS_per_lig ) / 
-                                           float( self.size_of_protein )
-                                           , 3 ) )
-            percentage_tot_per_lig_ASP = ( round( float( ASP_per_lig ) / 
-                                           float( self.size_of_protein )
-                                           , 3 ) )
-            percentage_tot_per_lig_GLU = ( round( float( GLU_per_lig ) / 
-                                           float( self.size_of_protein )
-                                           , 3 ) )
-            percentage_tot_per_lig_PHE = ( round( float( PHE_per_lig ) / 
-                                           float( self.size_of_protein )
-                                           , 3 ) )
-            percentage_tot_per_lig_GLY = ( round( float( GLY_per_lig ) / 
-                                           float( self.size_of_protein )
-                                           , 3 ) )
-            percentage_tot_per_lig_HIS = ( round( float( HIS_per_lig ) / 
-                                           float( self.size_of_protein )
-                                           , 3 ) )
-            percentage_tot_per_lig_ILE = ( round( float( ILE_per_lig ) / 
-                                           float( self.size_of_protein )
-                                           , 3 ) )
-            percentage_tot_per_lig_LYS = ( round( float( LYS_per_lig ) / 
-                                           float( self.size_of_protein )
-                                           , 3 ) )
-            percentage_tot_per_lig_LEU = ( round( float( LEU_per_lig ) / 
-                                           float( self.size_of_protein )
-                                           , 3 ) )
-            percentage_tot_per_lig_MET = ( round( float( MET_per_lig ) / 
-                                           float( self.size_of_protein )
-                                           , 3 ) )
-            percentage_tot_per_lig_ASN = ( round( float( ASN_per_lig ) / 
-                                           float( self.size_of_protein )
-                                           , 3 ) )
-            percentage_tot_per_lig_PRO = ( round( float( PRO_per_lig ) / 
-                                           float( self.size_of_protein )
-                                           , 3 ) )
-            percentage_tot_per_lig_GLN = ( round( float( GLN_per_lig ) / 
-                                           float( self.size_of_protein )
-                                           , 3 ) )
-            percentage_tot_per_lig_ARG = ( round( float( ARG_per_lig ) / 
-                                           float( self.size_of_protein )
-                                           , 3 ) )
-            percentage_tot_per_lig_SER = ( round( float( SER_per_lig ) / 
-                                           float( self.size_of_protein )
-                                           , 3 ) )
-            percentage_tot_per_lig_THR = ( round( float( THR_per_lig ) / 
-                                           float( self.size_of_protein )
-                                           , 3 ) )
-            percentage_tot_per_lig_VAL = ( round( float( VAL_per_lig ) / 
-                                           float( self.size_of_protein )
-                                           , 3 ) )
-            percentage_tot_per_lig_TRP = ( round( float( TRP_per_lig ) / 
-                                           float( self.size_of_protein )
-                                           , 3 ) )
-            percentage_tot_per_lig_TYR = ( round( float( TYR_per_lig ) / 
-                                           float( self.size_of_protein )
-                                           , 3 ) )
-            '''
-                                    
-        return True
-
-
-
-    def collect_activesite_data( self ):
-        # append all of the final data to the self.lists
-        # because if the analysis got this far, that means there actually is data to collect for the PDB
-        self.AS_pdb_names.append( self.name )
-        self.AS_lig_res.append( self.num_lig_residues )
-        self.AS_lig_atoms.append( self.num_lig_atoms )
-        self.AS_activesite_res.append( self.num_activesite_res )
-        self.AS_activesite_atoms.append( self.num_activesite_atoms )
-        
+        # add these counts to the lists for the Pandas dataframe
         self.AS_ALA_list.append( self.AS_ALA )
         self.AS_CYS_list.append( self.AS_CYS )
         self.AS_ASP_list.append( self.AS_ASP )
@@ -933,82 +777,259 @@ class ACTIVESITE:
         self.AS_VAL_list.append( self.AS_VAL )
         self.AS_TRP_list.append( self.AS_TRP )
         self.AS_TYR_list.append( self.AS_TYR )
-        
-        self.tot_ALA_list.append( self.tot_ALA )
-        self.tot_CYS_list.append( self.tot_CYS )
-        self.tot_ASP_list.append( self.tot_ASP )
-        self.tot_GLU_list.append( self.tot_GLU )
-        self.tot_PHE_list.append( self.tot_PHE )
-        self.tot_GLY_list.append( self.tot_GLY )
-        self.tot_HIS_list.append( self.tot_HIS )
-        self.tot_ILE_list.append( self.tot_ILE )
-        self.tot_LYS_list.append( self.tot_LYS )
-        self.tot_LEU_list.append( self.tot_LEU )
-        self.tot_MET_list.append( self.tot_MET )
-        self.tot_ASN_list.append( self.tot_ASN )
-        self.tot_PRO_list.append( self.tot_PRO )
-        self.tot_GLN_list.append( self.tot_GLN )
-        self.tot_ARG_list.append( self.tot_ARG )
-        self.tot_SER_list.append( self.tot_SER )
-        self.tot_THR_list.append( self.tot_THR )
-        self.tot_VAL_list.append( self.tot_VAL )
-        self.tot_TRP_list.append( self.tot_TRP )
-        self.tot_TYR_list.append( self.tot_TYR )
-        
-        self.AS_num_activesite_nonpolar_atom_types_list.append( self.num_activesite_nonpolar_atoms )
-        self.AS_num_activesite_polar_atom_types_list.append( self.num_activesite_polar_atoms )
-        self.AS_num_activesite_unk_atom_types_list.append( self.num_activesite_unk_atom_types )
-        self.AS_num_ligand_nonpolar_atom_types_list.append( self.num_lig_nonpolar_atoms )
-        self.AS_num_ligand_polar_atom_types_list.append( self.num_lig_polar_atoms )
-        self.AS_num_ligand_metal_atom_types_list.append( self.num_lig_metal_atoms )
-        self.AS_num_ligand_unk_atom_types_list.append( self.num_lig_unk_atoms )
-        
-        self.percentage_activesite_nonpolar_list.append( self.percentage_activesite_nonpolar )
-        self.percentage_activesite_polar_list.append( self.percentage_activesite_polar )
-        self.percentage_ligand_nonpolar_list.append( self.percentage_ligand_nonpolar )
-        self.percentage_ligand_polar_list.append( self.percentage_ligand_polar )
-        self.percentage_ligand_metal_list.append( self.percentage_ligand_metal )
-        
-        self.percentage_activesite_ALA_list.append( self.percentage_activesite_ALA )
-        self.percentage_activesite_CYS_list.append( self.percentage_activesite_CYS )
-        self.percentage_activesite_ASP_list.append( self.percentage_activesite_ASP )
-        self.percentage_activesite_GLU_list.append( self.percentage_activesite_GLU )
-        self.percentage_activesite_PHE_list.append( self.percentage_activesite_PHE )
-        self.percentage_activesite_GLY_list.append( self.percentage_activesite_GLY )
-        self.percentage_activesite_HIS_list.append( self.percentage_activesite_HIS )
-        self.percentage_activesite_ILE_list.append( self.percentage_activesite_ILE )
-        self.percentage_activesite_LYS_list.append( self.percentage_activesite_LYS )
-        self.percentage_activesite_LEU_list.append( self.percentage_activesite_LEU )
-        self.percentage_activesite_MET_list.append( self.percentage_activesite_MET )
-        self.percentage_activesite_ASN_list.append( self.percentage_activesite_ASN )
-        self.percentage_activesite_PRO_list.append( self.percentage_activesite_PRO )
-        self.percentage_activesite_GLN_list.append( self.percentage_activesite_GLN )
-        self.percentage_activesite_ARG_list.append( self.percentage_activesite_ARG )
-        self.percentage_activesite_SER_list.append( self.percentage_activesite_SER )
-        self.percentage_activesite_THR_list.append( self.percentage_activesite_THR )
-        self.percentage_activesite_VAL_list.append( self.percentage_activesite_VAL )
-        self.percentage_activesite_TRP_list.append( self.percentage_activesite_TYP )
-        self.percentage_activesite_TYR_list.append( self.percentage_activesite_TYR )
-        
-        self.percentage_tot_ALA_list.append( self.percentage_tot_ALA )
-        self.percentage_tot_CYS_list.append( self.percentage_tot_CYS )
-        self.percentage_tot_ASP_list.append( self.percentage_tot_ASP )
-        self.percentage_tot_GLU_list.append( self.percentage_tot_GLU )
-        self.percentage_tot_PHE_list.append( self.percentage_tot_PHE )
-        self.percentage_tot_GLY_list.append( self.percentage_tot_GLY )
-        self.percentage_tot_HIS_list.append( self.percentage_tot_HIS )
-        self.percentage_tot_ILE_list.append( self.percentage_tot_ILE )
-        self.percentage_tot_LYS_list.append( self.percentage_tot_LYS )
-        self.percentage_tot_LEU_list.append( self.percentage_tot_LEU )
-        self.percentage_tot_MET_list.append( self.percentage_tot_MET )
-        self.percentage_tot_ASN_list.append( self.percentage_tot_ASN )
-        self.percentage_tot_PRO_list.append( self.percentage_tot_PRO )
-        self.percentage_tot_GLN_list.append( self.percentage_tot_GLN )
-        self.percentage_tot_ARG_list.append( self.percentage_tot_ARG )
-        self.percentage_tot_SER_list.append( self.percentage_tot_SER )
-        self.percentage_tot_THR_list.append( self.percentage_tot_THR )
-        self.percentage_tot_VAL_list.append( self.percentage_tot_VAL )
-        self.percentage_tot_TRP_list.append( self.percentage_tot_TRP )
-        self.percentage_tot_TYR_list.append( self.percentage_tot_TYR )
+
+        # collect the percentage of each specific amino acid in the activesite compared to the total number of amino acids in the activesite
+        self.percentage_activesite_ALA_list.append( ( round( float( self.AS_ALA ) / 
+                                                             float( self.num_activesite_residues )
+                                                             , 3 ) ) )
+        self.percentage_activesite_CYS_list.append( ( round( float( self.AS_CYS ) / 
+                                                             float( self.num_activesite_residues )
+                                                             , 3 ) ) )
+        self.percentage_activesite_ASP_list.append( ( round( float( self.AS_ASP ) / 
+                                                             float( self.num_activesite_residues )
+                                                             , 3 ) ) )
+        self.percentage_activesite_GLU_list.append( ( round( float( self.AS_GLU ) / 
+                                                             float( self.num_activesite_residues )
+                                                             , 3 ) ) )
+        self.percentage_activesite_PHE_list.append( ( round( float( self.AS_PHE ) / 
+                                                             float( self.num_activesite_residues )
+                                                             , 3 ) ) )
+        self.percentage_activesite_GLY_list.append( ( round( float( self.AS_GLY ) / 
+                                                             float( self.num_activesite_residues )
+                                                             , 3 ) ) )
+        self.percentage_activesite_HIS_list.append( ( round( float( self.AS_HIS ) / 
+                                                             float( self.num_activesite_residues )
+                                                             , 3 ) ) )
+        self.percentage_activesite_ILE_list.append( ( round( float( self.AS_ILE ) / 
+                                                             float( self.num_activesite_residues )
+                                                             , 3 ) ) )
+        self.percentage_activesite_LYS_list.append( ( round( float( self.AS_LYS ) / 
+                                                             float( self.num_activesite_residues )
+                                                             , 3 ) ) )
+        self.percentage_activesite_LEU_list.append( ( round( float( self.AS_LEU ) / 
+                                                             float( self.num_activesite_residues )
+                                                             , 3 ) ) )
+        self.percentage_activesite_MET_list.append( ( round( float( self.AS_MET ) / 
+                                                             float( self.num_activesite_residues )
+                                                             , 3 ) ) )
+        self.percentage_activesite_ASN_list.append( ( round( float( self.AS_ASN ) / 
+                                                             float( self.num_activesite_residues )
+                                                             , 3 ) ) )
+        self.percentage_activesite_PRO_list.append( ( round( float( self.AS_PRO ) / 
+                                                             float( self.num_activesite_residues )
+                                                             , 3 ) ) )
+        self.percentage_activesite_GLN_list.append( ( round( float( self.AS_GLN ) / 
+                                                             float( self.num_activesite_residues )
+                                                             , 3 ) ) )
+        self.percentage_activesite_ARG_list.append( ( round( float( self.AS_ARG ) / 
+                                                             float( self.num_activesite_residues )
+                                                             , 3 ) ) )
+        self.percentage_activesite_SER_list.append( ( round( float( self.AS_SER ) / 
+                                                             float( self.num_activesite_residues )
+                                                             , 3 ) ) )
+        self.percentage_activesite_THR_list.append( ( round( float( self.AS_THR ) / 
+                                                             float( self.num_activesite_residues )
+                                                             , 3 ) ) )
+        self.percentage_activesite_VAL_list.append( ( round( float( self.AS_VAL ) / 
+                                                             float( self.num_activesite_residues )
+                                                             , 3 ) ) )
+        self.percentage_activesite_TRP_list.append( ( round( float( self.AS_TRP ) / 
+                                                             float( self.num_activesite_residues )
+                                                             , 3 ) ) )
+        self.percentage_activesite_TYR_list.append( ( round( float( self.AS_TYR ) / 
+                                                             float( self.num_activesite_residues )
+                                                             , 3 ) ) )
+
+
+        return True
+
+
+
+    def get_activesite_AA_composition_per_lig_res( self ):
+        # for each ligand
+        for uniq_lig_name in self.activesite_residues_per_lig.keys():
+            # get the unique protein names of the residues around this ligand
+            activesite_uniq_pro_res_names = self.activesite_residues_per_lig[ uniq_lig_name ]
+            
+            # get the total number of amino acids in this ligand's activesite
+            tot_AA_in_activesite = len( activesite_uniq_pro_res_names )
+            self.AS_num_activesite_res_per_lig_list.append( tot_AA_in_activesite )
+            
+            # now just collect the three-letter amino acid codes of the activesite residues
+            activesite_pro_residues = []
+            for uniq_pro_name in activesite_uniq_pro_res_names:
+                res_name = uniq_pro_name.split( '_' )[0]
+                activesite_pro_residues.append( res_name )
+            
+            # count the number of amino acid residues around the ligand
+            # counts are used elsewhere, hence collected individually in this fashion
+            ALA_per_lig = ( activesite_pro_residues.count( "ALA" ) )
+            CYS_per_lig = ( activesite_pro_residues.count( "CYS" ) )
+            ASP_per_lig = ( activesite_pro_residues.count( "ASP" ) )
+            GLU_per_lig = ( activesite_pro_residues.count( "GLU" ) )
+            PHE_per_lig = ( activesite_pro_residues.count( "PHE" ) )
+            GLY_per_lig = ( activesite_pro_residues.count( "GLY" ) )
+            HIS_per_lig = ( activesite_pro_residues.count( "HIS" ) )
+            ILE_per_lig = ( activesite_pro_residues.count( "ILE" ) )
+            LYS_per_lig = ( activesite_pro_residues.count( "LYS" ) )
+            LEU_per_lig = ( activesite_pro_residues.count( "LEU" ) )
+            MET_per_lig = ( activesite_pro_residues.count( "MET" ) )
+            ASN_per_lig = ( activesite_pro_residues.count( "ASN" ) )
+            PRO_per_lig = ( activesite_pro_residues.count( "PRO" ) )
+            GLN_per_lig = ( activesite_pro_residues.count( "GLN" ) )
+            ARG_per_lig = ( activesite_pro_residues.count( "ARG" ) )
+            SER_per_lig = ( activesite_pro_residues.count( "SER" ) )
+            THR_per_lig = ( activesite_pro_residues.count( "THR" ) )
+            VAL_per_lig = ( activesite_pro_residues.count( "VAL" ) )
+            TRP_per_lig = ( activesite_pro_residues.count( "TRP" ) )
+            TYR_per_lig = ( activesite_pro_residues.count( "TYR" ) )
+
+            # append collected data to ligand activesite Pandas dataframe lists
+            self.AS_ALA_per_lig_list.append( ALA_per_lig )
+            self.AS_CYS_per_lig_list.append( CYS_per_lig )
+            self.AS_ASP_per_lig_list.append( ASP_per_lig )
+            self.AS_GLU_per_lig_list.append( GLU_per_lig )
+            self.AS_PHE_per_lig_list.append( PHE_per_lig )
+            self.AS_GLY_per_lig_list.append( GLY_per_lig )
+            self.AS_HIS_per_lig_list.append( HIS_per_lig )
+            self.AS_ILE_per_lig_list.append( ILE_per_lig )
+            self.AS_LYS_per_lig_list.append( LYS_per_lig )
+            self.AS_LEU_per_lig_list.append( LEU_per_lig )
+            self.AS_MET_per_lig_list.append( MET_per_lig )
+            self.AS_ASN_per_lig_list.append( ASN_per_lig )
+            self.AS_PRO_per_lig_list.append( PRO_per_lig )
+            self.AS_GLN_per_lig_list.append( GLN_per_lig )
+            self.AS_ARG_per_lig_list.append( ARG_per_lig )
+            self.AS_SER_per_lig_list.append( SER_per_lig )
+            self.AS_THR_per_lig_list.append( THR_per_lig )
+            self.AS_VAL_per_lig_list.append( VAL_per_lig )
+            self.AS_TRP_per_lig_list.append( TRP_per_lig )
+            self.AS_TYR_per_lig_list.append( TYR_per_lig )
+            
+            # collect percentage data of number of a specific amino acid in the 
+            # ligand's activesite versus the number of total amino acids in that activesite
+            self.percentage_activesite_per_lig_ALA_list.append( ( round( float( ALA_per_lig ) / 
+                                                                         float( tot_AA_in_activesite )
+                                                                         , 3 ) ) )
+            self.percentage_activesite_per_lig_CYS_list.append( ( round( float( CYS_per_lig ) / 
+                                                                         float( tot_AA_in_activesite )
+                                                                         , 3 ) ) )
+            self.percentage_activesite_per_lig_ASP_list.append( ( round( float( ASP_per_lig ) / 
+                                                                         float( tot_AA_in_activesite )
+                                                                         , 3 ) ) )
+            self.percentage_activesite_per_lig_GLU_list.append( ( round( float( GLU_per_lig ) / 
+                                                                         float( tot_AA_in_activesite )
+                                                                         , 3 ) ) )
+            self.percentage_activesite_per_lig_PHE_list.append( ( round( float( PHE_per_lig ) / 
+                                                                         float( tot_AA_in_activesite )
+                                                                         , 3 ) ) )
+            self.percentage_activesite_per_lig_GLY_list.append( ( round( float( GLY_per_lig ) / 
+                                                                         float( tot_AA_in_activesite )
+                                                                         , 3 ) ) )
+            self.percentage_activesite_per_lig_HIS_list.append( ( round( float( HIS_per_lig ) / 
+                                                                         float( tot_AA_in_activesite )
+                                                                         , 3 ) ) )
+            self.percentage_activesite_per_lig_ILE_list.append( ( round( float( ILE_per_lig ) / 
+                                                                         float( tot_AA_in_activesite )
+                                                                         , 3 ) ) )
+            self.percentage_activesite_per_lig_LYS_list.append( ( round( float( LYS_per_lig ) / 
+                                                                         float( tot_AA_in_activesite )
+                                                                         , 3 ) ) )
+            self.percentage_activesite_per_lig_LEU_list.append( ( round( float( LEU_per_lig ) / 
+                                                                         float( tot_AA_in_activesite )
+                                                                         , 3 ) ) )
+            self.percentage_activesite_per_lig_MET_list.append( ( round( float( MET_per_lig ) / 
+                                                                         float( tot_AA_in_activesite )
+                                                                         , 3 ) ) )
+            self.percentage_activesite_per_lig_ASN_list.append( ( round( float( ASN_per_lig ) / 
+                                                                         float( tot_AA_in_activesite )
+                                                                         , 3 ) ) )
+            self.percentage_activesite_per_lig_PRO_list.append( ( round( float( PRO_per_lig ) / 
+                                                                         float( tot_AA_in_activesite )
+                                                                         , 3 ) ) )
+            self.percentage_activesite_per_lig_GLN_list.append( ( round( float( GLN_per_lig ) / 
+                                                                         float( tot_AA_in_activesite )
+                                                                         , 3 ) ) )
+            self.percentage_activesite_per_lig_ARG_list.append( ( round( float( ARG_per_lig ) / 
+                                                                         float( tot_AA_in_activesite )
+                                                                         , 3 ) ) )
+            self.percentage_activesite_per_lig_SER_list.append( ( round( float( SER_per_lig ) / 
+                                                                         float( tot_AA_in_activesite )
+                                                                         , 3 ) ) )
+            self.percentage_activesite_per_lig_THR_list.append( ( round( float( THR_per_lig ) / 
+                                                                         float( tot_AA_in_activesite )
+                                                                         , 3 ) ) )
+            self.percentage_activesite_per_lig_VAL_list.append( ( round( float( VAL_per_lig ) / 
+                                                                         float( tot_AA_in_activesite )
+                                                                         , 3 ) ) )
+            self.percentage_activesite_per_lig_TRP_list.append( ( round( float( TRP_per_lig ) / 
+                                                                         float( tot_AA_in_activesite )
+                                                                         , 3 ) ) )
+            self.percentage_activesite_per_lig_TYR_list.append( ( round( float( TYR_per_lig ) / 
+                                                                         float( tot_AA_in_activesite )
+                                                                         , 3 ) ) )
+            
+            
+            # recollect the percentage of each residue in the protein
+            self.percentage_tot_per_lig_ALA_list.append( ( round( float( ALA_per_lig ) / 
+                                                                  float( self.size_of_protein )
+                                                                  , 3 ) ) )
+            self.percentage_tot_per_lig_CYS_list.append( ( round( float( CYS_per_lig ) / 
+                                                                  float( self.size_of_protein )
+                                                                  , 3 ) ) )
+            self.percentage_tot_per_lig_ASP_list.append( ( round( float( ASP_per_lig ) / 
+                                                                  float( self.size_of_protein )
+                                                                  , 3 ) ) )
+            self.percentage_tot_per_lig_GLU_list.append( ( round( float( GLU_per_lig ) / 
+                                                                  float( self.size_of_protein )
+                                                                  , 3 ) ) )
+            self.percentage_tot_per_lig_PHE_list.append( ( round( float( PHE_per_lig ) / 
+                                                                  float( self.size_of_protein )
+                                                                  , 3 ) ) )
+            self.percentage_tot_per_lig_GLY_list.append( ( round( float( GLY_per_lig ) / 
+                                                                  float( self.size_of_protein )
+                                                                  , 3 ) ) )
+            self.percentage_tot_per_lig_HIS_list.append( ( round( float( HIS_per_lig ) / 
+                                                                  float( self.size_of_protein )
+                                                                  , 3 ) ) )
+            self.percentage_tot_per_lig_ILE_list.append( ( round( float( ILE_per_lig ) / 
+                                                                  float( self.size_of_protein )
+                                                                  , 3 ) ) )
+            self.percentage_tot_per_lig_LYS_list.append( ( round( float( LYS_per_lig ) / 
+                                                                  float( self.size_of_protein )
+                                                                  , 3 ) ) )
+            self.percentage_tot_per_lig_LEU_list.append( ( round( float( LEU_per_lig ) / 
+                                                                  float( self.size_of_protein )
+                                                                  , 3 ) ) )
+            self.percentage_tot_per_lig_MET_list.append( ( round( float( MET_per_lig ) / 
+                                                                  float( self.size_of_protein )
+                                                                  , 3 ) ) )
+            self.percentage_tot_per_lig_ASN_list.append( ( round( float( ASN_per_lig ) / 
+                                                                  float( self.size_of_protein )
+                                                                  , 3 ) ) )
+            self.percentage_tot_per_lig_PRO_list.append( ( round( float( PRO_per_lig ) / 
+                                                                  float( self.size_of_protein )
+                                                                  , 3 ) ) )
+            self.percentage_tot_per_lig_GLN_list.append( ( round( float( GLN_per_lig ) / 
+                                                                  float( self.size_of_protein )
+                                                                  , 3 ) ) )
+            self.percentage_tot_per_lig_ARG_list.append( ( round( float( ARG_per_lig ) / 
+                                                                  float( self.size_of_protein )
+                                                                  , 3 ) ) )
+            self.percentage_tot_per_lig_SER_list.append( ( round( float( SER_per_lig ) / 
+                                                                  float( self.size_of_protein )
+                                                                  , 3 ) ) )
+            self.percentage_tot_per_lig_THR_list.append( ( round( float( THR_per_lig ) / 
+                                                                  float( self.size_of_protein )
+                                                                  , 3 ) ) )
+            self.percentage_tot_per_lig_VAL_list.append( ( round( float( VAL_per_lig ) / 
+                                                                  float( self.size_of_protein )
+                                                                  , 3 ) ) )
+            self.percentage_tot_per_lig_TRP_list.append( ( round( float( TRP_per_lig ) / 
+                                                                  float( self.size_of_protein )
+                                                                  , 3 ) ) )
+            self.percentage_tot_per_lig_TYR_list.append( ( round( float( TYR_per_lig ) / 
+                                                                  float( self.size_of_protein )
+                                                                  , 3 ) ) )
         
         return True

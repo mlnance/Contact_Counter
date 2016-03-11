@@ -92,8 +92,8 @@ def go( pickle_dir, cutoff, heavy_atoms ):
         activesite.get_activesite_atom_composition()
         activesite.get_activesite_atom_composition_per_lig()
         
-        #activesite.get_activesite_AA_composition()
-        #activesite.get_activesite_AA_composition_per_lig_res()
+        activesite.get_activesite_AA_composition()
+        activesite.get_activesite_AA_composition_per_lig_res()
 
 
     print "\n\n\n"
@@ -110,75 +110,75 @@ def go( pickle_dir, cutoff, heavy_atoms ):
     # collect AS composition data in a pandas dataframe
     AS_df = pd.DataFrame()
     AS_df["PDB"] = activesite.AS_pdb_names_list
-    AS_df["num_lig_res"] = activesite.AS_lig_res_list
-    AS_df["num_lig_atoms"] = activesite.AS_lig_atoms_list
-    AS_df["num_lig_nonpolar_atoms"] = activesite.AS_num_ligand_nonpolar_atoms_list
-    AS_df["num_lig_polar_atoms"] = activesite.AS_num_ligand_polar_atoms_list
-    AS_df["num_lig_metal_atoms"] = activesite.AS_num_ligand_metal_atoms_list
+    AS_df["num_lig_res"] = activesite.AS_num_lig_res_list
+    AS_df["num_lig_atoms"] = activesite.AS_num_lig_atoms_list
+    AS_df["num_lig_nonpolar_atoms"] = activesite.AS_num_ligand_nonpolar_atom_types_list
+    AS_df["num_lig_polar_atoms"] = activesite.AS_num_ligand_polar_atom_types_list
+    AS_df["num_lig_metal_atoms"] = activesite.AS_num_ligand_metal_atom_types_list
     AS_df["num_lig_unk_atom_type"] = activesite.AS_num_ligand_unk_atom_types_list
-    AS_df["num_activesite_res"] = activesite.AS_activesite_res_list
-    AS_df["num_activesite_atoms"] = activesite.AS_activesite_atoms_list
-    AS_df["num_activesite_nonpolar_atoms"] = activesite.AS_num_activesite_nonpolar_atoms_list
-    AS_df["num_activesite_polar_atoms"] = activesite.AS_num_activesite_polar_atoms_list
+    AS_df["num_activesite_res"] = activesite.AS_num_activesite_res_list
+    AS_df["num_activesite_atoms"] = activesite.AS_num_activesite_atoms_list
+    AS_df["num_activesite_nonpolar_atoms"] = activesite.AS_num_activesite_nonpolar_atom_types_list
+    AS_df["num_activesite_polar_atoms"] = activesite.AS_num_activesite_polar_atom_types_list
     AS_df["num_activesite_unk_atom_type"] = activesite.AS_num_activesite_unk_atom_types_list
-    AS_df["ALA"] = activesite.ALA_list
+    AS_df["Activesite_ALA"] = activesite.AS_ALA_list
     AS_df["ALA_%_activesite_composition"] = activesite.percentage_activesite_ALA_list
     AS_df["ALA_%_in_full_protein"] = activesite.percentage_tot_ALA_list
-    AS_df["CYS"] = activesite.CYS_list
+    AS_df["Activesite_CYS"] = activesite.AS_CYS_list
     AS_df["CYS_%_activesite_composition"] = activesite.percentage_activesite_CYS_list
     AS_df["CYS_%_in_full_protein"] = activesite.percentage_tot_CYS_list
-    AS_df["ASP"] = activesite.ASP_list
+    AS_df["Activesite_ASP"] = activesite.AS_ASP_list
     AS_df["ASP_%_activesite_composition"] = activesite.percentage_activesite_ASP_list
     AS_df["ASP_%_in_full_protein"] = activesite.percentage_tot_ASP_list
-    AS_df["GLU"] = activesite.GLU_list
+    AS_df["Activesite_GLU"] = activesite.AS_GLU_list
     AS_df["GLU_%_activesite_composition"] = activesite.percentage_activesite_GLU_list
     AS_df["GLU_%_in_full_protein"] = activesite.percentage_tot_GLU_list
-    AS_df["PHE"] = activesite.PHE_list
+    AS_df["Activesite_PHE"] = activesite.AS_PHE_list
     AS_df["PHE_%_activesite_composition"] = activesite.percentage_activesite_PHE_list
     AS_df["PHE_%_in_full_protein"] = activesite.percentage_tot_PHE_list
-    AS_df["GLY"] = activesite.GLY_list
+    AS_df["Activesite_GLY"] = activesite.AS_GLY_list
     AS_df["GLY_%_activesite_composition"] = activesite.percentage_activesite_GLY_list
     AS_df["GLY_%_in_full_protein"] = activesite.percentage_tot_GLY_list
-    AS_df["HIS"] = activesite.HIS_list
+    AS_df["Activesite_HIS"] = activesite.AS_HIS_list
     AS_df["HIS_%_activesite_composition"] = activesite.percentage_activesite_HIS_list
     AS_df["HIS_%_in_full_protein"] = activesite.percentage_tot_HIS_list
-    AS_df["ILE"] = activesite.ILE_list
+    AS_df["Activesite_ILE"] = activesite.AS_ILE_list
     AS_df["ILE_%_activesite_composition"] = activesite.percentage_activesite_ILE_list
     AS_df["ILE_%_in_full_protein"] = activesite.percentage_tot_ILE_list
-    AS_df["LYS"] = activesite.LYS_list
+    AS_df["Activesite_LYS"] = activesite.AS_LYS_list
     AS_df["LYS_%_activesite_composition"] = activesite.percentage_activesite_LYS_list
     AS_df["LYS_%_in_full_protein"] = activesite.percentage_tot_LYS_list
-    AS_df["LEU"] = activesite.LEU_list
+    AS_df["Activesite_LEU"] = activesite.AS_LEU_list
     AS_df["LEU_%_activesite_composition"] = activesite.percentage_activesite_LEU_list
     AS_df["LEU_%_in_full_protein"] = activesite.percentage_tot_LEU_list
-    AS_df["MET"] = activesite.MET_list
+    AS_df["Activesite_MET"] = activesite.AS_MET_list
     AS_df["MET_%_activesite_composition"] = activesite.percentage_activesite_MET_list
     AS_df["MET_%_in_full_protein"] = activesite.percentage_tot_MET_list
-    AS_df["ASN"] = activesite.ASN_list
+    AS_df["Activesite_ASN"] = activesite.AS_ASN_list
     AS_df["ASN_%_activesite_composition"] = activesite.percentage_activesite_ASN_list
     AS_df["ASN_%_in_full_protein"] = activesite.percentage_tot_ASN_list
-    AS_df["PRO"] = activesite.PRO_list
+    AS_df["Activesite_PRO"] = activesite.AS_PRO_list
     AS_df["PRO_%_activesite_composition"] = activesite.percentage_activesite_PRO_list
     AS_df["PRO_%_in_full_protein"] = activesite.percentage_tot_PRO_list
-    AS_df["GLN"] = activesite.GLN_list
+    AS_df["Activesite_GLN"] = activesite.AS_GLN_list
     AS_df["GLN_%_activesite_composition"] = activesite.percentage_activesite_GLN_list
     AS_df["GLN_%_in_full_protein"] = activesite.percentage_tot_GLN_list
-    AS_df["ARG"] = activesite.ARG_list
+    AS_df["Activesite_ARG"] = activesite.AS_ARG_list
     AS_df["ARG_%_activesite_composition"] = activesite.percentage_activesite_ARG_list
     AS_df["ARG_%_in_full_protein"] = activesite.percentage_tot_ARG_list
-    AS_df["SER"] = activesite.SER_list
+    AS_df["Activesite_SER"] = activesite.AS_SER_list
     AS_df["SER_%_activesite_composition"] = activesite.percentage_activesite_SER_list
     AS_df["SER_%_in_full_protein"] = activesite.percentage_tot_SER_list
-    AS_df["THR"] = activesite.THR_list
+    AS_df["Activesite_THR"] = activesite.AS_THR_list
     AS_df["THR_%_activesite_composition"] = activesite.percentage_activesite_THR_list
     AS_df["THR_%_in_full_protein"] = activesite.percentage_tot_THR_list
-    AS_df["VAL"] = activesite.VAL_list
+    AS_df["Activesite_VAL"] = activesite.AS_VAL_list
     AS_df["VAL_%_activesite_composition"] = activesite.percentage_activesite_VAL_list
     AS_df["VAL_%_in_full_protein"] = activesite.percentage_tot_VAL_list
-    AS_df["TRP"] = activesite.TRP_list
+    AS_df["Activesite_TRP"] = activesite.AS_TRP_list
     AS_df["TRP_%_activesite_composition"] = activesite.percentage_activesite_TRP_list
     AS_df["TRP_%_in_full_protein"] = activesite.percentage_tot_TRP_list
-    AS_df["TYR"] = activesite.TYR_list
+    AS_df["Activesite_TYR"] = activesite.AS_TYR_list
     AS_df["TYR_%_activesite_composition"] = activesite.percentage_activesite_TYR_list
     AS_df["TYR_%_in_full_protein"] = activesite.percentage_tot_TYR_list
     
@@ -187,85 +187,84 @@ def go( pickle_dir, cutoff, heavy_atoms ):
     AS_df.to_csv( str( working_dir ) + '/' + filename + "activesite_AA_composition_at_" + str( cutoff ) + "_Ang_cutoff_and_" + str( heavy_atoms ) + "_heavy_atom_ligand.csv", index = 0, index_col = 0 )
 
     
-    
     # collect AS composition per ligand residue data in a pandas dataframe
     AS_per_lig_df = pd.DataFrame()
     AS_per_lig_df["PDB"] = activesite.AS_pdb_names_per_lig_list
-    AS_per_lig_df["uniq_lig_res_names"] = activesite.AS_lig_uniq_res_names_per_lig_list
-    AS_per_lig_df["lig_res_names"] = activesite.AS_lig_res_names_per_lig_list
+    AS_per_lig_df["uniq_lig_res_names"] = activesite.AS_uniq_res_names_per_lig_list
+    AS_per_lig_df["lig_res_names"] = activesite.AS_res_names_per_lig_list
     AS_per_lig_df["num_lig_atoms"] = activesite.AS_num_lig_atoms_per_lig_list
-    AS_per_lig_df["num_lig_nonpolar_atoms"] = activesite.AS_lig_num_ligand_nonpolar_atoms_list
-    AS_per_lig_df["num_lig_polar_atoms"] = activesite.AS_lig_num_ligand_polar_atoms_list
-    AS_per_lig_df["num_lig_metal_atoms"] = activesite.AS_lig_num_ligand_metal_atoms_list
-    AS_per_lig_df["num_lig_unk_atoms"] = activesite.AS_lig_num_ligand_unk_atoms_list
-    AS_per_lig_df["num_activesite_res"] = activesite.AS_activesite_res_per_lig_list
-    AS_per_lig_df["num_activesite_atoms"] = activesite.AS_activesite_atoms_per_lig_list
-    AS_per_lig_df["num_activesite_nonpolar_atoms"] = activesite.AS_lig_num_activesite_nonpolar_atoms_list
-    AS_per_lig_df["num_activesite_polar_atoms"] = activesite.AS_lig_num_activesite_polar_atoms_list
-    AS_per_lig_df["ALA"] = activesite.ALA_per_lig_list
+    AS_per_lig_df["num_lig_nonpolar_atoms"] = activesite.AS_num_lig_nonpolar_atoms_per_lig_list
+    AS_per_lig_df["num_lig_polar_atoms"] = activesite.AS_num_lig_polar_atoms_per_lig_list
+    AS_per_lig_df["num_lig_metal_atoms"] = activesite.AS_num_lig_metal_atoms_per_lig_list
+    AS_per_lig_df["num_lig_unk_atoms"] = activesite.AS_num_lig_unk_atoms_per_lig_list
+    AS_per_lig_df["num_activesite_res"] = activesite.AS_num_activesite_res_per_lig_list
+    AS_per_lig_df["num_activesite_atoms"] = activesite.AS_num_activesite_atoms_per_lig_list
+    AS_per_lig_df["num_activesite_nonpolar_atoms"] = activesite.AS_num_activesite_nonpolar_atoms_per_lig_list
+    AS_per_lig_df["num_activesite_polar_atoms"] = activesite.AS_num_activesite_polar_atoms_per_lig_list
+    AS_per_lig_df["num_activesite_unk_atoms"] = activesite.AS_num_activesite_unk_atoms_per_lig_list
+    AS_per_lig_df["ALA"] = activesite.AS_ALA_per_lig_list
     AS_per_lig_df["ALA_%_activesite_composition"] = activesite.percentage_activesite_per_lig_ALA_list
     AS_per_lig_df["ALA_%_in_full_protein"] = activesite.percentage_tot_per_lig_ALA_list
-    AS_per_lig_df["CYS"] = activesite.CYS_per_lig_list
+    AS_per_lig_df["CYS"] = activesite.AS_CYS_per_lig_list
     AS_per_lig_df["CYS_%_activesite_composition"] = activesite.percentage_activesite_per_lig_CYS_list
     AS_per_lig_df["CYS_%_in_full_protein"] = activesite.percentage_tot_per_lig_CYS_list
-    AS_per_lig_df["ASP"] = activesite.ASP_per_lig_list
+    AS_per_lig_df["ASP"] = activesite.AS_ASP_per_lig_list
     AS_per_lig_df["ASP_%_activesite_composition"] = activesite.percentage_activesite_per_lig_ASP_list
     AS_per_lig_df["ASP_%_in_full_protein"] = activesite.percentage_tot_per_lig_ASP_list
-    AS_per_lig_df["GLU"] = activesite.GLU_per_lig_list
+    AS_per_lig_df["GLU"] = activesite.AS_GLU_per_lig_list
     AS_per_lig_df["GLU_%_activesite_composition"] = activesite.percentage_activesite_per_lig_GLU_list
     AS_per_lig_df["GLU_%_in_full_protein"] = activesite.percentage_tot_per_lig_GLU_list
-    AS_per_lig_df["PHE"] = activesite.PHE_per_lig_list
+    AS_per_lig_df["PHE"] = activesite.AS_PHE_per_lig_list
     AS_per_lig_df["PHE_%_activesite_composition"] = activesite.percentage_activesite_per_lig_PHE_list
     AS_per_lig_df["PHE_%_in_full_protein"] = activesite.percentage_tot_per_lig_PHE_list
-    AS_per_lig_df["GLY"] = activesite.GLY_per_lig_list
+    AS_per_lig_df["GLY"] = activesite.AS_GLY_per_lig_list
     AS_per_lig_df["GLY_%_activesite_composition"] = activesite.percentage_activesite_per_lig_GLY_list
     AS_per_lig_df["GLY_%_in_full_protein"] = activesite.percentage_tot_per_lig_GLY_list
-    AS_per_lig_df["HIS"] = activesite.HIS_per_lig_list
+    AS_per_lig_df["HIS"] = activesite.AS_HIS_per_lig_list
     AS_per_lig_df["HIS_%_activesite_composition"] = activesite.percentage_activesite_per_lig_HIS_list
     AS_per_lig_df["HIS_%_in_full_protein"] = activesite.percentage_tot_per_lig_HIS_list
-    AS_per_lig_df["ILE"] = activesite.ILE_per_lig_list
+    AS_per_lig_df["ILE"] = activesite.AS_ILE_per_lig_list
     AS_per_lig_df["ILE_%_activesite_composition"] = activesite.percentage_activesite_per_lig_ILE_list
     AS_per_lig_df["ILE_%_in_full_protein"] = activesite.percentage_tot_per_lig_ILE_list
-    AS_per_lig_df["LYS"] = activesite.LYS_per_lig_list
+    AS_per_lig_df["LYS"] = activesite.AS_LYS_per_lig_list
     AS_per_lig_df["LYS_%_activesite_composition"] = activesite.percentage_activesite_per_lig_LYS_list
     AS_per_lig_df["LYS_%_in_full_protein"] = activesite.percentage_tot_per_lig_LYS_list
-    AS_per_lig_df["LEU"] = activesite.LEU_per_lig_list
+    AS_per_lig_df["LEU"] = activesite.AS_LEU_per_lig_list
     AS_per_lig_df["LEU_%_activesite_composition"] = activesite.percentage_activesite_per_lig_LEU_list
     AS_per_lig_df["LEU_%_in_full_protein"] = activesite.percentage_tot_per_lig_LEU_list
-    AS_per_lig_df["MET"] = activesite.MET_per_lig_list
+    AS_per_lig_df["MET"] = activesite.AS_MET_per_lig_list
     AS_per_lig_df["MET_%_activesite_composition"] = activesite.percentage_activesite_per_lig_MET_list
     AS_per_lig_df["MET_%_in_full_protein"] = activesite.percentage_tot_per_lig_MET_list
-    AS_per_lig_df["ASN"] = activesite.ASN_per_lig_list
+    AS_per_lig_df["ASN"] = activesite.AS_ASN_per_lig_list
     AS_per_lig_df["ASN_%_activesite_composition"] = activesite.percentage_activesite_per_lig_ASN_list
     AS_per_lig_df["ASN_%_in_full_protein"] = activesite.percentage_tot_per_lig_ASN_list
-    AS_per_lig_df["PRO"] = activesite.PRO_per_lig_list
+    AS_per_lig_df["PRO"] = activesite.AS_PRO_per_lig_list
     AS_per_lig_df["PRO_%_activesite_composition"] = activesite.percentage_activesite_per_lig_PRO_list
     AS_per_lig_df["PRO_%_in_full_protein"] = activesite.percentage_tot_per_lig_PRO_list
-    AS_per_lig_df["GLN"] = activesite.GLN_per_lig_list
+    AS_per_lig_df["GLN"] = activesite.AS_GLN_per_lig_list
     AS_per_lig_df["GLN_%_activesite_composition"] = activesite.percentage_activesite_per_lig_GLN_list
     AS_per_lig_df["GLN_%_in_full_protein"] = activesite.percentage_tot_per_lig_GLN_list
-    AS_per_lig_df["ARG"] = activesite.ARG_per_lig_list
+    AS_per_lig_df["ARG"] = activesite.AS_ARG_per_lig_list
     AS_per_lig_df["ARG_%_activesite_composition"] = activesite.percentage_activesite_per_lig_ARG_list
     AS_per_lig_df["ARG_%_in_full_protein"] = activesite.percentage_tot_per_lig_ARG_list
-    AS_per_lig_df["SER"] = activesite.SER_per_lig_list
+    AS_per_lig_df["SER"] = activesite.AS_SER_per_lig_list
     AS_per_lig_df["SER_%_activesite_composition"] = activesite.percentage_activesite_per_lig_SER_list
     AS_per_lig_df["SER_%_in_full_protein"] = activesite.percentage_tot_per_lig_SER_list
-    AS_per_lig_df["THR"] = activesite.THR_per_lig_list
+    AS_per_lig_df["THR"] = activesite.AS_THR_per_lig_list
     AS_per_lig_df["THR_%_activesite_composition"] = activesite.percentage_activesite_per_lig_THR_list
     AS_per_lig_df["THR_%_in_full_protein"] = activesite.percentage_tot_per_lig_THR_list
-    AS_per_lig_df["VAL"] = activesite.VAL_per_lig_list
+    AS_per_lig_df["VAL"] = activesite.AS_VAL_per_lig_list
     AS_per_lig_df["VAL_%_activesite_composition"] = activesite.percentage_activesite_per_lig_VAL_list
     AS_per_lig_df["VAL_%_in_full_protein"] = activesite.percentage_tot_per_lig_VAL_list
-    AS_per_lig_df["TRP"] = activesite.TRP_per_lig_list
+    AS_per_lig_df["TRP"] = activesite.AS_TRP_per_lig_list
     AS_per_lig_df["TRP_%_activesite_composition"] = activesite.percentage_activesite_per_lig_TRP_list
     AS_per_lig_df["TRP_%_in_full_protein"] = activesite.percentage_tot_per_lig_TRP_list
-    AS_per_lig_df["TYR"] = activesite.TYR_per_lig_list
+    AS_per_lig_df["TYR"] = activesite.AS_TYR_per_lig_list
     AS_per_lig_df["TYR_%_activesite_composition"] = activesite.percentage_activesite_per_lig_TYR_list
     AS_per_lig_df["TYR_%_in_full_protein"] = activesite.percentage_tot_per_lig_TYR_list
 
     print AS_per_lig_df
     AS_per_lig_df.to_csv( str( working_dir ) + '/' + filename + "activesite_AA_composition_per_ligand_at_" + str( cutoff ) + "_Ang_cutoff_and_" + str( heavy_atoms ) + "_heavy_atom_ligand.csv", index = 0, index_col = 0 )
-
 
 
 ######################
